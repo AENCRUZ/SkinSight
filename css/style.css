@@ -1092,10 +1092,10 @@ footer .brand {
     width: 6px; height: 6px;
     border-radius: 50%;
     background: var(--success);
-    animation: skinsync-pulse 1.8s ease-in-out infinite;
+    animation: skinsight-pulse 1.8s ease-in-out infinite;
   }
 }
-@keyframes skinsync-pulse {
+@keyframes skinsight-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.45; transform: scale(0.75); }
 }

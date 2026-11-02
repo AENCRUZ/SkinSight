@@ -1,5 +1,5 @@
 /*
- * SKINSYNC — Auth UI interactions 
+ * SKINSIGHT — Auth UI interactions 
  * Frontend-ONLY. No network calls, no password handling/storage,
  * no real authentication.
  */

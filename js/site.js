@@ -1,5 +1,5 @@
 /*
- * SKINSYNC — UI Polish lang po
+ * SKINSIGHT — UI Polish lang po
  * Adds scroll animations, staggered element animations,
  * and a glassy navbar effect.
  *
