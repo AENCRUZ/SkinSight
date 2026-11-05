@@ -789,7 +789,7 @@ footer .brand {
 
 /* ---------- Tablet: 768px–1024px ---------- */
 @media (max-width: 1024px) {
-  .hamburger-label { display: flex; }
+  .hamburger-label { display: flex; margin-left: auto; }
   .navbar .btn-sm { display: none; }
   .nav-links {
     display: none;
