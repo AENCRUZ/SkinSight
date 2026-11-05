@@ -43,6 +43,15 @@
           return;
         }
 
+        // Mark as "logged in" (demo only) and return to the previous page if any
+        try { localStorage.setItem("skinsight_logged_in", "true"); } catch (err) {}
+
+        var nextPage = new URLSearchParams(window.location.search).get("next");
+        if (nextPage && /^[a-z0-9-]+\.html$/i.test(nextPage)) {
+          window.location.href = nextPage;
+          return;
+        }
+
         var note = form.querySelector("[data-auth-note]");
         if (note) {
           note.classList.add("show");
