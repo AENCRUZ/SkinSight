@@ -1,10 +1,6 @@
-/*
- * SKINSIGHT — Login gate & Clinic Email/Appointment Placeholder
- * Handles:
- * 1. Checking whether user is logged in before viewing summary or sending email to clinic.
- * 2. Showing the "Log in to see summary" modal if unauthenticated.
- * 3. Showing a realistic interactive placeholder for sending an email/appointment request to the clinic if authenticated.
- */
+
+// SKINSIGHT — Login gate & Clinic Email/Appointment Placeholder
+
 (function () {
   "use strict";
 
@@ -64,9 +60,7 @@
     var isClinicDetails = window.location.pathname.indexOf("clinic-details.html") !== -1;
     var isConsultationSummary = window.location.pathname.indexOf("consultation-summary.html") !== -1;
 
-    // ----------------------------------------------------
-    // 1. Build Login Gate Modal
-    // ----------------------------------------------------
+    // Build Login Gate Modal
     var gateModal = document.createElement("div");
     gateModal.className = "login-gate";
     gateModal.id = "login-gate-modal";
@@ -113,9 +107,7 @@
       }
     });
 
-    // ----------------------------------------------------
-    // 2. Build Clinic Email / Appointment Placeholder Modal
-    // ----------------------------------------------------
+    // Build Clinic Email / Appointment Placeholder Modal
     var apptModal = document.createElement("div");
     apptModal.className = "login-gate";
     apptModal.id = "appointment-modal";
@@ -291,11 +283,8 @@
       });
     }
 
-    // ----------------------------------------------------
-    // 3. Page Interceptors
-    // ----------------------------------------------------
+    // Page Interceptors
 
-    // On clinic-details.html:
     if (isClinicDetails) {
       var emailLink = document.getElementById("btn-email-clinic") ||
         document.querySelector('.send-option a[href^="mailto:"]') ||
@@ -336,7 +325,6 @@
       }
     }
 
-    // On consultation-summary.html:
     if (isConsultationSummary) {
       if (!isLoggedIn()) {
         openLoginGate(
