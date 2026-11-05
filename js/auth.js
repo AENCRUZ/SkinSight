@@ -291,7 +291,6 @@
         return;
       }
 
-      // Successfully updated! Sign out of the temporary recovery session so the user can log in freshly
       saveCachedUser(null);
       try {
         await window.supabaseClient.auth.signOut();
@@ -368,7 +367,6 @@
 
     if (isRecovery) {
       if (!isResetPage) {
-        // Recovery link opened on another page (e.g. index.html or login.html) -> redirect to reset-password.html with hash
         window.location.href = getAppUrl("reset-password.html") + hash;
       }
       return;
@@ -402,7 +400,6 @@
     var hash = window.location.hash || "";
     var search = window.location.search || "";
 
-    // Check if Supabase returned an error in hash or search (e.g. otp_expired)
     if (hash.includes("error=") || search.includes("error=")) {
       form.style.display = "none";
       if (expiredBlock) {
@@ -644,7 +641,6 @@
   function initAuthNavbar() {
     var isResetPage = window.location.pathname.indexOf("reset-password.html") !== -1;
     if (isResetPage) {
-      // Keep navbar unauthenticated on reset-password page during recovery
       return;
     }
 
