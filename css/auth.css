@@ -1,10 +1,8 @@
-/*
- * SKINSIGHT — Auth UI (Login / Sign Up / Forgot Password)
- */
+/* SKINSIGHT — Auth UI (Login / Sign Up / Forgot Password) */
 
 /* ---------- Navbar Responsive Controls ---------- */
 /* Prevent flash of unauthenticated login button when user is signed in */
-html.auth-user-signed-in .nav-auth-actions > a.btn,
+html.auth-user-signed-in .nav-auth-actions>a.btn,
 html.auth-user-signed-in .nav-login-item:not(.nav-mobile-bottom-item) {
   display: none !important;
 }
@@ -30,8 +28,13 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 }
 
 @keyframes skeleton-shimmer {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0 50%;
+  }
 }
 
 @media (min-width: 1025px) {
@@ -55,7 +58,8 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 
   .hamburger-label {
     display: flex !important;
-    margin-left: auto !important; /* Always keeps hamburger button on far right */
+    margin-left: auto !important;
+    /* Always keeps hamburger button on far right */
   }
 
   .nav-mobile-profile {
@@ -72,21 +76,26 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 .auth-panel {
   max-width: 440px;
 }
+
 .auth-panel.wide {
   max-width: 480px;
 }
+
 .auth-head {
   text-align: center;
   margin-bottom: 28px;
 }
+
 .auth-head .brand {
   display: inline-flex;
   margin-bottom: 16px;
 }
+
 .auth-head h1 {
   font-size: 1.6rem;
   margin-bottom: 6px;
 }
+
 .auth-head p {
   margin: 0;
   font-size: 0.92rem;
@@ -96,9 +105,11 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 .input-icon-wrap {
   position: relative;
 }
+
 .input-icon-wrap input {
   padding-right: 46px;
 }
+
 .input-icon-btn {
   position: absolute;
   top: 50%;
@@ -117,10 +128,12 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   transition: color 0.2s ease, background 0.2s ease;
   padding: 0;
 }
+
 .input-icon-btn:hover {
   color: var(--blue);
   background: var(--pale-cyan);
 }
+
 .input-icon-btn svg {
   width: 19px;
   height: 19px;
@@ -128,9 +141,18 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   fill: none;
   stroke-width: 1.8;
 }
-.input-icon-btn .icon-eye-off { display: none; }
-.input-icon-btn.is-visible .icon-eye { display: none; }
-.input-icon-btn.is-visible .icon-eye-off { display: flex; }
+
+.input-icon-btn .icon-eye-off {
+  display: none;
+}
+
+.input-icon-btn.is-visible .icon-eye {
+  display: none;
+}
+
+.input-icon-btn.is-visible .icon-eye-off {
+  display: flex;
+}
 
 /* ---------- Field meta row (e.g. Forgot password?) ---------- */
 .field-meta {
@@ -138,6 +160,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   justify-content: flex-end;
   margin-top: 8px;
 }
+
 .auth-link-sm {
   font-size: 0.84rem;
   font-weight: 700;
@@ -150,6 +173,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   gap: 10px;
   margin-bottom: 20px;
 }
+
 .field-check input[type="checkbox"] {
   width: 18px;
   height: 18px;
@@ -157,13 +181,17 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   accent-color: var(--blue);
   flex-shrink: 0;
 }
+
 .field-check label {
   margin: 0;
   font-weight: 400;
   color: var(--ink-soft);
   font-size: 0.86rem;
 }
-.field-check a { font-weight: 600; }
+
+.field-check a {
+  font-weight: 600;
+}
 
 /* ---------- Switch line under the form ---------- */
 .auth-switch {
@@ -172,6 +200,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   color: var(--ink-soft);
   margin: 22px 0 0;
 }
+
 .auth-switch a {
   font-weight: 700;
 }
@@ -184,9 +213,11 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   margin-top: 6px;
   font-weight: 600;
 }
+
 .field.has-error input {
   border-color: var(--danger);
 }
+
 .field.has-error .field-error {
   display: block;
 }
@@ -207,7 +238,11 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   text-align: center;
   padding: 8px 0 4px;
 }
-.auth-success.show { display: block; }
+
+.auth-success.show {
+  display: block;
+}
+
 .auth-success .success-icon {
   width: 56px;
   height: 56px;
@@ -219,7 +254,11 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   justify-content: center;
   margin: 0 auto 18px;
 }
-.auth-success .success-icon svg { width: 28px; height: 28px; }
+
+.auth-success .success-icon svg {
+  width: 28px;
+  height: 28px;
+}
 
 /* ---------- Status / feedback notes shown after submit ---------- */
 [data-auth-note] {
@@ -229,30 +268,37 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   padding: 10px 14px;
   transition: all 0.2s ease;
 }
+
 [data-auth-note].show {
   display: flex;
 }
+
 [data-auth-note].danger {
   border-left-color: var(--danger);
   background: var(--danger-bg);
   color: var(--danger);
 }
+
 [data-auth-note].danger svg {
   color: var(--danger);
 }
+
 [data-auth-note].success {
   border-left-color: var(--success);
   background: var(--success-bg);
   color: var(--success);
 }
+
 [data-auth-note].success svg {
   color: var(--success);
 }
+
 [data-auth-note].warning {
   border-left-color: #f59e0b;
   background: #fef3c7;
   color: #92400e;
 }
+
 [data-auth-note].warning svg {
   color: #d97706;
 }
@@ -438,6 +484,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
    Mobile Navigation & Hamburger Menu Drawer
    ================================================================ */
 @media (max-width: 1024px) {
+
   /* Profile header card inside opened hamburger menu */
   .nav-mobile-profile {
     display: block !important;
@@ -505,7 +552,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
     text-overflow: ellipsis;
   }
 
-  /* Sign Out option at the VERY BOTTOM of hamburger menu */
+  /* Sign Out option */
   .nav-mobile-bottom-item {
     display: block !important;
     width: 100%;
@@ -549,8 +596,13 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 }
 
 @media (max-width: 600px) {
-  .auth-head h1 { font-size: 1.4rem; }
-  .field-meta { justify-content: flex-start; }
+  .auth-head h1 {
+    font-size: 1.4rem;
+  }
+
+  .field-meta {
+    justify-content: flex-start;
+  }
 }
 
 /* ---------- Google OAuth Button ---------- */
@@ -571,18 +623,22 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
 .btn-google:hover {
   background: #f7f8f8;
   border-color: #c6c8ca;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
+
 .btn-google:active {
   background: #eef0f2;
 }
+
 .btn-google:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
+
 .btn-google .google-icon {
   flex-shrink: 0;
 }
@@ -594,6 +650,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   margin: 20px 0;
   gap: 14px;
 }
+
 .auth-divider::before,
 .auth-divider::after {
   content: "";
@@ -601,6 +658,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   height: 1px;
   background: #dadce0;
 }
+
 .auth-divider span {
   font-size: 0.82rem;
   color: #888;
@@ -620,7 +678,11 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   justify-content: center;
   padding: 20px;
 }
-.login-gate.show { display: flex; }
+
+.login-gate.show {
+  display: flex;
+}
+
 .login-gate-panel {
   background: #fff;
   border-radius: 16px;
@@ -632,13 +694,33 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   position: relative;
   animation: modalFadeIn 0.25s ease-out;
 }
+
 @keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
-.login-gate-panel h3 { margin-bottom: 8px; color: var(--navy); }
-.login-gate-panel p { margin-bottom: 20px; color: var(--ink-soft); font-size: 0.94rem; }
-.login-gate-panel .btn { margin-bottom: 10px; }
+
+.login-gate-panel h3 {
+  margin-bottom: 8px;
+  color: var(--navy);
+}
+
+.login-gate-panel p {
+  margin-bottom: 20px;
+  color: var(--ink-soft);
+  font-size: 0.94rem;
+}
+
+.login-gate-panel .btn {
+  margin-bottom: 10px;
+}
 
 /* ---------- Appointment & Email Modal Placeholder ---------- */
 .login-gate-panel.appointment-panel {
@@ -663,6 +745,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   border-radius: 6px;
   transition: color 0.15s ease, background 0.15s ease;
 }
+
 .modal-close-btn:hover {
   color: var(--navy);
   background: #f1f5f9;
@@ -671,6 +754,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 .appt-modal-header {
   margin-bottom: 18px;
 }
+
 .appt-modal-header .appt-badge {
   display: inline-block;
   background: var(--pale-cyan);
@@ -683,11 +767,13 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   border-radius: 20px;
   margin-bottom: 8px;
 }
+
 .appt-modal-header h3 {
   font-size: 1.25rem;
   color: var(--navy);
   margin: 0 0 6px 0;
 }
+
 .appt-modal-header p {
   font-size: 0.88rem;
   color: var(--ink-soft);
@@ -699,6 +785,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+
 @media (max-width: 520px) {
   .appt-grid {
     grid-template-columns: 1fr;
@@ -709,6 +796,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 .appt-field {
   margin-bottom: 14px;
 }
+
 .appt-field label {
   display: block;
   font-size: 0.82rem;
@@ -716,6 +804,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   color: var(--navy);
   margin-bottom: 5px;
 }
+
 .appt-field input,
 .appt-field select,
 .appt-field textarea {
@@ -729,6 +818,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   background: #fff;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
 .appt-field input:focus,
 .appt-field select:focus,
 .appt-field textarea:focus {
@@ -747,6 +837,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   padding: 12px 14px;
   margin: 16px 0;
 }
+
 .appt-attach-icon {
   width: 36px;
   height: 36px;
@@ -758,11 +849,13 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   color: var(--blue);
   flex-shrink: 0;
 }
+
 .appt-attach-info strong {
   display: block;
   font-size: 0.88rem;
   color: var(--navy);
 }
+
 .appt-attach-info span {
   font-size: 0.78rem;
   color: var(--ink-soft);
@@ -779,6 +872,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   text-align: center;
   padding: 10px 0;
 }
+
 .appt-success-icon {
   width: 58px;
   height: 58px;
@@ -790,16 +884,19 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   align-items: center;
   justify-content: center;
 }
+
 #appt-success-view h3 {
   font-size: 1.3rem;
   color: var(--navy);
   margin-bottom: 8px;
 }
+
 #appt-success-view p {
   color: var(--ink-soft);
   font-size: 0.9rem;
   margin-bottom: 16px;
 }
+
 .appt-ref-box {
   background: #f8fafc;
   border: 1.5px dashed var(--border);
@@ -811,6 +908,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   align-items: center;
   gap: 4px;
 }
+
 .appt-ref-box .ref-label {
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -818,6 +916,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   color: var(--ink-soft);
   font-weight: 700;
 }
+
 .appt-ref-box .ref-code {
   font-family: monospace;
   font-size: 1.25rem;
@@ -825,8 +924,41 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   color: var(--navy);
   letter-spacing: 0.08em;
 }
+
 .appt-subtext {
   font-size: 0.82rem !important;
   color: #718096 !important;
   margin-bottom: 20px !important;
+}
+
+/* ---------- Sign Out Confirmation Modal ---------- */
+.login-gate-panel.signout-panel {
+  max-width: 380px;
+  padding: 28px 24px;
+}
+.signout-icon-wrap {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--danger-bg);
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.signout-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.btn-danger {
+  background: var(--danger) !important;
+  color: #fff !important;
+  border-color: var(--danger) !important;
+}
+.btn-danger:hover {
+  background: #961f18 !important;
+  border-color: #961f18 !important;
 }

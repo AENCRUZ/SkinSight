@@ -499,8 +499,94 @@
     return null;
   }
 
-  async function handleSignOut(e) {
+    var signoutModalEl = null;
+
+  function initSignOutModal() {
+    if (signoutModalEl) return signoutModalEl;
+
+    var modal = document.createElement("div");
+    modal.className = "login-gate";
+    modal.id = "signout-confirm-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-labelledby", "signout-modal-title");
+    modal.innerHTML =
+      '<div class="login-gate-panel signout-panel">' +
+      '<div class="signout-icon-wrap">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>' +
+      '<polyline points="16 17 21 12 16 7"/>' +
+      '<line x1="21" y1="12" x2="9" y2="12"/>' +
+      '</svg>' +
+      '</div>' +
+      '<h3 id="signout-modal-title">Sign Out</h3>' +
+      '<p>Are you sure you want to sign out of your account?</p>' +
+      '<div class="signout-btn-group">' +
+      '<button type="button" class="btn btn-primary btn-danger btn-block" id="btn-confirm-signout">Yes, Sign Out</button>' +
+      '<button type="button" class="btn btn-ghost btn-block" id="btn-cancel-signout">Cancel</button>' +
+      '</div>' +
+      '</div>';
+
+    document.body.appendChild(modal);
+
+    var confirmBtn = modal.querySelector("#btn-confirm-signout");
+    var cancelBtn = modal.querySelector("#btn-cancel-signout");
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", function () {
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = "Signing out...";
+        performSignOut();
+      });
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", closeSignOutModal);
+    }
+
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) {
+        closeSignOutModal();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.classList.contains("show")) {
+        closeSignOutModal();
+      }
+    });
+
+    signoutModalEl = modal;
+    return modal;
+  }
+
+  function openSignOutModal() {
+    var dropdown = document.getElementById("nav-user-dropdown");
+    if (dropdown) dropdown.classList.remove("open");
+    var trigger = document.getElementById("nav-user-trigger");
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+
+    var navToggle = document.getElementById("nav-toggle");
+    if (navToggle && navToggle.checked) {
+      navToggle.checked = false;
+    }
+
+    var modal = initSignOutModal();
+    modal.classList.add("show");
+  }
+
+  function closeSignOutModal() {
+    if (signoutModalEl) {
+      signoutModalEl.classList.remove("show");
+    }
+  }
+
+  function handleSignOut(e) {
     if (e) e.preventDefault();
+    openSignOutModal();
+  }
+
+  async function performSignOut() {
     saveCachedUser(null);
     renderAuthNavbar(null);
     if (window.supabaseClient) {
