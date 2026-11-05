@@ -1,0 +1,31 @@
+# ==========================
+# SKINSIGHT .gitignore
+# ==========================
+
+# ----- OS files -----
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# ----- IDE / Editor -----
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ----- Environment / Secrets -----
+.env
+.env.local
+.env.*.local
+
+# ----- Build output -----
+dist/
+build/
+out/
+
+# ----- Misc -----
+*.log
+

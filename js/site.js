@@ -16,7 +16,6 @@
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
-    /* ---------------- Navbar ---------------- */
     var navbar = document.querySelector(".navbar");
     if (navbar) {
       var updateNavbar = function () {
@@ -59,7 +58,6 @@
       return;
     }
 
-    /* ---------------- Scroll-reveal --------- */
     var revealSelector = [
       ".card",
       ".list-row",
@@ -98,7 +96,6 @@
       io.observe(el);
     });
 
-    /* ---------------- Stagger repeated groups ------------------------ */
     function stagger(containerSelector, childSelector, stepMs) {
       var containers = document.querySelectorAll(containerSelector);
       containers.forEach(function (container) {
@@ -115,7 +112,6 @@
     stagger(".send-options", ".send-option", 80);
     stagger(".feature-list", ".feature-row", 60);
 
-    /* ---------------- "How It Works" carousel ---------------- */
     var hiwCarousel = document.getElementById("hiwCarousel");
     if (hiwCarousel) {
       var hiwViewport = hiwCarousel.querySelector(".hiw-viewport");
@@ -134,7 +130,7 @@
       hiwTrack.appendChild(firstClone);
 
       var allSlides = Array.prototype.slice.call(hiwTrack.querySelectorAll(".hiw-slide"));
-      var current = 1; 
+      var current = 1;
       var isAnimating = false;
 
       function realIndex(pos) {
