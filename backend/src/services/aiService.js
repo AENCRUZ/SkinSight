@@ -62,6 +62,9 @@ export async function sendChatMessage({ message, history = [], imageFile = null 
   // Start chat session with previous history
   const chat = model.startChat({
     history: formattedHistory,
+    generationConfig: {
+      temperature: 0.3,
+    },
   });
 
   // Prepare current user turn parts
@@ -126,6 +129,7 @@ export async function generateConsultationSummary(history = []) {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: 'application/json',
+      temperature: 0.2,
     },
   });
 
