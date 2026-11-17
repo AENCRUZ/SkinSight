@@ -7,7 +7,7 @@
 const LOCAL_API_URL = 'http://localhost:5000';
 // Deployed backend on Render — paste your Render service URL here after deploying
 // (e.g. 'https://your-service-name.onrender.com', no trailing slash)
-const PRODUCTION_API_URL = '';
+const PRODUCTION_API_URL = 'https://skinsight-f5p8.onrender.com';
 
 const isLocalHost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
 
