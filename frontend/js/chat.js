@@ -200,10 +200,18 @@
     } catch (err) {
       hideTypingIndicator();
       console.error('Chat error:', err);
-      appendAIMessage(
-        `⚠️ **Error connecting to AI service:** ${err.message || 'Server error'}.\n\n` +
-        "Please ensure the backend server is running (`npm run dev` in `backend/`) and that your `GEMINI_API_KEY` is configured in `backend/.env`."
-      );
+      const isAuthErr = err.message && (err.message.includes('token') || err.message.includes('Authentication'));
+      if (isAuthErr) {
+        appendAIMessage(
+          `🔒 **Session Expired or Login Required:** ${err.message}\n\n` +
+          'Please **log in** (or sign in again) at [login.html](login.html) to chat with the AI Assistant.'
+        );
+      } else {
+        appendAIMessage(
+          `⚠️ **Error connecting to AI service:** ${err.message || 'Server error'}.\n\n` +
+          "Please ensure the backend server is running (`npm run dev` in `backend/`) and that your `GEMINI_API_KEY` is configured in `backend/.env`."
+        );
+      }
     } finally {
       isWaitingForResponse = false;
       chatInput.disabled = false;

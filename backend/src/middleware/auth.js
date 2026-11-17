@@ -6,11 +6,22 @@ dotenv.config();
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+const isConfigured = (val) =>
+  typeof val === 'string' &&
+  val.trim().length > 0 &&
+  !val.includes('your_') &&
+  !val.includes('your-project-id');
+
 let supabase = null;
-if (supabaseUrl && supabaseServiceKey) {
-  supabase = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+if (isConfigured(supabaseUrl) && isConfigured(supabaseServiceKey)) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+  } catch (e) {
+    console.warn('Failed to initialize Supabase client for auth verification:', e.message);
+    supabase = null;
+  }
 }
 
 /**
