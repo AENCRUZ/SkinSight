@@ -5,20 +5,26 @@ dotenv.config();
 
 const apiKey = process.env.GEMINI_API_KEY;
 
-if (!apiKey) {
+const isConfiguredKey =
+  typeof apiKey === 'string' &&
+  apiKey.trim().length > 0 &&
+  !apiKey.includes('your_gemini_api_key_here') &&
+  !apiKey.includes('your_');
+
+if (!isConfiguredKey) {
   console.warn(
-    '\n⚠️  [SKINSIGHT WARNING] GEMINI_API_KEY is not set in backend/.env!\n' +
-    '   Please add your API key from https://aistudio.google.com/app/apikey to enable AI responses.\n'
+    '\n⚠️  [SKINSIGHT WARNING] GEMINI_API_KEY is not configured in backend/.env!\n' +
+    '   Please add your real API key to enable AI responses.\n'
   );
 }
 
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const genAI = isConfiguredKey ? new GoogleGenerativeAI(apiKey.trim()) : null;
 
 export const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
 
 export function getGenerativeModel(modelName = DEFAULT_MODEL, systemInstruction) {
   if (!genAI) {
-    throw new Error('GEMINI_API_KEY is missing. Please set it in backend/.env');
+    throw new Error('GEMINI_API_KEY in backend/.env is missing or still set to placeholder. Please paste your real Gemini API key.');
   }
 
   return genAI.getGenerativeModel({
