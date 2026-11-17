@@ -8,7 +8,7 @@ dotenv.config();
 
 const app = express();
 
-// Determine allowed origins for CORS
+// CORS configuration: allow local development and configured origins
 const allowedOrigins = process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim())
   : ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:5500', 'http://127.0.0.1:5500'];
@@ -16,16 +16,31 @@ const allowedOrigins = process.env.CLIENT_ORIGIN
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. mobile apps, curl, file://) or if origin is in allowlist
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS origin not allowed'), false);
+      // Allow requests with no origin (mobile apps, curl, file://)
+      if (!origin) return callback(null, true);
+
+      const isLocal =
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('https://localhost:') ||
+        origin.startsWith('http://127.0.0.1:') ||
+        origin.startsWith('https://127.0.0.1:');
+
+      if (isLocal || allowedOrigins.includes(origin)) {
+        return callback(null, true);
       }
+
+      // Reject other origins without throwing an unhandled exception
+      return callback(null, false);
     },
     credentials: true,
   })
 );
+
+// Helpful request logger for development
+app.use((req, res, next) => {
+  console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

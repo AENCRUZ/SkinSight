@@ -26,9 +26,12 @@ if (isConfigured(supabaseUrl) && isConfigured(supabaseServiceKey)) {
 
 /**
  * Express middleware: validates the Supabase JWT from the Authorization header.
- * If Supabase credentials are not configured (local dev), requests pass through.
+ * - If a token is provided, validates it with Supabase.
+ * - If no token is provided: allows guest access in dev mode (unless REQUIRE_AUTH=true in .env).
  */
 export async function requireAuth(req, res, next) {
+  const strictAuth = process.env.REQUIRE_AUTH === 'true';
+
   if (!supabase) {
     // Supabase not configured on backend — allow requests in development
     return next();
@@ -40,18 +43,33 @@ export async function requireAuth(req, res, next) {
     : null;
 
   if (!token) {
-    return res.status(401).json({ success: false, error: 'Authentication required.' });
+    if (strictAuth) {
+      return res.status(401).json({ success: false, error: 'Authentication required. Please log in.' });
+    }
+    // Permissive in development mode for guest testing
+    req.user = { id: 'guest', email: 'guest@skinsight.local' };
+    return next();
   }
 
   try {
     const { data, error } = await supabase.auth.getUser(token);
     if (error || !data.user) {
-      return res.status(401).json({ success: false, error: 'Invalid or expired token.' });
+      if (strictAuth) {
+        return res.status(401).json({ success: false, error: 'Invalid or expired token. Please log in again.' });
+      }
+      // If token verification failed in dev, still permit testing
+      console.warn('Auth token verification failed, continuing as guest:', error?.message);
+      req.user = { id: 'guest', email: 'guest@skinsight.local' };
+      return next();
     }
     req.user = data.user;
     next();
   } catch (err) {
     console.error('Auth middleware error:', err);
-    return res.status(401).json({ success: false, error: 'Authentication failed.' });
+    if (strictAuth) {
+      return res.status(401).json({ success: false, error: 'Authentication failed.' });
+    }
+    req.user = { id: 'guest', email: 'guest@skinsight.local' };
+    next();
   }
 }

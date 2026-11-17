@@ -42,9 +42,14 @@ export async function handleChatMessage(req, res) {
     });
   } catch (error) {
     console.error('Error in handleChatMessage:', error);
+    const isApiKeyError = error.message && (
+      error.message.includes('API_KEY') ||
+      error.message.includes('API key') ||
+      error.message.includes('GEMINI')
+    );
     return res.status(500).json({
       success: false,
-      error: 'Failed to process chat message.',
+      error: isApiKeyError ? error.message : 'Failed to process chat message.',
     });
   }
 }
