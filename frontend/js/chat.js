@@ -1,0 +1,258 @@
+/**
+ * Chat Controller for SKINSIGHT AI Assistant
+ * Connects frontend/ai-chat.html with the backend AI service.
+ */
+
+(function () {
+  const chatBody = document.querySelector('.chat-body');
+  const chatInput = document.querySelector('.chat-inputbar input[type="text"]');
+  const sendBtn = document.querySelector('.chat-inputbar button.send');
+  const attachToggle = document.getElementById('attach-toggle');
+  const fileInputs = document.querySelectorAll('.attach-panel input[type="file"]');
+  const summaryBtn = document.querySelector('.chat-cta a');
+
+  let conversationHistory = [];
+  let selectedImageFile = null;
+  let isWaitingForResponse = false;
+
+  // Selected image preview container
+  let previewBar = document.getElementById('selected-image-preview');
+  if (!previewBar) {
+    previewBar = document.createElement('div');
+    previewBar.id = 'selected-image-preview';
+    previewBar.style.cssText =
+      'display:none; padding:8px 16px; background:#e6f8f8; border-top:1px solid #bceae9; font-size:0.85rem; color:#0d6966; display:flex; align-items:center; justify-content:space-between;';
+    const inputBar = document.querySelector('.chat-inputbar');
+    if (inputBar && inputBar.parentNode) {
+      inputBar.parentNode.insertBefore(previewBar, inputBar);
+    }
+  }
+
+  function initChat() {
+    // Try to load any existing session history
+    const saved = sessionStorage.getItem('skinsight_chat_history');
+    if (saved) {
+      try {
+        conversationHistory = JSON.parse(saved);
+      } catch (e) {
+        conversationHistory = [];
+      }
+    }
+
+    if (conversationHistory.length > 0) {
+      renderAllMessages();
+    } else {
+      // Default initial welcome message
+      chatBody.innerHTML = '';
+      appendAIMessage(
+        "Hello! I am your **SKINSIGHT AI Intake Assistant**.\n\n" +
+        "I'm here to help you document and organize your skin symptoms before you speak with a dermatologist.\n\n" +
+        "To get started, please **describe what you're noticing or feeling on your skin** (e.g., redness, itching, bumps), or attach a clear photo using the camera button."
+      );
+    }
+
+    attachEventListeners();
+  }
+
+  function attachEventListeners() {
+    if (sendBtn) {
+      sendBtn.addEventListener('click', handleSendMessage);
+    }
+
+    if (chatInput) {
+      chatInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSendMessage();
+        }
+      });
+    }
+
+    // Attach file selection listeners
+    fileInputs.forEach((input) => {
+      input.addEventListener('change', function (e) {
+        if (e.target.files && e.target.files[0]) {
+          selectedImageFile = e.target.files[0];
+          showImagePreview(selectedImageFile.name);
+          if (attachToggle) attachToggle.checked = false; // close panel
+        }
+      });
+    });
+
+    if (summaryBtn) {
+      summaryBtn.addEventListener('click', function (e) {
+        // Save current history and clear stale summary cache
+        sessionStorage.setItem('skinsight_chat_history', JSON.stringify(conversationHistory));
+        sessionStorage.removeItem('skinsight_consultation_summary');
+      });
+    }
+  }
+
+  function showImagePreview(filename) {
+    previewBar.style.display = 'flex';
+    previewBar.innerHTML = `
+      <span>📷 Attached photo: <strong>${escapeHtml(filename)}</strong></span>
+      <button type="button" style="background:none; border:none; color:#0d6966; font-size:1.1rem; cursor:pointer; font-weight:bold;" title="Remove photo">&times;</button>
+    `;
+    const removeBtn = previewBar.querySelector('button');
+    removeBtn.addEventListener('click', () => {
+      selectedImageFile = null;
+      previewBar.style.display = 'none';
+      fileInputs.forEach((i) => (i.value = ''));
+    });
+  }
+
+  function clearImagePreview() {
+    selectedImageFile = null;
+    previewBar.style.display = 'none';
+    fileInputs.forEach((i) => (i.value = ''));
+  }
+
+  function appendUserMessage(text, imageFile) {
+    if (imageFile) {
+      const photoWrap = document.createElement('div');
+      photoWrap.className = 'msg-photo-wrap';
+      photoWrap.innerHTML = `
+        <div class="msg-photo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l2-3h4l2 3"/><circle cx="12" cy="13" r="3.5"/></svg>
+        </div>
+        <p class="msg-caption">${escapeHtml(imageFile.name)}</p>
+      `;
+      chatBody.appendChild(photoWrap);
+    }
+
+    if (text && text.trim()) {
+      const bubble = document.createElement('div');
+      bubble.className = 'msg msg-user';
+      bubble.textContent = text;
+      chatBody.appendChild(bubble);
+    }
+
+    scrollToBottom();
+  }
+
+  function appendAIMessage(rawMarkdown) {
+    const bubble = document.createElement('div');
+    bubble.className = 'msg msg-ai';
+    bubble.innerHTML = formatMarkdownToHTML(rawMarkdown);
+    chatBody.appendChild(bubble);
+    scrollToBottom();
+  }
+
+  function showTypingIndicator() {
+    const typing = document.createElement('div');
+    typing.className = 'msg msg-ai typing-indicator';
+    typing.id = 'typingIndicator';
+    typing.innerHTML = '<em>SKINSIGHT is reviewing and preparing questions…</em>';
+    chatBody.appendChild(typing);
+    scrollToBottom();
+  }
+
+  function hideTypingIndicator() {
+    const typing = document.getElementById('typingIndicator');
+    if (typing) typing.remove();
+  }
+
+  function scrollToBottom() {
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  async function handleSendMessage() {
+    if (isWaitingForResponse) return;
+
+    const messageText = chatInput.value.trim();
+    const imageToUpload = selectedImageFile;
+
+    if (!messageText && !imageToUpload) {
+      chatInput.focus();
+      return;
+    }
+
+    // Render user message on screen
+    appendUserMessage(messageText, imageToUpload);
+
+    // Clear input bar and attached image preview
+    chatInput.value = '';
+    clearImagePreview();
+
+    // Show typing indicator & lock input
+    isWaitingForResponse = true;
+    showTypingIndicator();
+    chatInput.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+
+    try {
+      const response = await window.SkinsightAPI.sendMessage({
+        message: messageText,
+        history: conversationHistory,
+        imageFile: imageToUpload,
+      });
+
+      hideTypingIndicator();
+
+      if (response && response.reply) {
+        appendAIMessage(response.reply);
+        conversationHistory = response.history || conversationHistory;
+        sessionStorage.setItem('skinsight_chat_history', JSON.stringify(conversationHistory));
+      } else {
+        appendAIMessage("I received your message, but couldn't generate a response. Please try again.");
+      }
+    } catch (err) {
+      hideTypingIndicator();
+      console.error('Chat error:', err);
+      appendAIMessage(
+        `⚠️ **Error connecting to AI service:** ${err.message || 'Server error'}.\n\n` +
+        "Please ensure the backend server is running (`npm run dev` in `backend/`) and that your `GEMINI_API_KEY` is configured in `backend/.env`."
+      );
+    } finally {
+      isWaitingForResponse = false;
+      chatInput.disabled = false;
+      if (sendBtn) sendBtn.disabled = false;
+      chatInput.focus();
+    }
+  }
+
+  function renderAllMessages() {
+    chatBody.innerHTML = '';
+    conversationHistory.forEach((turn) => {
+      const role = turn.role === 'model' || turn.role === 'assistant' ? 'ai' : 'user';
+      const text = turn.parts ? turn.parts.map((p) => p.text).join(' ') : (turn.text || turn.content || '');
+
+      if (role === 'user') {
+        appendUserMessage(text, null);
+      } else {
+        appendAIMessage(text);
+      }
+    });
+    scrollToBottom();
+  }
+
+  // Simple Markdown to HTML helper for bold, lists, and line breaks
+  function formatMarkdownToHTML(text) {
+    if (!text) return '';
+    let html = escapeHtml(text);
+    // Bold
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Bullet points
+    html = html.replace(/(?:^|\n)[*-] (.*)/g, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gs, '<ul style="margin:8px 0; padding-left:20px;">$1</ul>');
+    // Paragraph breaks
+    html = html.replace(/\n\n/g, '<br><br>');
+    html = html.replace(/\n/g, '<br>');
+    return html;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Run on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChat);
+  } else {
+    initChat();
+  }
+})();
+

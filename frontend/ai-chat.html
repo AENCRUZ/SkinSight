@@ -60,35 +60,8 @@
         <strong>SKINSIGHT AI Skin Assistant</strong>
         <span class="status-pill">Consultation Support</span>
       </div>
-      <div class="chat-body chatpage-scroll">
-        <div class="msg msg-ai">Hi! What skin concern would you like to talk about today?</div>
-        <div class="msg msg-user">I have a red, itchy patch on my forearm.</div>
-        <div class="msg msg-ai">Thanks for sharing that. How long have you noticed this patch?</div>
-        <div class="msg msg-user">About five days now.</div>
-        <div class="msg msg-ai">Has it changed in size, color, or texture since it appeared? Any new soaps, lotions, or fabrics recently?</div>
-        <div class="msg msg-user">It got slightly bigger. I did try a new laundry detergent last week.</div>
-        <div class="msg msg-ai">That's helpful to note. Feel free to add a photo of the patch using the attachment button below — I can include general observations in your summary.</div>
-
-        <div class="msg-photo-wrap">
-          <div class="msg-photo">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l2-3h4l2 3"/><circle cx="12" cy="13" r="3.5"/></svg>
-          </div>
-          <p class="msg-caption">forearm-patch.jpg</p>
-        </div>
-
-        <div class="msg msg-ai">
-          Thanks for the photo. Here's what I can observe — general and non-diagnostic:
-          <ul style="margin:10px 0 0; padding-left:18px;">
-            <li>Slightly raised, reddened patch of skin</li>
-            <li>Irregular but well-defined border</li>
-            <li>No visible open wound or bleeding</li>
-          </ul>
-        </div>
-        <div class="msg msg-ai">Different skin concerns can share similar visible traits, like redness or raised texture — a photo alone can't tell us the cause. Do you have any other questions before we wrap up?</div>
-        <div class="msg msg-user">Could the detergent really cause this?</div>
-        <div class="msg msg-ai">It's possible — new detergents are a common trigger for skin irritation, but only a dermatologist can confirm the cause. Want me to add that as a question to discuss in your summary?</div>
-        <div class="msg msg-user">Yes, please add that.</div>
-        <div class="msg msg-ai">Added. Whenever you're ready, I can put together your consultation summary with everything we've discussed so far.</div>
+      <div class="chat-body chatpage-scroll" id="chatBody">
+        <div class="msg msg-ai">Hi! What skin concern would you like to talk about today? You can describe what you're noticing or feeling, or attach a photo below.</div>
       </div>
       <div class="chat-safety">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info preview-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -152,5 +125,7 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
+<script src="js/api.js"></script>
+<script src="js/chat.js" defer></script>
 </body>
 </html>
