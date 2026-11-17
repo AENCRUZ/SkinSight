@@ -25,7 +25,9 @@ app.use(
         origin.startsWith('http://127.0.0.1:') ||
         origin.startsWith('https://127.0.0.1:');
 
-      if (isLocal || allowedOrigins.includes(origin)) {
+      const isGitHubPages = origin.endsWith('.github.io');
+
+      if (isLocal || isGitHubPages || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
