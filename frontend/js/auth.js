@@ -293,6 +293,9 @@
 
       saveCachedUser(null);
       try {
+        sessionStorage.clear();
+      } catch (e) { }
+      try {
         await window.supabaseClient.auth.signOut();
       } catch (signOutErr) { }
 
@@ -470,6 +473,7 @@
         document.documentElement.classList.add("auth-user-signed-in");
       } else {
         localStorage.removeItem("skinsight_user");
+        localStorage.removeItem("skinsight_logged_in");
         document.documentElement.classList.remove("auth-user-signed-in");
       }
     } catch (e) { }
@@ -587,14 +591,21 @@
   }
 
   async function performSignOut() {
+    try {
+      sessionStorage.clear();
+    } catch (e) { }
+
     saveCachedUser(null);
     renderAuthNavbar(null);
+
     if (window.supabaseClient) {
       try {
         await window.supabaseClient.auth.signOut();
       } catch (err) { }
     }
-    window.location.reload();
+
+    // Replace current history entry to prevent forward-navigation back into authenticated actions
+    window.location.replace("index.html");
   }
 
   function renderAuthNavbar(userData) {
@@ -770,8 +781,45 @@
         } else {
           saveCachedUser(null);
           renderAuthNavbar(null);
+          if (event === "SIGNED_OUT") {
+            try {
+              sessionStorage.clear();
+            } catch (e) { }
+          }
         }
       });
     }
   }
+
+  // Handle Back-Forward Cache (bfcache) restore
+  window.addEventListener("pageshow", function (event) {
+    var cached = getCachedUser();
+    // If the page was restored from bfcache after the user signed out,
+    // force a clean reload to purge any stale authenticated DOM state!
+    if (!cached && document.documentElement.classList.contains("auth-user-signed-in")) {
+      document.documentElement.classList.remove("auth-user-signed-in");
+      try {
+        sessionStorage.clear();
+      } catch (e) { }
+      window.location.reload();
+      return;
+    }
+    initAuthNavbar();
+  });
+
+  // Cross-tab logout & auth sync
+  window.addEventListener("storage", function (e) {
+    if (e.key === "skinsight_user" || (e.key && e.key.indexOf("sb-") === 0)) {
+      var cached = getCachedUser();
+      renderAuthNavbar(cached);
+      if (!cached) {
+        document.documentElement.classList.remove("auth-user-signed-in");
+        try {
+          sessionStorage.clear();
+        } catch (err) { }
+      } else {
+        document.documentElement.classList.add("auth-user-signed-in");
+      }
+    }
+  });
 })();

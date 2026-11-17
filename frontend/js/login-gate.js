@@ -333,6 +333,28 @@
           "consultation-summary.html"
         );
       }
+
+      window.addEventListener("pageshow", function () {
+        if (!isLoggedIn()) {
+          openLoginGate(
+            "Log in to view your summary",
+            "Please log in or create a free account to view and save your complete consultation summary.",
+            "consultation-summary.html"
+          );
+        }
+      });
+
+      window.addEventListener("storage", function (e) {
+        if (e.key === "skinsight_user" && !e.newValue) {
+          if (!isLoggedIn()) {
+            openLoginGate(
+              "Log in to view your summary",
+              "Please log in or create a free account to view and save your complete consultation summary.",
+              "consultation-summary.html"
+            );
+          }
+        }
+      });
     }
 
     // Global escape key handler to close active modal

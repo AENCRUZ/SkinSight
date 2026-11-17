@@ -272,6 +272,36 @@
     return div.innerHTML;
   }
 
+  function resetSummaryView() {
+    currentSummaryData = null;
+    if (mainConcernEl) mainConcernEl.textContent = 'Not specified';
+    if (symptomsEl) symptomsEl.textContent = 'None reported';
+    if (durationEl) durationEl.textContent = 'Not specified';
+    if (affectedAreaEl) affectedAreaEl.textContent = 'Not specified';
+    if (triggersEl) triggersEl.textContent = 'None reported';
+    if (observationsEl) observationsEl.textContent = 'No observations available';
+    if (questionsEl) questionsEl.innerHTML = '<li>No questions formulated yet.</li>';
+  }
+
+  // Handle Back-Forward Cache (bfcache) navigation
+  window.addEventListener('pageshow', function (event) {
+    const rawHistory = sessionStorage.getItem('skinsight_chat_history');
+    if (!rawHistory) {
+      resetSummaryView();
+    }
+  });
+
+  // Cross-tab logout listener
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'skinsight_user' && !e.newValue) {
+      try {
+        sessionStorage.removeItem('skinsight_chat_history');
+        sessionStorage.removeItem('skinsight_consultation_summary');
+      } catch (err) { }
+      resetSummaryView();
+    }
+  });
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSummary);
   } else {
