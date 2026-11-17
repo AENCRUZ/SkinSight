@@ -28,6 +28,21 @@
     }
   }
 
+  const DEFAULT_WELCOME_MSG =
+    "Hello! I am your **SKINSIGHT AI Intake Assistant**.\n\n" +
+    "I'm here to help you document and organize your skin symptoms before you speak with a dermatologist.\n\n" +
+    "To get started, please **describe what you're noticing or feeling on your skin** (e.g., redness, itching, bumps), or attach a clear photo using the camera button.";
+
+  function resetChatToWelcome() {
+    conversationHistory = [];
+    selectedImageFile = null;
+    clearImagePreview();
+    if (chatBody) {
+      chatBody.innerHTML = '';
+      appendAIMessage(DEFAULT_WELCOME_MSG);
+    }
+  }
+
   function initChat() {
     // Try to load any existing session history
     const saved = sessionStorage.getItem('skinsight_chat_history');
@@ -42,13 +57,7 @@
     if (conversationHistory.length > 0) {
       renderAllMessages();
     } else {
-      // Default initial welcome message
-      chatBody.innerHTML = '';
-      appendAIMessage(
-        "Hello! I am your **SKINSIGHT AI Intake Assistant**.\n\n" +
-        "I'm here to help you document and organize your skin symptoms before you speak with a dermatologist.\n\n" +
-        "To get started, please **describe what you're noticing or feeling on your skin** (e.g., redness, itching, bumps), or attach a clear photo using the camera button."
-      );
+      resetChatToWelcome();
     }
 
     attachEventListeners();
@@ -255,6 +264,33 @@
     div.textContent = str;
     return div.innerHTML;
   }
+
+  // Handle Back-Forward Cache (bfcache) navigation
+  window.addEventListener('pageshow', function (event) {
+    const saved = sessionStorage.getItem('skinsight_chat_history');
+    if (!saved) {
+      // If history was purged (e.g. user signed out), wipe stale messages immediately
+      resetChatToWelcome();
+    } else if (event.persisted) {
+      try {
+        conversationHistory = JSON.parse(saved);
+        renderAllMessages();
+      } catch (e) {
+        resetChatToWelcome();
+      }
+    }
+  });
+
+  // Cross-tab logout listener
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'skinsight_user' && !e.newValue) {
+      try {
+        sessionStorage.removeItem('skinsight_chat_history');
+        sessionStorage.removeItem('skinsight_consultation_summary');
+      } catch (err) { }
+      resetChatToWelcome();
+    }
+  });
 
   // Run on page load
   if (document.readyState === 'loading') {
