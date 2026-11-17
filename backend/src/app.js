@@ -8,9 +8,16 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration: allow local development and configured origins
+// Render (and most PaaS hosts) sit behind a reverse proxy. Trust the first hop so
+// req.ip is the real client IP and the rate limiter counts each user separately.
+app.set('trust proxy', 1);
+
+// CORS configuration: allow local development and the exact origins listed in CLIENT_ORIGIN
+// (e.g. CLIENT_ORIGIN=https://aencruz.github.io in production)
 const allowedOrigins = process.env.CLIENT_ORIGIN
-  ? process.env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim())
+  ? process.env.CLIENT_ORIGIN.split(',')
+      .map((origin) => origin.trim().replace(/\/+$/, ''))
+      .filter(Boolean)
   : ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:5500', 'http://127.0.0.1:5500'];
 
 app.use(
@@ -25,9 +32,7 @@ app.use(
         origin.startsWith('http://127.0.0.1:') ||
         origin.startsWith('https://127.0.0.1:');
 
-      const isGitHubPages = origin.endsWith('.github.io');
-
-      if (isLocal || isGitHubPages || allowedOrigins.includes(origin)) {
+      if (isLocal || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
