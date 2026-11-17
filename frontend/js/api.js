@@ -3,7 +3,26 @@
  * Connects frontend with the Node.js/Express backend
  */
 
-const BACKEND_BASE_URL = window.SKINSIGHT_API_URL || 'http://localhost:5000';
+// Local development backend
+const LOCAL_API_URL = 'http://localhost:5000';
+// Deployed backend on Render — paste your Render service URL here after deploying
+// (e.g. 'https://your-service-name.onrender.com', no trailing slash)
+const PRODUCTION_API_URL = 'https://skinsight-f5p8.onrender.com';
+
+const isLocalHost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
+
+// Local pages use localhost; deployed pages use PRODUCTION_API_URL only (never localhost).
+const BACKEND_BASE_URL = (
+  window.SKINSIGHT_API_URL ||
+  (isLocalHost ? LOCAL_API_URL : PRODUCTION_API_URL)
+).replace(/\/+$/, '');
+
+if (!BACKEND_BASE_URL) {
+  console.error(
+    '[SKINSIGHT] Backend URL is not configured. Set PRODUCTION_API_URL in frontend/js/api.js ' +
+    'to your Render service URL (e.g. https://your-service-name.onrender.com).'
+  );
+}
 
 /**
  * Retrieve Supabase auth token for authenticated API requests
