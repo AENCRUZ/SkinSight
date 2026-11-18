@@ -119,15 +119,15 @@
       '<button type="button" class="modal-close-btn" data-appt-close aria-label="Close modal">&times;</button>' +
       '<div id="appt-form-view">' +
       '<div class="appt-modal-header">' +
-      '<div class="appt-badge">Clinic Appointment Request</div>' +
-      '<h3 id="appt-modal-title">Send Summary to Bay Area Dermatology Clinic</h3>' +
-      '<p>Send your AI consultation summary directly to the clinic front desk to schedule an in-person consultation.</p>' +
+      '<div class="appt-badge">Preview · Sample data</div>' +
+      '<h3 id="appt-modal-title">Appointment request (preview)</h3>' +
+      '<p>This feature is not live yet. Nothing you enter here is sent to a clinic and no email is delivered. Bay Area Dermatology Clinic is a sample.</p>' +
       '</div>' +
       '<form id="clinic-appointment-form" novalidate>' +
       '<div class="appt-grid">' +
       '<div class="appt-field">' +
       '<label for="appt-name">Patient Name</label>' +
-      '<input type="text" id="appt-name" required value="Juan Dela Cruz">' +
+      '<input type="text" id="appt-name" required value="" placeholder="Your name">' +
       '</div>' +
       '<div class="appt-field">' +
       '<label for="appt-email">Your Email Address</label>' +
@@ -160,8 +160,8 @@
       '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
       '</div>' +
       '<div class="appt-attach-info">' +
-      '<strong>Attached: SKINSIGHT-Consultation-Summary.pdf</strong>' +
-      '<span>Main concern: Red, itchy patch on forearm (5 days) · AI Observations included</span>' +
+      '<strong>Sample attachment (preview)</strong>' +
+      '<span>Sample text only. This is not your real consultation summary.</span>' +
       '</div>' +
       '</div>' +
       '<div class="appt-field">' +
@@ -171,7 +171,7 @@
       '<div class="appt-actions">' +
       '<button type="submit" class="btn btn-primary btn-block" id="btn-submit-appt">' +
       '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
-      'Send Summary & Request Appointment' +
+      'Preview the request (nothing is sent)' +
       '</button>' +
       '<button type="button" class="btn btn-ghost btn-block" data-appt-close>Cancel</button>' +
       '</div>' +
@@ -181,16 +181,16 @@
       '<div class="appt-success-icon">' +
       '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' +
       '</div>' +
-      '<h3>Appointment Request & Summary Sent!</h3>' +
-      '<p>Your consultation summary has been emailed to <strong>Bay Area Dermatology Clinic</strong> (info@bayareaderma.example).</p>' +
+      '<h3>Preview complete: nothing was sent</h3>' +
+      '<p>In the full version, your request would go to <strong>Bay Area Dermatology Clinic</strong>. This preview did not contact any clinic or send any email.</p>' +
       '<div class="appt-ref-box">' +
-      '<span class="ref-label">Reference ID</span>' +
+      '<span class="ref-label">Sample reference (not real)</span>' +
       '<span class="ref-code" id="appt-ref-id">SKIN-84291</span>' +
       '</div>' +
-      '<p class="appt-subtext">The clinic front desk will review your details and contact you at <strong id="appt-confirmed-email">your email</strong> within 1 business day to confirm your appointment schedule.</p>' +
+      '<p class="appt-subtext">No confirmation will be sent to <strong id="appt-confirmed-email">your email</strong>, and real appointment requests are not available yet. To reach a clinic, contact them directly by phone or email.</p>' +
       '<div class="appt-actions">' +
       '<button type="button" class="btn btn-primary btn-block" data-appt-close>Done</button>' +
-      '<a id="appt-mailto-fallback" class="btn btn-ghost btn-sm btn-block" href="#">Open in Default Mail App Instead</a>' +
+      '<a id="appt-mailto-fallback" class="btn btn-ghost btn-sm btn-block" href="#">Draft an email in my mail app (sample address)</a>' +
       '</div>' +
       '</div>' +
       '</div>';
@@ -207,7 +207,7 @@
       if (successView) successView.style.display = "none";
 
       if (user) {
-        if (nameInput) nameInput.value = user.displayName || "Juan Dela Cruz";
+        if (nameInput) nameInput.value = user.displayName || "";
         if (emailInput) emailInput.value = user.email || "";
       }
 
@@ -244,7 +244,7 @@
         var originalText = submitBtn ? submitBtn.innerHTML : "Send";
         if (submitBtn) {
           submitBtn.disabled = true;
-          submitBtn.innerText = "Sending Summary to Clinic...";
+          submitBtn.innerText = "Preparing preview...";
         }
 
         var userEmail = (document.getElementById("appt-email") || {}).value || "your email";

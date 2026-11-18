@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 520" width="560" height="520" role="img" aria-labelledby="t d">
+  <title id="t">SKINSIGHT tools working together</title>
+  <desc id="d">A consultation summary document, a chat conversation with a photo, a nearby clinic card and a medication reminder, layered together.</desc>
+  <defs>
+    <linearGradient id="blob" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#CFEFF7"/>
+      <stop offset="1" stop-color="#F3ECE0"/>
+    </linearGradient>
+    <linearGradient id="photo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F3C9B8"/>
+      <stop offset="1" stop-color="#E8A58F"/>
+    </linearGradient>
+    <filter id="lift" x="-25%" y="-20%" width="150%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="13" flood-color="#03045E" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- backdrop -->
+  <path d="M70 120C60 40 200 10 300 40c130 30 230 90 220 230-10 130-100 220-230 220-140 0-230-70-240-190-5-70 25-120 20-180Z" fill="url(#blob)"/>
+  <circle cx="44" cy="76" r="15" fill="#E8674D" opacity="0.3"/>
+  <circle cx="528" cy="446" r="12" fill="#00B4D8" opacity="0.5"/>
+  <circle cx="22" cy="300" r="8" fill="#0E8F9B" opacity="0.4"/>
+
+  <!-- summary document -->
+  <g filter="url(#lift)"><rect x="250" y="50" width="270" height="340" rx="24" fill="#FFFFFF"/></g>
+  <path d="M250 74a24 24 0 0 1 24-24h222a24 24 0 0 1 24 24v30H250z" fill="#03045E"/>
+  <rect x="274" y="68" width="112" height="9" rx="4.5" fill="#FFFFFF"/>
+  <rect x="274" y="84" width="68" height="6" rx="3" fill="#90E0EF"/>
+  <rect x="274" y="122" width="4" height="40" rx="2" fill="#0077B6"/>
+  <rect x="286" y="122" width="96" height="8" rx="4" fill="#03045E" opacity="0.85"/>
+  <rect x="286" y="140" width="200" height="7" rx="3.5" fill="#4B5675" opacity="0.5"/>
+  <rect x="286" y="154" width="150" height="7" rx="3.5" fill="#4B5675" opacity="0.35"/>
+  <circle cx="288" cy="196" r="8" fill="#DDF2F2"/><circle cx="288" cy="196" r="3.4" fill="#0E8F9B"/>
+  <rect x="306" y="192" width="84" height="8" rx="4" fill="#03045E" opacity="0.8"/>
+  <rect x="402" y="192" width="84" height="8" rx="4" fill="#4B5675" opacity="0.4"/>
+  <circle cx="288" cy="228" r="8" fill="#DDF2F2"/><circle cx="288" cy="228" r="3.4" fill="#0E8F9B"/>
+  <rect x="306" y="224" width="70" height="8" rx="4" fill="#03045E" opacity="0.8"/>
+  <rect x="402" y="224" width="60" height="8" rx="4" fill="#4B5675" opacity="0.4"/>
+  <circle cx="288" cy="260" r="8" fill="#DDF2F2"/><circle cx="288" cy="260" r="3.4" fill="#0E8F9B"/>
+  <rect x="306" y="256" width="96" height="8" rx="4" fill="#03045E" opacity="0.8"/>
+  <rect x="414" y="256" width="72" height="8" rx="4" fill="#4B5675" opacity="0.4"/>
+  <rect x="274" y="288" width="222" height="1.5" fill="#E2DED5"/>
+  <rect x="274" y="302" width="120" height="8" rx="4" fill="#03045E" opacity="0.8"/>
+  <rect x="274" y="320" width="190" height="7" rx="3.5" fill="#4B5675" opacity="0.4"/>
+  <rect x="396" y="344" width="100" height="30" rx="15" fill="#0077B6"/>
+  <rect x="414" y="356" width="64" height="7" rx="3.5" fill="#FFFFFF"/>
+
+  <!-- chat -->
+  <g filter="url(#lift)"><rect x="30" y="110" width="240" height="172" rx="22" fill="#FFFFFF"/></g>
+  <rect x="46" y="128" width="154" height="46" rx="15" fill="#E3F5FA"/>
+  <rect x="60" y="141" width="124" height="7" rx="3.5" fill="#03045E" opacity="0.75"/>
+  <rect x="60" y="155" width="86" height="7" rx="3.5" fill="#0077B6" opacity="0.5"/>
+  <rect x="96" y="184" width="158" height="40" rx="15" fill="#0077B6"/>
+  <rect x="110" y="196" width="124" height="7" rx="3.5" fill="#FFFFFF"/>
+  <rect x="110" y="209" width="80" height="6" rx="3" fill="#FFFFFF" opacity="0.6"/>
+  <rect x="46" y="234" width="48" height="36" rx="11" fill="url(#photo)"/>
+  <circle cx="70" cy="252" r="8" fill="#FFFFFF" opacity="0.4"/><circle cx="70" cy="252" r="3.5" fill="#E8674D" opacity="0.6"/>
+  <rect x="104" y="244" width="98" height="7" rx="3.5" fill="#4B5675" opacity="0.4"/>
+  <rect x="104" y="258" width="62" height="7" rx="3.5" fill="#4B5675" opacity="0.25"/>
+
+  <!-- clinic -->
+  <g filter="url(#lift)"><rect x="40" y="330" width="222" height="112" rx="22" fill="#FFFFFF"/></g>
+  <circle cx="76" cy="386" r="24" fill="#0E8F9B"/>
+  <path d="M76 372c-6.2 0-10.6 4.5-10.6 10 0 7.4 10.6 16.4 10.6 16.4s10.6-9 10.6-16.4c0-5.5-4.4-10-10.6-10Z" fill="#FFFFFF"/>
+  <circle cx="76" cy="382" r="4" fill="#0E8F9B"/>
+  <rect x="112" y="360" width="116" height="9" rx="4.5" fill="#03045E" opacity="0.85"/>
+  <rect x="112" y="378" width="128" height="7" rx="3.5" fill="#4B5675" opacity="0.4"/>
+  <rect x="112" y="392" width="88" height="7" rx="3.5" fill="#4B5675" opacity="0.3"/>
+  <rect x="112" y="408" width="58" height="18" rx="9" fill="#E7F6EE"/>
+  <circle cx="124" cy="417" r="3.4" fill="#1E7A4C"/>
+  <rect x="132" y="414" width="30" height="6" rx="3" fill="#1E7A4C" opacity="0.8"/>
+
+  <!-- medication reminder -->
+  <g filter="url(#lift)"><rect x="330" y="410" width="190" height="72" rx="20" fill="#FFFFFF"/></g>
+  <circle cx="366" cy="446" r="22" fill="#FDEAE4"/>
+  <g transform="translate(354 434)" fill="none" stroke="#C44A32" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>
+  </g>
+  <rect x="398" y="430" width="88" height="9" rx="4.5" fill="#03045E" opacity="0.85"/>
+  <rect x="398" y="448" width="62" height="7" rx="3.5" fill="#4B5675" opacity="0.4"/>
+  <circle cx="498" cy="446" r="11" fill="#E7F6EE"/>
+  <path d="m492.5 446 4 4 7-8" fill="none" stroke="#1E7A4C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- shield badge -->
+  <g filter="url(#lift)"><circle cx="508" cy="58" r="30" fill="#FFFFFF"/></g>
+  <path d="M508 40c6 4 12 5 18 5v14c0 10-8 16-18 20-10-4-18-10-18-20V45c6 0 12-1 18-5z" fill="#0E8F9B"/>
+  <path d="m499.5 59 6 6 11.5-12" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,271 @@
+/* ==========================================================================
+   SKINSIGHT — Feature pages
+   Loads after style.css on: clinic-finder, clinic-details, no-clinic-available,
+   medication-tracker, add-medication, medication-history, about.
+
+   Sections
+     1. Preview / sample-data components
+     2. Page scaffolding
+     3. Clinic finder
+     4. Clinic details (+ summary sharing)
+     5. Self-care page
+     6. Medication tracker
+     7. Add medication (form)
+     8. Medication history
+     9. About
+    10. Responsive
+   ========================================================================== */
+
+/* ---------- 1. Preview / sample-data components ---------- */
+.preview-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: 12px 16px;
+  border: 1px solid #EBD08F;
+  border-radius: var(--radius-md);
+  background: var(--amber-soft);
+  color: #5A3B00;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.preview-banner .i { width: 20px; height: 20px; margin-top: 1px; color: #8A5A00; }
+.preview-banner p { margin: 0; color: inherit; }
+.preview-banner strong { font-family: var(--font-display); }
+
+.badge-preview { background: var(--amber-soft); color: var(--warning); border: 1px solid #EBD08F; }
+.badge-done { background: var(--success-bg); color: var(--success); }
+
+/* Large static cards shouldn't lift on hover like the small clickable ones */
+.card-static, .card-static:hover { transform: none; }
+.card-static:hover { box-shadow: var(--shadow-sm); border-color: var(--border); }
+
+/* ---------- 2. Page scaffolding ---------- */
+.feature-section { padding-top: var(--space-6); }
+.wrap-narrow { max-width: 760px; }
+.wrap-mid { max-width: 860px; }
+.wrap-form { max-width: 640px; }
+.page-header .eyebrow { margin-bottom: var(--space-2); }
+.page-header h1 { margin-bottom: var(--space-2); }
+.section-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.section-bar h2 { margin: 0; font-size: 1.25rem; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: var(--space-4); font-weight: 600; font-size: 0.92rem; }
+.back-link .i { width: 16px; height: 16px; }
+
+/* ---------- 3. Clinic finder ---------- */
+.finder-panel { margin-bottom: var(--space-5); padding: var(--space-5); }
+.finder-fields { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.finder-fields:disabled { opacity: 0.72; }
+.finder-row, .finder-filters { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.finder-search { position: relative; flex: 1; min-width: 220px; }
+.finder-search .i { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; margin-top: -9px; color: var(--ink-faint); pointer-events: none; }
+.finder-search input { padding-left: 42px; min-height: 48px; }
+.finder-filters .select-wrap { flex: 0 1 auto; }
+.finder-filters select { width: auto; min-height: 44px; }
+
+.finder-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-5); align-items: start; }
+.results-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.results-head h2 { margin: 0; font-size: 1.1rem; }
+
+.clinic-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+  margin-bottom: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--dur) ease, border-color var(--dur) ease;
+}
+.clinic-card:hover { box-shadow: var(--shadow); border-color: var(--light-cyan); }
+.clinic-card-icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--teal-soft); color: #0A6F7A; }
+.clinic-card.is-closed .clinic-card-icon { background: var(--surface-warm); color: var(--ink-soft); }
+.clinic-card-icon .i { width: 24px; height: 24px; }
+.clinic-card h3 { margin-bottom: 2px; font-size: 1.05rem; }
+.clinic-meta { margin: 0 0 var(--space-2); font-size: var(--text-sm); }
+.clinic-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.clinic-card-actions { display: flex; flex-direction: column; gap: var(--space-2); align-items: stretch; }
+
+.finder-map { margin: 0; padding: var(--space-3); position: sticky; top: calc(var(--navbar-h) + 16px); }
+.finder-map img { width: 100%; height: auto; border-radius: var(--radius-md); }
+.finder-map figcaption { padding: var(--space-3) var(--space-2) var(--space-1); font-size: var(--text-sm); color: var(--ink-soft); }
+.finder-map figcaption strong { display: block; color: var(--navy); font-family: var(--font-display); }
+
+/* ---------- 4. Clinic details ---------- */
+.clinic-hero { margin-bottom: var(--space-4); }
+.clinic-hero-top { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--space-3); }
+.clinic-hero h1 { font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem); margin-bottom: var(--space-4); }
+.info-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.info-list li { display: flex; align-items: flex-start; gap: var(--space-3); color: var(--ink); }
+.info-list .i { width: 20px; height: 20px; margin-top: 2px; color: var(--teal); }
+.info-list strong { color: var(--navy); }
+
+.card-title { font-size: 1.15rem; margin-bottom: var(--space-4); }
+.derm-list { display: grid; gap: var(--space-3); }
+.derm-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); }
+.derm-avatar { width: 44px; height: 44px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--navy); color: var(--white); font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; }
+.derm-row strong { color: var(--navy); font-family: var(--font-display); }
+.derm-row p { margin: 0; font-size: var(--text-sm); }
+.derm-row .badge { margin-left: auto; flex-shrink: 0; }
+
+.send-card { margin-bottom: var(--space-5); }
+.send-card .intro { margin-bottom: var(--space-4); }
+.send-option-title { font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--navy); margin: 0 0 6px; }
+.send-option .btn { padding-inline: 12px; white-space: nowrap; }
+.sample-note { display: flex; gap: 8px; align-items: flex-start; margin: var(--space-4) 0 0; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--amber-soft); color: #5A3B00; font-size: var(--text-sm); }
+.sample-note .i { width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0; }
+
+/* The simulated-appointment modal (built by login-gate.js): amber "preview" badge */
+.appt-modal-header .appt-badge { background: var(--amber-soft); color: var(--warning); border: 1px solid #EBD08F; }
+
+/* ---------- 5. Self-care page ---------- */
+.selfcare-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-6); }
+.selfcare-grid h3 { font-size: 1.05rem; }
+.selfcare-grid p { margin: 0; font-size: 0.95rem; }
+.selfcare-note { margin-bottom: 28px; max-width: 720px; }
+.selfcare-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.coming-soon { display: inline-flex; align-items: center; gap: 8px; }
+.coming-soon .badge { font-size: 0.7rem; padding: 2px 8px; }
+
+/* ---------- 6. Medication tracker ---------- */
+.med-progress { display: flex; align-items: center; gap: var(--space-5); margin-bottom: var(--space-6); padding: var(--space-5); }
+.ring {
+  --pct: 0;
+  position: relative;
+  flex-shrink: 0;
+  width: 88px; height: 88px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--teal) calc(var(--pct) * 1%), var(--sand) 0);
+}
+.ring::before { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: var(--surface); }
+.ring span { position: relative; font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--navy); }
+.med-progress-body { flex: 1; min-width: 0; }
+.med-progress-body h2 { font-size: 1.1rem; margin-bottom: 4px; }
+.med-progress-body p { margin-bottom: var(--space-3); }
+.med-progress-body strong { color: var(--navy); }
+
+.med-list { list-style: none; margin: 0 0 var(--space-5); padding: 0; display: grid; gap: var(--space-3); }
+.med-item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--space-4); align-items: center; }
+.med-time { font-family: var(--font-display); font-weight: 700; color: var(--navy); font-size: 0.95rem; text-align: right; }
+.med-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--dur) ease, border-color var(--dur) ease;
+}
+.med-item.is-done .med-card { border-left-color: var(--success); background: #F6FBF8; }
+.med-info { flex: 1; min-width: 0; }
+.med-info h3 { margin-bottom: 2px; font-size: 1.02rem; }
+.med-info p { margin: 0; font-size: var(--text-sm); }
+.med-actions { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+.med-actions [hidden] { display: none !important; }
+.med-undo { border: 0; background: none; padding: 6px 4px; color: var(--ink-soft); font-size: var(--text-sm); text-decoration: underline; cursor: pointer; font-family: var(--font-body); min-height: 36px; }
+.med-undo:hover { color: var(--navy); }
+.med-footer { display: flex; flex-direction: column; gap: var(--space-4); align-items: center; margin-top: 28px; }
+
+/* ---------- 7. Add medication (form) ---------- */
+.form-card { padding: var(--space-6); }
+.form-card h2 { font-size: 1.25rem; margin-bottom: 4px; }
+.form-card .field label .req { color: var(--danger); margin-left: 2px; }
+.form-card select { appearance: none; -webkit-appearance: none; padding-right: 40px; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234B5675' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center / 16px; }
+[aria-invalid="true"] { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.14); }
+.field-error { margin: 6px 0 0; font-size: var(--text-sm); font-weight: 600; color: var(--danger); display: flex; align-items: center; gap: 6px; }
+.field-error[hidden] { display: none; }
+.form-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-5); }
+.form-actions .btn { flex: 1 1 160px; }
+.form-result { margin-top: var(--space-5); padding: var(--space-4); border: 1px solid #EBD08F; border-radius: var(--radius-md); background: var(--amber-soft); color: #5A3B00; }
+.form-result[hidden] { display: none; }
+.form-result p { color: inherit; margin: 0 0 var(--space-3); }
+.form-result strong { font-family: var(--font-display); }
+
+/* ---------- 8. Medication history ---------- */
+.hist-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+.hist-stat { padding: var(--space-4) var(--space-5); }
+.hist-stat .num { display: block; font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; line-height: 1.1; color: var(--navy); }
+.hist-stat .label { font-size: var(--text-sm); color: var(--ink-soft); }
+.hist-stat.is-good .num { color: var(--success); }
+.hist-stat.is-bad .num { color: var(--danger); }
+
+.tabs[role="tablist"] { gap: 6px; border-bottom: 0; margin-bottom: var(--space-4); }
+.tabs[role="tablist"] .tab {
+  min-height: 40px;
+  padding: 8px 18px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+.tabs[role="tablist"] .tab:hover { border-color: var(--blue); color: var(--blue-600); }
+.tabs[role="tablist"] .tab[aria-selected="true"] { background: var(--navy); border-color: var(--navy); color: var(--white); }
+
+.table-card { padding: 0; overflow: hidden; }
+.hist-table { white-space: normal; display: table; }
+.hist-table th { padding: 14px 20px; background: var(--surface-warm); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+.hist-table td { padding: 16px 20px; }
+.hist-table tbody tr:last-child td { border-bottom: 0; }
+.hist-table tbody tr[hidden] { display: none; }
+.hist-empty { padding: var(--space-6); text-align: center; color: var(--ink-soft); margin: 0; }
+.hist-empty[hidden] { display: none; }
+
+/* ---------- 9. About ---------- */
+.about-hero .eyebrow { justify-content: center; }
+.about-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
+.about-card { display: flex; gap: var(--space-4); align-items: flex-start; padding: var(--space-5); }
+.about-card .card-icon { margin: 0; flex-shrink: 0; }
+.about-card h3 { margin-bottom: 4px; }
+.about-card p { margin: 0; }
+.about-safety { padding: var(--space-8) 0; }
+.about-safety-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+.about-safety-icon { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: var(--space-4); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.3); color: var(--light-cyan); }
+.about-safety-icon .i { width: 28px; height: 28px; }
+.about-safety h2 { color: var(--white); }
+.about-safety p { color: var(--pale-cyan); font-size: 1.05rem; }
+
+/* ---------- 10. Responsive ---------- */
+@media (max-width: 1000px) {
+  .finder-layout { grid-template-columns: 1fr; }
+  .finder-map { display: none; }
+  .selfcare-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .clinic-card { grid-template-columns: auto minmax(0, 1fr); }
+  .clinic-card-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+  .clinic-card-actions .btn { flex: 1 1 160px; }
+  .med-item { grid-template-columns: 1fr; gap: 6px; }
+  .med-time { text-align: left; padding-left: 2px; }
+  .med-card { flex-wrap: wrap; }
+  .med-actions { width: 100%; }
+  .med-actions .btn { flex: 1; }
+  .about-grid { grid-template-columns: 1fr; }
+  .form-card { padding: var(--space-5); }
+  .derm-row { flex-wrap: wrap; }
+  .derm-row .badge { margin-left: 0; }
+}
+@media (max-width: 640px) {
+  .hist-stats { grid-template-columns: 1fr; }
+  .hist-table, .hist-table tbody, .hist-table tr, .hist-table td { display: block; }
+  .hist-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .hist-table tr { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); }
+  .hist-table tbody tr:last-child { border-bottom: 0; }
+  .hist-table td { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding: 5px 0; border: 0; }
+  .hist-table td::before { content: attr(data-label); flex-shrink: 0; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint); }
+}
+@media (max-width: 600px) {
+  .selfcare-grid { grid-template-columns: 1fr; }
+  .med-progress { flex-direction: column; align-items: flex-start; }
+}

@@ -4,10 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI Chat — SKINSIGHT</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#FBF9F5">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/chat.css">
+<script src="js/ui.js"></script>
 <script>
   (function () {
     try {
@@ -30,102 +37,122 @@
 </head>
 <body>
 
-<header class="navbar">
-  <div class="wrap">
-    <a href="index.html" class="brand">SKIN<span>SIGHT</span></a>
-    <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="hamburger-label" aria-label="Toggle navigation menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="ai-assistant-intro.html" class="active">AI Skin Assistant</a></li>
-      <li><a href="clinic-finder.html">Find a Dermatologist</a></li>
-      <li><a href="medication-tracker.html">Medication Tracker</a></li>
-      <li><a href="about.html">About</a></li>
-      <li class="nav-login-item"><a href="login.html">Log In</a></li>
-    </ul>
-    <div class="nav-auth-actions">
-      <a href="login.html" class="btn btn-ghost btn-sm">Log In</a>
-      <a href="ai-assistant-intro.html" class="btn btn-primary btn-sm">Get Started</a>
-    </div>
-  </div>
-</header>
+<site-header data-nav="assistant"></site-header>
+<noscript><p class="noscript-note">SKINSIGHT needs JavaScript for navigation and the AI assistant. Please enable it to continue.</p></noscript>
+<main id="main">
 
 <section class="chatpage-section">
-  <div class="chat-shell chatpage-shell">
+  <h1 class="visually-hidden">AI Skin Assistant</h1>
+  <div class="chat-app" id="chatApp" data-sidebar="open">
+
+    <!-- Conversation history (frontend-only; see js/chat-ui.js) -->
+    <aside class="chat-sidebar" id="chatSidebar" aria-label="Consultation history">
+      <div class="cs-inner">
+        <div class="cs-head">
+          <h2>Consultations</h2>
+          <button type="button" class="cs-collapse" id="historyClose" aria-label="Hide consultation history">
+            <svg class="i" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+          </button>
+        </div>
+
+        <button type="button" class="btn btn-primary cs-new" id="newConsultBtn">
+          <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>
+          New consultation
+        </button>
+
+        <div class="cs-search">
+          <label for="historySearch" class="visually-hidden">Search conversations</label>
+          <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+          <input type="search" id="historySearch" placeholder="Search conversations" autocomplete="off">
+        </div>
+
+        <div class="cs-list" id="historyList"></div>
+        <p class="visually-hidden" id="historyStatus" role="status" aria-live="polite"></p>
+
+        <p class="cs-foot"><strong>Preview feature.</strong> Sample conversations are demo data. Consultations from this session stay in this browser tab only and aren't saved to your account yet.</p>
+      </div>
+    </aside>
+    <div class="chat-sidebar-backdrop" id="chatSidebarBackdrop" aria-hidden="true"></div>
+
+    <!-- Conversation -->
+    <div class="chat-shell chatpage-shell" id="chatShell">
       <div class="chat-topbar">
-        <strong>SKINSIGHT AI Skin Assistant</strong>
+        <button type="button" class="icon-btn history-toggle" id="historyToggle" aria-controls="chatSidebar" aria-expanded="true" aria-label="Show or hide consultation history">
+          <svg class="i" aria-hidden="true"><use href="#i-panel-left"/></svg>
+        </button>
+        <div class="chat-topbar-title">
+          <strong id="chatTitle">New consultation</strong>
+          <span>SKINSIGHT AI Skin Assistant</span>
+        </div>
         <span class="status-pill">Consultation Support</span>
       </div>
-      <div class="chat-body chatpage-scroll" id="chatBody">
+
+      <!-- Read-only view of a sample conversation (filled by chat-ui.js) -->
+      <div class="chat-preview" id="chatPreview"></div>
+
+      <div class="chat-body chatpage-scroll" id="chatBody" tabindex="0" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation with SKINSIGHT">
         <div class="msg msg-ai">Hi! What skin concern would you like to talk about today? You can describe what you're noticing or feeling, or attach a photo below.</div>
-      </div>
-      <div class="chat-safety">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info preview-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        <span>SKINSIGHT helps organize information and does not diagnose or prescribe.</span>
-      </div>
-
-      <input type="checkbox" id="attach-toggle" class="attach-toggle">
-      <div class="chat-inputbar">
-        <label for="attach-toggle" class="icon-btn" aria-label="Attach or take a photo">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-images preview-icon"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16"/><path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/><circle cx="13" cy="7" r="1" fill="currentColor"/><rect x="8" y="2" width="14" height="14" rx="2"/></svg>
-        </label>
-        <input type="text" placeholder="Ask a follow-up question…">
-        <button type="button" class="icon-btn send" aria-label="Send">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal preview-icon"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
-        </button>
-      </div>
-
-      <div class="attach-panel">
-        <p class="helper" style="margin:0 0 10px; text-transform:none;">Add a photo to this conversation</p>
-        <div class="attach-panel-row">
-          <label class="attach-option">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l2-3h4l2 3"/><circle cx="12" cy="13" r="3.5"/></svg>
-            Take a Photo
-            <input type="file" accept="image/*" capture="environment">
-          </label>
-          <label class="attach-option">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
-            Upload a Photo
-            <input type="file" accept="image/*">
-          </label>
-        </div>
       </div>
 
       <div class="chat-cta">
         <p>Covered everything you wanted to ask? Your summary is ready whenever you are.</p>
         <a href="consultation-summary.html" class="btn btn-primary">Generate Consultation Summary</a>
       </div>
+
+      <div class="chat-starters" id="chatStarters">
+        <p class="chat-starters-label">Try starting with</p>
+        <button type="button" class="chat-starter" data-prompt="I have a red, itchy rash on my ">A red, itchy rash</button>
+        <button type="button" class="chat-starter" data-prompt="I've noticed dry, flaky patches on my ">Dry or flaky patches</button>
+        <button type="button" class="chat-starter" data-prompt="I've been having acne breakouts on my ">Acne or breakouts</button>
+        <button type="button" class="chat-starter" data-prompt="I noticed a mole or spot that has changed on my ">A spot that changed</button>
+        <button type="button" class="chat-starter" data-prompt="I'm not sure how to describe it, but it looks like ">I'm not sure how to describe it</button>
+      </div>
+
+      <button type="button" id="attach-toggle" class="attach-toggle" aria-label="Attach a photo" aria-expanded="false" aria-controls="attachPanel"></button>
+      <div class="chat-inputbar">
+        <label for="attach-toggle" class="icon-btn" aria-hidden="true">
+          <svg class="i" aria-hidden="true"><use href="#i-image"/></svg>
+        </label>
+        <textarea id="chatInput" rows="1" placeholder="Describe your concern…" aria-label="Message SKINSIGHT"></textarea>
+        <button type="button" class="icon-btn send" aria-label="Send message">
+          <svg class="i" aria-hidden="true"><use href="#i-send"/></svg>
+        </button>
+      </div>
+
+      <div class="attach-panel" id="attachPanel">
+        <p class="helper">Add a photo to this conversation</p>
+        <div class="attach-panel-row">
+          <label class="attach-option">
+            <svg class="i" aria-hidden="true"><use href="#i-camera"/></svg>
+            Take a Photo
+            <input type="file" accept="image/*" capture="environment">
+          </label>
+          <label class="attach-option">
+            <svg class="i i-rotate-180" aria-hidden="true"><use href="#i-download"/></svg>
+            Upload a Photo
+            <input type="file" accept="image/*">
+          </label>
+        </div>
+      </div>
+
+      <div class="chat-safety">
+        <svg class="i" aria-hidden="true"><use href="#i-info"/></svg>
+        <span>SKINSIGHT helps organize information and does not diagnose or prescribe.<span class="chat-kbd-hint"> Press Enter to send, Shift+Enter for a new line.</span></span>
+      </div>
+    </div>
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div>
-      <div class="brand" style="margin-bottom:10px;">SKIN<span>SIGHT</span></div>
-      <p style="color:var(--light-cyan); max-width:32ch;">AI-Assisted Skin Health Platform.</p>
-    </div>
-    <ul class="footer-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="ai-assistant-intro.html" class="active">AI Skin Assistant</a></li>
-      <li><a href="clinic-finder.html">Find a Dermatologist</a></li>
-      <li><a href="medication-tracker.html">Medication Tracker</a></li>
-      <li><a href="about.html">About</a></li>
-    </ul>
-  </div>
-  <div class="wrap footer-bottom">
-    SKINSIGHT is not a substitute for professional medical advice, diagnosis, or treatment.
-  </div>
-</footer>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<site-footer></site-footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
 <script src="js/supabase-config.js"></script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
 <script src="js/api.js"></script>
 <script src="js/chat.js" defer></script>
+<script src="js/chat-ui.js" defer></script>
 </body>
 </html>

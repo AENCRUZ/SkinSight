@@ -4,10 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Find a Dermatologist — SKINSIGHT</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#FBF9F5">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/features.css">
+<script src="js/ui.js"></script>
 <script>
   (function () {
     try {
@@ -30,124 +37,99 @@
 </head>
 <body>
 
-<header class="navbar">
-  <div class="wrap">
-    <a href="index.html" class="brand">SKIN<span>SIGHT</span></a>
-    <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="hamburger-label" aria-label="Toggle navigation menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="ai-assistant-intro.html">AI Skin Assistant</a></li>
-      <li><a href="clinic-finder.html" class="active">Find a Dermatologist</a></li>
-      <li><a href="medication-tracker.html">Medication Tracker</a></li>
-      <li><a href="about.html">About</a></li>
-      <li class="nav-login-item"><a href="login.html">Log In</a></li>
-    </ul>
-    <div class="nav-auth-actions">
-      <a href="login.html" class="btn btn-ghost btn-sm">Log In</a>
-      <a href="ai-assistant-intro.html" class="btn btn-primary btn-sm">Get Started</a>
-    </div>
-  </div>
-</header>
+<site-header data-nav="clinics"></site-header>
+<noscript><p class="noscript-note">SKINSIGHT needs JavaScript for navigation and the AI assistant. Please enable it to continue.</p></noscript>
+<main id="main">
 
 <div class="page-header">
   <div class="wrap">
-    <h1 style="font-size:2rem;">Find a Dermatologist</h1>
+    <span class="eyebrow">Clinics near you</span>
+    <h1>Find a Dermatologist</h1>
     <p>Find skin clinics and dermatologists near you, then reach out directly and share your consultation summary.</p>
   </div>
 </div>
 
-<section style="padding-top:36px;">
+<section class="feature-section">
   <div class="wrap">
+    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Preview · Sample data.</strong> The clinics below are examples that show how this page will work. Search, location and filters aren't active yet.</p></div>
 
-    <div class="card" style="margin-bottom:24px;">
-      <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
-        <input type="search" placeholder="Search location or clinic" style="flex:1; min-width:220px;">
-        <button class="btn btn-secondary" type="button">
-          <svg class="icon" viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Use My Location
-        </button>
-      </div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <div class="select-wrap">
-          <select style="width:auto;"><option>Distance: Any</option></select>
-          <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    <form class="card card-static finder-panel" role="search" aria-label="Search clinics (preview)" onsubmit="return false">
+      <fieldset class="finder-fields" disabled>
+        <legend class="visually-hidden">Clinic search and filters (not active in this preview)</legend>
+        <div class="finder-row">
+          <div class="finder-search">
+            <label class="visually-hidden" for="clinic-q">Search location or clinic</label>
+            <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+            <input type="search" id="clinic-q" placeholder="Search location or clinic">
+          </div>
+          <button class="btn btn-secondary" type="button"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg> Use My Location</button>
         </div>
-        <div class="select-wrap">
-          <select style="width:auto;"><option>Availability: Any</option></select>
-          <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        <div class="finder-filters">
+          <div class="select-wrap"><select id="f-distance" aria-label="Distance"><option>Distance: Any</option></select><svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></div>
+          <div class="select-wrap"><select id="f-availability" aria-label="Availability"><option>Availability: Any</option></select><svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></div>
+          <div class="select-wrap"><select id="f-type" aria-label="Consultation type"><option>Consultation Type: Any</option></select><svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></div>
         </div>
-        <div class="select-wrap">
-          <select style="width:auto;"><option>Consultation Type: Any</option></select>
-          <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </fieldset>
+    </form>
+
+    <div class="finder-layout">
+      <div class="finder-results">
+        <div class="results-head">
+          <h2>3 sample clinics</h2>
+          <span class="badge badge-preview">Sample data</span>
         </div>
-      </div>
-    </div>
 
-    <div class="list-row">
-      <div>
-        <h3 style="margin-bottom:4px;">Bay Area Dermatology Clinic</h3>
-        <p style="margin-bottom:6px;">1.2 km away · Batangas City</p>
-        <span class="badge badge-open">Open Now</span>
-        <span class="badge badge-info">2 dermatologists available</span>
-      </div>
-      <div style="display:flex; gap:10px; flex-shrink:0;">
-        <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
-      </div>
-    </div>
+        <article class="clinic-card">
+          <div class="clinic-card-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg></div>
+          <div class="clinic-card-body">
+            <h3>Bay Area Dermatology Clinic</h3>
+            <p class="clinic-meta">1.2 km away · Batangas City</p>
+            <div class="clinic-tags"><span class="badge badge-open">Open Now</span><span class="badge badge-info">2 dermatologists available</span></div>
+          </div>
+          <div class="clinic-card-actions">
+            <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
+          </div>
+        </article>
 
-    <div class="list-row">
-      <div>
-        <h3 style="margin-bottom:4px;">Skinluxe Skin & Wellness Center</h3>
-        <p style="margin-bottom:6px;">3.4 km away · Lipa City</p>
-        <span class="badge badge-open">Open Now</span>
-        <span class="badge badge-info">1 dermatologist available</span>
-      </div>
-      <div style="display:flex; gap:10px; flex-shrink:0;">
-        <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
-      </div>
-    </div>
+        <article class="clinic-card">
+          <div class="clinic-card-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg></div>
+          <div class="clinic-card-body">
+            <h3>Skinluxe Skin &amp; Wellness Center</h3>
+            <p class="clinic-meta">3.4 km away · Lipa City</p>
+            <div class="clinic-tags"><span class="badge badge-open">Open Now</span><span class="badge badge-info">1 dermatologist available</span></div>
+          </div>
+          <div class="clinic-card-actions">
+            <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
+          </div>
+        </article>
 
-    <div class="list-row">
-      <div>
-        <h3 style="margin-bottom:4px;">Coastal Dermatology Associates</h3>
-        <p style="margin-bottom:6px;">6.8 km away · Batangas City</p>
-        <span class="badge badge-closed">Closed</span>
-        <span class="badge badge-info">Reopens tomorrow, 9:00 AM</span>
+        <article class="clinic-card is-closed">
+          <div class="clinic-card-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg></div>
+          <div class="clinic-card-body">
+            <h3>Coastal Dermatology Associates</h3>
+            <p class="clinic-meta">6.8 km away · Batangas City</p>
+            <div class="clinic-tags"><span class="badge badge-closed">Closed</span><span class="badge badge-info">Reopens tomorrow, 9:00 AM</span></div>
+          </div>
+          <div class="clinic-card-actions">
+            <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
+            <a href="no-clinic-available.html" class="btn btn-ghost btn-sm">Self-Care Tips</a>
+          </div>
+        </article>
       </div>
-      <div style="display:flex; gap:10px; flex-shrink:0;">
-        <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
-        <a href="no-clinic-available.html" class="btn btn-ghost btn-sm">Self-Care Tips</a>
-      </div>
-    </div>
 
+      <figure class="card card-static finder-map">
+        <img src="img/map-preview.svg" alt="" width="400" height="320" loading="lazy">
+        <figcaption><strong>Map view: coming soon</strong>Nearby clinics will appear on a map once location search is available.</figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div>
-      <div class="brand" style="margin-bottom:10px;">SKIN<span>SIGHT</span></div>
-      <p style="color:var(--light-cyan); max-width:32ch;">AI-Assisted Skin Health Platform.</p>
-    </div>
-    <ul class="footer-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="ai-assistant-intro.html">AI Skin Assistant</a></li>
-      <li><a href="clinic-finder.html" class="active">Find a Dermatologist</a></li>
-      <li><a href="medication-tracker.html">Medication Tracker</a></li>
-      <li><a href="about.html">About</a></li>
-    </ul>
-  </div>
-  <div class="wrap footer-bottom">
-    SKINSIGHT is not a substitute for professional medical advice, diagnosis, or treatment.
-  </div>
-</footer>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<site-footer></site-footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
 <script src="js/supabase-config.js"></script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>

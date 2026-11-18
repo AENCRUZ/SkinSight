@@ -1,0 +1,110 @@
+/* ==========================================================================
+   SKINSIGHT — Design tokens
+   Single source of truth for color, type, spacing, radii, shadows and motion.
+   Legacy names (--navy, --blue, --cyan, --light-cyan, --pale-cyan, --white,
+   --ink, --ink-soft, --border, --danger*, --success*, --radius-*, --shadow*,
+   --max*, --navbar-h) are kept so existing page styles keep working.
+   ========================================================================== */
+
+:root {
+  /* ----- Brand blues (identity retained) ----- */
+  --navy: #03045E;
+  --navy-800: #0A1172;
+  --blue: #0077B6;
+  --blue-600: #006399;
+  --cyan: #00B4D8;          /* bright cyan: decorative, or text on NAVY (7:1) */
+  --cyan-ink: #0092B5;      /* brand cyan for text on LIGHT surfaces (3.5:1: large/bold wordmark only) */
+  --light-cyan: #90E0EF;
+  --pale-cyan: #E3F5FA;
+
+  /* ----- Secondary accents (use sparingly) ----- */
+  --teal: #0E8F9B;
+  --teal-soft: #DDF2F2;
+  --coral: #E8674D;
+  --coral-600: #C44A32;   /* 4.8:1 with white text: use for filled buttons */
+  --coral-700: #B03A24;
+  --coral-soft: #FDEAE4;
+  --amber: #B7791F;
+  --amber-soft: #FDF3DC;
+
+  /* ----- Warm neutrals ----- */
+  --bg: #FBF9F5;            /* page background */
+  --surface: #FFFFFF;       /* cards, inputs */
+  --surface-warm: #F5F0E8;  /* tinted sections */
+  --sand: #ECE5D8;          /* dividers on warm surfaces */
+  --white: #FFFFFF;
+
+  /* ----- Text ----- */
+  --ink: #0F1D3A;
+  --ink-soft: #4B5675;      /* 7:1 on --bg, 7.6:1 on white */
+  --ink-faint: #5E6784;      /* >=4.9:1 on white, --bg, --pale-cyan and --surface-warm */
+
+  /* ----- Lines ----- */
+  --border: #E2DED5;
+  --border-strong: #C7CDD6;
+
+  /* ----- Semantic ----- */
+  --danger: #B3261E;
+  --danger-bg: #FDECEA;
+  --success: #1E7A4C;
+  --success-bg: #E7F6EE;
+  --warning: #8A5A00;
+  --warning-bg: #FDF3DC;
+  --focus: #0077B6;
+  --focus-ring: 0 0 0 3px rgba(0, 119, 182, 0.35);
+
+  /* ----- Type ----- */
+  --font-display: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+
+  --text-xs: 0.78rem;
+  --text-sm: 0.88rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-h3: clamp(1.1rem, 1.02rem + 0.35vw, 1.25rem);
+  --text-h2: clamp(1.45rem, 1.15rem + 1.3vw, 2rem);
+  --text-h1: clamp(1.85rem, 1.25rem + 2.7vw, 3rem);
+
+  /* ----- Spacing (4px base) ----- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* ----- Radii ----- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* ----- Shadows (layered, navy-tinted) ----- */
+  --shadow-sm: 0 1px 2px rgba(3, 4, 94, 0.05), 0 1px 3px rgba(3, 4, 94, 0.04);
+  --shadow: 0 2px 4px rgba(3, 4, 94, 0.04), 0 10px 28px rgba(3, 4, 94, 0.08);
+  --shadow-lg: 0 4px 8px rgba(3, 4, 94, 0.05), 0 24px 56px rgba(3, 4, 94, 0.14);
+
+  /* ----- Layout ----- */
+  --max: 1180px;
+  --max-narrow: 760px;
+  --navbar-h: 72px;
+
+  /* ----- Motion ----- */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.15s;
+  --dur: 0.28s;
+
+  /* ----- Layers ----- */
+  --z-nav: 999;
+  --z-drawer: 998;
+  --z-modal: 1100;
+  --z-toast: 1200;
+}
+
+@media (max-width: 600px) {
+  :root { --navbar-h: 64px; }
+}
