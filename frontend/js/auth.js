@@ -225,6 +225,12 @@
     return window.location.origin + basePath + page;
   }
 
+  function getNextPage() {
+    var n = new URLSearchParams(window.location.search).get("next");
+    // plain page names only, so ?next= can't redirect off-site
+    return (n && /^[a-z0-9-]+\.html$/i.test(n)) ? n : "index.html";
+  }
+
   // Handle Forgot Password
   async function handleForgotPassword(form) {
     var emailInput = document.getElementById("reset-email");
@@ -387,7 +393,7 @@
           saveCachedUser(getUserData(user));
         }
         window.history.replaceState(null, "", window.location.pathname);
-        window.location.href = "index.html";
+        window.location.href = getNextPage();
       }
     } catch (err) {
       console.warn("OAuth redirect handling error:", err);

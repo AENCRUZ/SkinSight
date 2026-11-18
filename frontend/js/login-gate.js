@@ -57,8 +57,10 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    var isClinicDetails = window.location.pathname.indexOf("clinic-details.html") !== -1;
-    var isConsultationSummary = window.location.pathname.indexOf("consultation-summary.html") !== -1;
+    var currentFile = window.location.pathname.split("/").pop();
+    var isClinicDetails = currentFile === "clinic-details.html";
+    var isAiPage = currentFile === "ai-assistant-intro.html" || currentFile === "ai-chat.html";
+    var redirectHomeOnClose = false;   // true when the gate blocks the whole page
 
     // Build Login Gate Modal
     var gateModal = document.createElement("div");
@@ -98,7 +100,10 @@
     }
 
     function closeLoginGate() {
+      if (!gateModal.classList.contains("show")) return;
       gateModal.classList.remove("show");
+      // If the gate was blocking an AI page, "Not now" goes back home
+      if (redirectHomeOnClose) window.location.replace("index.html");
     }
 
     gateModal.addEventListener("click", function (e) {
@@ -283,7 +288,7 @@
       });
     }
 
-    // Page Interceptors
+        // Page Interceptors
 
     if (isClinicDetails) {
       var emailLink = document.getElementById("btn-email-clinic") ||
@@ -325,37 +330,38 @@
       }
     }
 
-    if (isConsultationSummary) {
-      if (!isLoggedIn()) {
+    // ---- Gate the AI Skin Assistant ----
+
+    // 1) Clicking any link to the AI pages
+    document.addEventListener("click", function (e) {
+      if (isLoggedIn()) return;
+      var a = e.target.closest && e.target.closest("a[href]");
+      if (!a) return;
+      var href = (a.getAttribute("href") || "").split("?")[0].split("#")[0];
+      if (href === "ai-assistant-intro.html" || href === "ai-chat.html") {
+        e.preventDefault();
+        e.stopPropagation();
         openLoginGate(
-          "Log in to view your summary",
-          "Please log in or create a free account to view and save your complete consultation summary.",
-          "consultation-summary.html"
+          "Log in to use the AI Skin Assistant",
+          "Please log in or create a free account to chat with the AI Skin Assistant.",
+          href
         );
       }
+    }, true);
 
-      window.addEventListener("pageshow", function () {
-        if (!isLoggedIn()) {
-          openLoginGate(
-            "Log in to view your summary",
-            "Please log in or create a free account to view and save your complete consultation summary.",
-            "consultation-summary.html"
-          );
-        }
-      });
-
-      window.addEventListener("storage", function (e) {
-        if (e.key === "skinsight_user" && !e.newValue) {
-          if (!isLoggedIn()) {
-            openLoginGate(
-              "Log in to view your summary",
-              "Please log in or create a free account to view and save your complete consultation summary.",
-              "consultation-summary.html"
-            );
-          }
-        }
-      });
+    // 2) Typing the URL directly (or using the back button) onto an AI page
+    function gateAiPage() {
+      if (isAiPage && !isLoggedIn()) {
+        redirectHomeOnClose = true;
+        openLoginGate(
+          "Log in to use the AI Skin Assistant",
+          "Please log in or create a free account to chat with the AI Skin Assistant.",
+          currentFile
+        );
+      }
     }
+    gateAiPage();
+    window.addEventListener("pageshow", gateAiPage);
 
     // Global escape key handler to close active modal
     document.addEventListener("keydown", function (e) {
