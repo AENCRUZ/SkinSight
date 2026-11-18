@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/medication-tracker.css">
 <script>
   (function () {
     try {
@@ -67,31 +68,17 @@
     <div class="card" style="margin-bottom:28px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h3 style="margin:0;">Today's Progress</h3>
-        <span style="font-weight:700; color:var(--navy);">1 / 2 completed</span>
+        <span id="progress-text" style="font-weight:700; color:var(--navy);">0 / 0 completed</span>
       </div>
-      <div class="progress-track"><div class="progress-fill" style="width:50%;"></div></div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%;"></div></div>
     </div>
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <h3 style="margin:0;">Today's Schedule</h3>
-      <a href="add-medication.html" class="btn btn-primary btn-sm">Add Medication</a>
+      <button type="button" id="open-add" class="btn btn-primary btn-sm">Add Medication</button>
     </div>
 
-    <div class="list-row">
-      <div>
-        <h3 style="margin-bottom:4px;">Tretinoin Cream 0.025%</h3>
-        <p style="margin-bottom:2px;">8:00 PM · Apply a pea-sized amount to affected area</p>
-      </div>
-      <span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span>
-    </div>
-
-    <div class="list-row">
-      <div>
-        <h3 style="margin-bottom:4px;">Hydrocortisone Cream 1%</h3>
-        <p style="margin-bottom:2px;">9:00 AM · Apply thin layer to forearm patch</p>
-      </div>
-      <button class="btn btn-secondary btn-sm" type="button">Mark as Completed</button>
-    </div>
+    <div id="schedule-list"></div>
 
     <div class="notice strong" style="margin-top:8px;">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info preview-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -103,6 +90,61 @@
     </div>
   </div>
 </section>
+
+<div class="modal-backdrop" id="add-modal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="add-title">
+    <h2 id="add-title">Add Medication</h2>
+    <p class="modal-sub">Enter details for a medication prescribed or recommended by a healthcare professional.</p>
+
+    <form id="add-form" novalidate>
+      <div class="field">
+        <label for="med-name">Medication Name</label>
+        <input type="text" id="med-name" name="name" placeholder="e.g., Hydrocortisone Cream 1%" autocomplete="off">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="med-schedule">Schedule</label>
+          <select id="med-schedule" name="schedule">
+            <option value="once_daily">Once daily</option>
+            <option value="twice_daily">Twice daily</option>
+            <option value="every_other_day">Every other day</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="med-frequency">Frequency</label>
+          <select id="med-frequency" name="frequency">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="as_needed">As needed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="med-time">Reminder Time</label>
+        <input type="time" id="med-time" name="time" value="09:00">
+      </div>
+
+      <div class="field">
+        <label for="med-notes">Notes</label>
+        <textarea id="med-notes" name="notes" placeholder="Apply thin layer to affected area…"></textarea>
+      </div>
+
+      <div class="form-error" id="form-error">Please enter a medication name.</div>
+
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Save Medication</button>
+        <button type="button" class="btn btn-ghost" id="cancel-add">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="undo-toast" id="undo-toast" role="status" aria-live="polite" hidden>
+  <span id="undo-text">Medication removed.</span>
+  <button type="button" id="undo-btn">Undo</button>
+</div>
 
 <footer>
   <div class="wrap">
@@ -125,6 +167,135 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
+<script src="js/medication-store.js"></script>
+<script>
+(function () {
+  var S = window.SkinStore;
+  var list = document.getElementById("schedule-list");
+  var progressText = document.getElementById("progress-text");
+  var progressFill = document.getElementById("progress-fill");
+  var modal = document.getElementById("add-modal");
+  var form = document.getElementById("add-form");
+  var nameInput = document.getElementById("med-name");
+  var errorBox = document.getElementById("form-error");
+
+  function render() {
+    var slots = S.slotsFor(S.today());
+    var done = slots.filter(function (s) { return s.status === "completed"; }).length;
+
+    progressText.textContent = done + " / " + slots.length + " completed";
+    progressFill.style.width = (slots.length ? Math.round((done / slots.length) * 100) : 0) + "%";
+
+    if (!slots.length) {
+      list.innerHTML = '<div class="card empty-card">No medications scheduled for today. Press <strong>Add Medication</strong> to get started.</div>';
+      return;
+    }
+
+    list.innerHTML = slots.map(function (s) {
+      var detail = S.fmtTime(s.time) + (s.med.notes ? " · " + S.esc(s.med.notes) : "");
+      var action = s.status === "completed"
+        ? '<button class="badge badge-completed-btn" type="button" title="Click to undo" data-uncomplete="' + S.esc(s.id) + '">Completed</button>'
+        : '<button class="btn btn-secondary btn-sm" type="button" data-complete="' + S.esc(s.id) + '">Mark as Completed</button>';
+      return '<div class="list-row">' +
+        '<div><h3 style="margin-bottom:4px;">' + S.esc(s.med.name) + '</h3>' +
+        '<p style="margin-bottom:2px;">' + detail + '</p></div>' +
+        '<div class="row-actions">' + action +
+        '<button class="btn btn-ghost btn-sm" type="button" data-remove="' + S.esc(s.med.id) + '">Remove</button></div>' +
+        '</div>';
+    }).join("");
+  }
+
+  list.addEventListener("click", function (e) {
+    var c = e.target.closest("[data-complete]");
+    if (c) {
+      S.completeSlot(c.getAttribute("data-complete"));
+      render();
+      return;
+    }
+    var u = e.target.closest("[data-uncomplete]");
+    if (u) {
+      S.uncompleteSlot(u.getAttribute("data-uncomplete"));
+      render();
+      return;
+    }
+    var r = e.target.closest("[data-remove]");
+    if (r) {
+      var snapshot = S.removeMed(r.getAttribute("data-remove"));
+      render();
+      showUndo(snapshot);
+    }
+  });
+
+  var toast = document.getElementById("undo-toast");
+  var toastText = document.getElementById("undo-text");
+  var undoSnapshot = null;
+  var toastTimer = null;
+
+  function hideUndo() {
+    toast.hidden = true;
+    undoSnapshot = null;
+    clearTimeout(toastTimer);
+  }
+  function showUndo(snapshot) {
+    if (!snapshot) return;
+    undoSnapshot = snapshot;
+    toastText.textContent = snapshot.med.name + " removed.";
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideUndo, 6000);
+  }
+  document.getElementById("undo-btn").addEventListener("click", function () {
+    if (undoSnapshot) {
+      S.restoreMed(undoSnapshot);
+      render();
+    }
+    hideUndo();
+  });
+
+  function openModal() {
+    form.reset();
+    errorBox.classList.remove("show");
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    setTimeout(function () { nameInput.focus(); }, 80);
+  }
+  function closeModal() {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
+  document.getElementById("open-add").addEventListener("click", openModal);
+  document.getElementById("cancel-add").addEventListener("click", closeModal);
+  modal.addEventListener("mousedown", function (e) { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal(); });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = nameInput.value.trim();
+    if (!name) {
+      errorBox.classList.add("show");
+      nameInput.focus();
+      return;
+    }
+    S.addMed({
+      name: name,
+      schedule: document.getElementById("med-schedule").value,
+      frequency: document.getElementById("med-frequency").value,
+      time: document.getElementById("med-time").value || "09:00",
+      notes: document.getElementById("med-notes").value.trim()
+    });
+    closeModal();
+    render();
+  });
+
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
+  window.addEventListener("storage", render);
+
+  render();
+})();
+</script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
 <script src="js/login-gate.js" defer></script>

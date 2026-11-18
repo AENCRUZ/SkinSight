@@ -8,6 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
+<style>
+  .tabs .tab { cursor: pointer; user-select: none; }
+  .empty-cell { text-align: center; color: #5a6585; padding: 28px 12px; }
+</style>
 <script>
   (function () {
     try {
@@ -64,9 +68,9 @@
 <section style="padding-top:36px;">
   <div class="wrap">
     <div class="tabs">
-      <span class="tab active">All</span>
-      <span class="tab">Completed</span>
-      <span class="tab">Missed</span>
+      <span class="tab active" data-filter="all">All</span>
+      <span class="tab" data-filter="completed">Completed</span>
+      <span class="tab" data-filter="missed">Missed</span>
     </div>
 
     <div class="card">
@@ -74,34 +78,12 @@
         <thead>
           <tr><th>Medication</th><th>Date</th><th>Status</th></tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>Tretinoin Cream 0.025%</td>
-            <td>Sept 22, 2026 · 8:00 PM</td>
-            <td><span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span></td>
-          </tr>
-          <tr>
-            <td>Hydrocortisone Cream 1%</td>
-            <td>Sept 22, 2026 · 9:00 AM</td>
-            <td><span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span></td>
-          </tr>
-          <tr>
-            <td>Hydrocortisone Cream 1%</td>
-            <td>Sept 21, 2026 · 9:00 AM</td>
-            <td><span class="badge badge-closed">Missed</span></td>
-          </tr>
-          <tr>
-            <td>Tretinoin Cream 0.025%</td>
-            <td>Sept 21, 2026 · 8:00 PM</td>
-            <td><span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span></td>
-          </tr>
-          <tr>
-            <td>Hydrocortisone Cream 1%</td>
-            <td>Sept 20, 2026 · 9:00 AM</td>
-            <td><span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span></td>
-          </tr>
-        </tbody>
+        <tbody id="history-body"></tbody>
       </table>
+    </div>
+
+    <div style="text-align:center; margin-top:28px;">
+      <a href="medication-tracker.html" class="btn btn-ghost">Back to Medication Tracker</a>
     </div>
   </div>
 </section>
@@ -127,6 +109,52 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
+<script src="js/medication-store.js"></script>
+<script>
+(function () {
+  var S = window.SkinStore;
+  var body = document.getElementById("history-body");
+  var tabs = document.querySelectorAll(".tabs .tab");
+  var filter = "all";
+
+  function render() {
+    var rows = S.history().filter(function (r) {
+      return filter === "all" || r.status === filter;
+    });
+
+    if (!rows.length) {
+      var msg = filter === "completed" ? "No completed doses yet."
+              : filter === "missed" ? "No missed doses."
+              : "No history yet. Add a medication and mark doses as completed on the Medication Tracker.";
+      body.innerHTML = '<tr><td colspan="3" class="empty-cell">' + msg + '</td></tr>';
+      return;
+    }
+
+    body.innerHTML = rows.map(function (r) {
+      var badge = r.status === "completed"
+        ? '<span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span>'
+        : '<span class="badge badge-closed">Missed</span>';
+      return '<tr><td>' + S.esc(r.med.name) + '</td>' +
+             '<td>' + S.fmtDate(r.date) + ' · ' + S.fmtTime(r.time) + '</td>' +
+             '<td>' + badge + '</td></tr>';
+    }).join("");
+  }
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      tabs.forEach(function (t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+      filter = tab.getAttribute("data-filter");
+      render();
+    });
+  });
+
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
+  window.addEventListener("storage", render);
+
+  render();
+})();
+</script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
 <script src="js/login-gate.js" defer></script>
