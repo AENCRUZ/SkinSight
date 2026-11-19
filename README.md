@@ -27,7 +27,7 @@ clearly labeled "Preview" / "Sample data" in the UI; nothing is saved or sent.
 | Authentication | Working | Email/password, Google OAuth and password reset via Supabase |
 | Find a Dermatologist | Preview | Sample clinics; search and filters are disabled |
 | Email / appointment request | Preview | Simulated. Nothing is sent to any clinic |
-| Medication tracker | Preview | Sample data; actions work in the page but are not saved |
+| Medication tracker | Working (browser-local) | Add medications (dialog or full page), daily schedule, mark doses complete / undo, remove / undo, as-needed list, history with filters and progress. Saved **only in this browser on this device**, separately for the guest and each signed-in account: not synced, not backed up, not private on a shared device. It sends **no notifications or reminders**, cannot verify that a dose was taken, and gives no medical advice. Includes controls to delete the data. See "Medication tracker storage" below |
 
 ---
 
@@ -42,7 +42,8 @@ SkinSight/
 │   │   ├── auth.css              # Navbar account menu, sign-out and login-gate modals
 │   │   ├── home.css              # Home page
 │   │   ├── chat.css              # AI chat app, history sidebar, assistant intro, summary page
-│   │   ├── features.css          # Clinics, medication and About pages (+ Preview components)
+│   │   ├── features.css          # Clinics and About pages (+ Preview components, shared form helpers)
+│   │   ├── medication-tracker.css # Medication tracker, add form, history, dialogs
 │   │   └── auth-pages.css        # Login, sign-up, forgot / reset password
 │   ├── js/
 │   │   ├── ui.js                 # <site-header>/<site-footer>, mobile nav drawer, icon sprite
@@ -55,7 +56,8 @@ SkinSight/
 │   │   ├── chat.js               # Chat controller: messages, photo upload, session history
 │   │   ├── chat-ui.js            # Chat polish and the conversation history sidebar
 │   │   ├── summary.js            # Summary rendering, TXT/PDF download, copy
-│   │   └── meds-ui.js            # Medication page interactions (Preview, not persisted)
+│   │   ├── medication-store.js   # Browser-local medication data (per profile), schedules, history
+│   │   └── meds-ui.js            # Medication pages: dialog/form, doses, undo, history, data deletion
 │   ├── img/                      # SVG illustrations and favicon
 │   ├── index.html                # Home
 │   ├── ai-assistant-intro.html   # AI assistant introduction
@@ -64,9 +66,9 @@ SkinSight/
 │   ├── clinic-finder.html        # Clinic search (Preview)
 │   ├── clinic-details.html       # Clinic details and summary sharing (Preview)
 │   ├── no-clinic-available.html  # Self-care fallback (Preview)
-│   ├── medication-tracker.html   # Medication tracker (Preview)
-│   ├── add-medication.html       # Add medication (Preview)
-│   ├── medication-history.html   # Medication history (Preview)
+│   ├── medication-tracker.html   # Medication tracker (browser-local)
+│   ├── add-medication.html       # Add medication, full-page form (browser-local)
+│   ├── medication-history.html   # Medication history (browser-local)
 │   ├── login.html / signup.html / forgot-password.html / reset-password.html
 │   └── about.html
 │
@@ -169,6 +171,30 @@ Rename these and something breaks:
 - **Auth forms:** `[data-auth-form]`, `[data-auth-note]`, `[data-auth-success]`, `[data-reset-expired]`, `[data-toggle-password]`, `[data-google-login]`, and the `login-*` / `signup-*` / `reset-email` / `update-*` ids. Submit buttons and the Google label must contain plain text only; `auth.js` overwrites it while loading.
 - **Chat:** `.chat-body`, `.chat-inputbar textarea`, `.chat-inputbar button.send`, `#attach-toggle`, `.attach-panel input[type=file]`, `.chat-cta a`, `#selected-image-preview` (created by `chat.js`).
 - **Summary:** the `#summary*` ids, `#printableSummary`, `#downloadTxtBtn`, `#downloadPdfBtn`, `#copySummaryBtn`, `.copy-confirm`.
+
+### Medication tracker storage
+The medication tracker is **frontend-only**. Its data never leaves the browser: there is no API, database or
+Supabase table behind it.
+
+- **Where:** `localStorage`, in per-profile keys `skinsight_meds_v1:<profile>` and `skinsight_medlog_v1:<profile>`.
+  `<profile>` is `guest` when nobody is signed in, or `u_<Supabase user id>` for an account. A profile only reads its own
+  keys, so signing out or switching accounts never shows another profile's medications. Guest data is **not** migrated
+  into an account.
+- **Which account is active:** read from the Supabase session token that supabase-js stores in `localStorage`
+  (`sb-*-auth-token`), parsed the same way `js/auth.js` parses it. The token is the source of truth, so a stale
+  `skinsight_user` cache without a session never unlocks an account's data. Nothing in `auth.js` was changed.
+- **Limits (also disclosed in the UI):** this is isolation, not security. The data is plain text under predictable keys;
+  anyone who can use the browser profile can read it, and it stays on the device after sign-out until deleted. It is
+  not synced across devices or browsers, not backed up, and is lost when browser data is cleared or in private
+  browsing. On GitHub Pages the origin (`<user>.github.io`) is shared by every project site under the same account.
+- **Deleting:** the notice on each medication page has "Delete medication data on this device" (this profile, or every
+  profile plus data from earlier prototype versions).
+- **Storage unavailable or full:** the store keeps working in memory for the life of the page and the UI says plainly
+  that nothing is being saved.
+- **What it does not do:** send notifications or reminders, verify that a dose was taken (doses the user did not mark
+  are shown as "Not logged", not "missed"), or give medical advice.
+- **Going further** (accounts that sync across devices) needs a backend: tables for medications and dose logs with
+  row-level security on the user id, endpoints, and a migration path for existing browser-local data.
 
 ### Third-party scripts
 `supabase-js` and `jsPDF` are loaded from CDNs at **pinned versions with Subresource Integrity** hashes, so a CDN

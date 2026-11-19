@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
 <link rel="stylesheet" href="css/features.css">
+<link rel="stylesheet" href="css/medication-tracker.css">
 <script src="js/ui.js"></script>
 <script>
   (function () {
@@ -50,54 +51,39 @@
 </div>
 
 <section class="feature-section">
-  <div class="wrap wrap-mid">
-    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Preview · Sample data.</strong> These medications are examples. You can try marking doses complete, but nothing is saved and reloading resets the page.</p></div>
+  <div class="wrap wrap-mid" id="medApp">
+    <noscript><div class="med-alert is-warning"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert-circle"/></svg><p><strong>JavaScript is required.</strong> The medication tracker runs in your browser and stores its data on this device, so it can't work without JavaScript.</p></div></noscript>
+    <div id="medNotice"></div>
+    <div class="med-alerts" id="medAlerts"></div>
 
     <div class="card card-static med-progress">
-      <div class="ring" id="medRing" style="--pct:50" role="img" aria-label="1 of 2 doses completed today"><span id="medRingText">1/2</span></div>
+      <div class="ring" id="medRing" role="img" aria-label="No scheduled doses today"><span id="medRingText">&ndash;</span></div>
       <div class="med-progress-body">
         <h2>Today's progress</h2>
-        <p id="medProgressText"><strong>1 of 2</strong> doses completed</p>
-        <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="medBar" style="width:50%;"></div></div>
+        <p id="medProgressText">No scheduled doses today</p>
+        <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="medBar"></div></div>
+        <p class="med-hint" id="medProgressNote" hidden>As-needed medications aren't included in this progress.</p>
       </div>
     </div>
 
     <div class="section-bar">
       <h2>Today's schedule</h2>
-      <a href="add-medication.html" class="btn btn-primary btn-sm"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> Add Medication</a>
+      <a href="add-medication.html" id="medAddLink" class="btn btn-primary btn-sm"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> Add medication</a>
     </div>
+    <div id="medScheduleEmpty" hidden></div>
+    <ul class="med-list" id="medList" aria-label="Today's scheduled doses" hidden></ul>
 
-    <ul class="med-list" id="medList" aria-label="Today's schedule (sample)">
-      <li class="med-item is-done" data-status="done">
-        <span class="med-time">9:00 AM</span>
-        <div class="med-card">
-          <div class="med-info">
-            <h3>Hydrocortisone Cream 1%</h3>
-            <p>Apply thin layer to forearm patch</p>
-          </div>
-          <div class="med-actions">
-            <span class="badge badge-done med-status"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-circle-check"/></svg> Completed</span>
-            <button type="button" class="med-undo">Undo</button>
-            <button type="button" class="btn btn-secondary btn-sm med-complete" hidden>Mark as Completed</button>
-          </div>
-        </div>
-      </li>
-      <li class="med-item" data-status="pending">
-        <span class="med-time">8:00 PM</span>
-        <div class="med-card">
-          <div class="med-info">
-            <h3>Tretinoin Cream 0.025%</h3>
-            <p>Apply a pea-sized amount to affected area</p>
-          </div>
-          <div class="med-actions">
-            <span class="badge badge-done med-status" hidden><svg class="i" aria-hidden="true" focusable="false"><use href="#i-circle-check"/></svg> Completed</span>
-            <button type="button" class="med-undo" hidden>Undo</button>
-            <button type="button" class="btn btn-secondary btn-sm med-complete">Mark as Completed</button>
-          </div>
-        </div>
-      </li>
-    </ul>
-    <p class="visually-hidden" id="medLive" role="status" aria-live="polite"></p>
+    <section class="med-section" id="medAsNeededSection" aria-labelledby="medAsNeededTitle" hidden>
+      <div class="section-bar"><h2 id="medAsNeededTitle">As needed</h2></div>
+      <p class="med-section-note">Not scheduled and not counted in your progress. Log a dose when you take one. SKINSIGHT records what you tell it and can't verify it.</p>
+      <ul class="med-list" id="medAsNeededList"></ul>
+    </section>
+
+    <section class="med-section" id="medMineSection" aria-labelledby="medMineTitle" hidden>
+      <div class="section-bar"><h2 id="medMineTitle">My medications</h2></div>
+      <p class="med-section-note">Removing a medication also deletes its dose history on this device. You can undo right after.</p>
+      <ul class="med-mine" id="medMine"></ul>
+    </section>
 
     <div class="notice strong">
       <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
@@ -105,8 +91,9 @@
     </div>
 
     <div class="med-footer">
-      <a href="medication-history.html" class="btn btn-ghost">View Medication History</a>
+      <a href="medication-history.html" class="btn btn-ghost">View medication history</a>
     </div>
+    <p class="visually-hidden" id="medLive" role="status" aria-live="polite"></p>
   </div>
 </section>
 
@@ -118,6 +105,7 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
+<script src="js/medication-store.js" defer></script>
 <script src="js/meds-ui.js" defer></script>
 </body>
 </html>

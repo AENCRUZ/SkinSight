@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
 <link rel="stylesheet" href="css/features.css">
+<link rel="stylesheet" href="css/medication-tracker.css">
 <script src="js/ui.js"></script>
 <script>
   (function () {
@@ -45,61 +46,47 @@
   <div class="wrap">
     <span class="eyebrow">Medication Tracker</span>
     <h1>Medication History</h1>
-    <p>A record of completed and missed doses over time.</p>
+    <p>A record of the doses you marked as completed, and the scheduled doses you didn't, over time.</p>
   </div>
 </div>
 
 <section class="feature-section">
-  <div class="wrap wrap-mid">
-    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Preview · Sample data.</strong> These doses are examples. Your real history will appear here once medication tracking is available.</p></div>
+  <div class="wrap wrap-mid" id="medApp">
+    <noscript><div class="med-alert is-warning"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert-circle"/></svg><p><strong>JavaScript is required.</strong> The medication tracker runs in your browser and stores its data on this device, so it can't work without JavaScript.</p></div></noscript>
+    <div id="medNotice"></div>
+    <div class="med-alerts" id="medAlerts"></div>
 
     <div class="hist-stats">
-      <div class="card card-static hist-stat is-good"><span class="num" id="statDone">4</span><span class="label">Completed (sample)</span></div>
-      <div class="card card-static hist-stat is-bad"><span class="num" id="statMissed">1</span><span class="label">Missed (sample)</span></div>
-      <div class="card card-static hist-stat"><span class="num" id="statRate">80%</span><span class="label">Completion rate (sample)</span></div>
+      <div class="card card-static hist-stat is-good"><span class="num" id="statDone">0</span><span class="label">Completed</span></div>
+      <div class="card card-static hist-stat"><span class="num" id="statNotLogged">0</span><span class="label">Not logged</span></div>
+      <div class="card card-static hist-stat"><span class="num" id="statRate">&ndash;</span><span class="label">Completion rate (scheduled doses)</span></div>
     </div>
 
     <div class="tabs" role="tablist" aria-label="Filter medication history">
       <button type="button" class="tab" role="tab" id="tab-all" data-filter="all" aria-selected="true" aria-controls="histPanel">All</button>
-      <button type="button" class="tab" role="tab" id="tab-done" data-filter="done" aria-selected="false" tabindex="-1" aria-controls="histPanel">Completed</button>
-      <button type="button" class="tab" role="tab" id="tab-missed" data-filter="missed" aria-selected="false" tabindex="-1" aria-controls="histPanel">Missed</button>
+      <button type="button" class="tab" role="tab" id="tab-completed" data-filter="completed" aria-selected="false" tabindex="-1" aria-controls="histPanel">Completed</button>
+      <button type="button" class="tab" role="tab" id="tab-not-logged" data-filter="not_logged" aria-selected="false" tabindex="-1" aria-controls="histPanel">Not logged</button>
+      <button type="button" class="tab" role="tab" id="tab-as-needed" data-filter="as_needed" aria-selected="false" tabindex="-1" aria-controls="histPanel">As needed</button>
     </div>
 
-    <div class="card card-static table-card" id="histPanel" role="tabpanel" aria-label="Medication history (sample data)">
-      <table class="hist-table">
+    <div class="card card-static table-card" id="histPanel" role="tabpanel" aria-label="Dose history">
+      <table class="hist-table" id="histTable">
+        <caption class="visually-hidden">Dose history, newest first</caption>
         <thead>
           <tr><th scope="col">Medication</th><th scope="col">Date</th><th scope="col">Status</th></tr>
         </thead>
-        <tbody>
-          <tr data-status="done">
-            <td data-label="Medication">Hydrocortisone Cream 1%</td>
-            <td data-label="Date">Sept 22, 2026 · 9:00 AM</td>
-            <td data-label="Status"><span class="badge badge-done">Completed</span></td>
-          </tr>
-          <tr data-status="done">
-            <td data-label="Medication">Tretinoin Cream 0.025%</td>
-            <td data-label="Date">Sept 21, 2026 · 8:00 PM</td>
-            <td data-label="Status"><span class="badge badge-done">Completed</span></td>
-          </tr>
-          <tr data-status="missed">
-            <td data-label="Medication">Hydrocortisone Cream 1%</td>
-            <td data-label="Date">Sept 21, 2026 · 9:00 AM</td>
-            <td data-label="Status"><span class="badge badge-closed">Missed</span></td>
-          </tr>
-          <tr data-status="done">
-            <td data-label="Medication">Tretinoin Cream 0.025%</td>
-            <td data-label="Date">Sept 20, 2026 · 8:00 PM</td>
-            <td data-label="Status"><span class="badge badge-done">Completed</span></td>
-          </tr>
-          <tr data-status="done">
-            <td data-label="Medication">Hydrocortisone Cream 1%</td>
-            <td data-label="Date">Sept 20, 2026 · 9:00 AM</td>
-            <td data-label="Status"><span class="badge badge-done">Completed</span></td>
-          </tr>
-        </tbody>
+        <tbody id="histBody"></tbody>
       </table>
-      <p class="hist-empty" id="histEmpty" hidden>No doses match this filter.</p>
+      <p class="hist-empty" id="histEmpty" hidden></p>
+      <div class="hist-more" id="histMore" hidden><button type="button" class="btn btn-secondary btn-sm" id="histMoreBtn">Show more</button></div>
     </div>
+
+    <p class="hist-note">&ldquo;Not logged&rdquo; means you didn't mark that scheduled dose as completed. SKINSIGHT can't tell whether it was taken, so this isn't a record of missed doses. As-needed doses appear when you log them and aren't part of the completion rate.</p>
+
+    <div class="med-footer">
+      <a href="medication-tracker.html" class="btn btn-ghost">Back to the tracker</a>
+    </div>
+    <p class="visually-hidden" id="medLive" role="status" aria-live="polite"></p>
   </div>
 </section>
 
@@ -111,6 +98,7 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
+<script src="js/medication-store.js" defer></script>
 <script src="js/meds-ui.js" defer></script>
 </body>
 </html>
