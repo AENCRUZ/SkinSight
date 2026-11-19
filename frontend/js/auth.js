@@ -10,6 +10,7 @@
     initPasswordToggles();
     initAuthForms();
     initGoogleOAuth();
+    carryNextToSwitchLinks();
     initAuthNavbar();
     handleOAuthRedirect();
     checkPasswordResetPage();
@@ -163,7 +164,7 @@
         }
         showNotice(form, "success", "Account created successfully! Redirecting...");
         setTimeout(function () {
-          window.location.href = "index.html";
+          window.location.href = getNextPage();
         }, 1200);
       } else {
         showNotice(
@@ -172,7 +173,8 @@
           "Account registered! If confirmation is enabled in Supabase, please check your email inbox to verify."
         );
         setTimeout(function () {
-          window.location.href = "login.html";
+          var carried = getNextFromUrl();
+          window.location.href = "login.html" + (carried ? "?next=" + encodeURIComponent(carried) : "");
         }, 3000);
       }
     } catch (err) {
@@ -211,7 +213,7 @@
 
       showNotice(form, "success", "Welcome back! Redirecting...");
       setTimeout(function () {
-        window.location.href = "index.html";
+        window.location.href = getNextPage();
       }, 1000);
     } catch (err) {
       showNotice(form, "danger", err.message || "An unexpected error occurred.");
@@ -223,6 +225,61 @@
     var path = window.location.pathname;
     var basePath = path.substring(0, path.lastIndexOf("/") + 1);
     return window.location.origin + basePath + page;
+  }
+
+  // ---- Post-login destination (?next=) ----
+  // Only exact file names from this allowlist are honoured. Login, signup, reset-password and forgot-password are
+  // deliberately absent so ?next= can never create a redirect loop; anything else (other sites, paths, unknown
+  // pages, empty values) falls back to index.html. Keep in sync with NEXT_PAGES in login-gate.js.
+  var NEXT_PAGES = [
+    "index.html", "ai-assistant-intro.html", "ai-chat.html", "clinic-finder.html", "clinic-details.html",
+    "no-clinic-available.html", "consultation-summary.html", "about.html",
+    "medication-tracker.html", "medication-history.html", "add-medication.html"
+  ];
+  var NEXT_STORAGE_KEY = "skinsight_next";
+  var NEXT_TTL_MS = 10 * 60 * 1000;
+
+  function sanitizeNext(page) {
+    return typeof page === "string" && NEXT_PAGES.indexOf(page) !== -1 ? page : null;
+  }
+
+  function getNextFromUrl() {
+    try { return sanitizeNext(new URLSearchParams(window.location.search).get("next")); } catch (e) { return null; }
+  }
+
+  function getNextPage() {
+    return getNextFromUrl() || "index.html";
+  }
+
+  // Google sign-in leaves the site and comes back to index.html (the redirect URL registered in Supabase is not
+  // changed), so the destination is remembered for this tab and used when the session is established.
+  function rememberNextForOAuth() {
+    try {
+      var next = getNextFromUrl();
+      if (next) sessionStorage.setItem(NEXT_STORAGE_KEY, JSON.stringify({ page: next, t: Date.now() }));
+      else sessionStorage.removeItem(NEXT_STORAGE_KEY);
+    } catch (e) { }
+  }
+
+  function consumeRememberedNext() {
+    var page = null;
+    try {
+      var raw = sessionStorage.getItem(NEXT_STORAGE_KEY);
+      sessionStorage.removeItem(NEXT_STORAGE_KEY);
+      var data = raw ? JSON.parse(raw) : null;
+      if (data && typeof data.t === "number" && Date.now() - data.t < NEXT_TTL_MS) page = sanitizeNext(data.page);
+    } catch (e) { }
+    return page || "index.html";
+  }
+
+  // Keep ?next= when switching between the login and signup pages
+  function carryNextToSwitchLinks() {
+    var next = getNextFromUrl();
+    if (!next) return;
+    var links = document.querySelectorAll('.auth-switch a[href="login.html"], .auth-switch a[href="signup.html"]');
+    Array.prototype.forEach.call(links, function (a) {
+      a.setAttribute("href", a.getAttribute("href") + "?next=" + encodeURIComponent(next));
+    });
   }
 
   // Handle Forgot Password
@@ -336,6 +393,7 @@
         btn.disabled = true;
         btn.querySelector(".google-btn-text").textContent = "Redirecting...";
 
+        rememberNextForOAuth();
         try {
           var response = await window.supabaseClient.auth.signInWithOAuth({
             provider: "google",
@@ -387,7 +445,7 @@
           saveCachedUser(getUserData(user));
         }
         window.history.replaceState(null, "", window.location.pathname);
-        window.location.href = "index.html";
+        window.location.href = consumeRememberedNext();
       }
     } catch (err) {
       console.warn("OAuth redirect handling error:", err);

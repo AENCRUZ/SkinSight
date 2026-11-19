@@ -4,44 +4,71 @@
 (function () {
   "use strict";
 
-  var AUTH_KEY = "skinsight_logged_in";
+  // ---- Authentication state --------------------------------------------------------------------------
+  // The gate is a UX convenience; the backend still verifies the token on every API call.
+  // Source of truth = the Supabase session stored under THIS project's key ("sb-<ref>-auth-token", the ref is
+  // taken from SUPABASE_URL in js/supabase-config.js). Fail closed: if the key cannot be determined, nobody is
+  // logged in. No other "sb-*" key is ever read, and the "skinsight_user" display cache (which can be stale)
+  // is never treated as proof of authentication.
+  var USER_CACHE_KEY = "skinsight_user";
+  var HOME_PAGE = "index.html";
 
-  // Helper to extract cached user data
-  function getCurrentUser() {
+  // Pages that may be used as a post-login destination (exact file names). Login, signup, reset-password and
+  // forgot-password are deliberately absent so ?next= can never cause a redirect loop. Keep in sync with auth.js.
+  var NEXT_PAGES = [
+    "index.html", "ai-assistant-intro.html", "ai-chat.html", "clinic-finder.html", "clinic-details.html",
+    "no-clinic-available.html", "consultation-summary.html", "about.html",
+    "medication-tracker.html", "medication-history.html", "add-medication.html"
+  ];
+  function safeNext(page) {
+    return typeof page === "string" && NEXT_PAGES.indexOf(page) !== -1 ? page : null;
+  }
+
+  function projectTokenKey() {
     try {
-      var raw = localStorage.getItem("skinsight_user");
-      if (raw) return JSON.parse(raw);
-
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (k && k.indexOf("sb-") === 0 && k.indexOf("-auth-token") !== -1) {
-          var sbRaw = localStorage.getItem(k);
-          if (sbRaw) {
-            var sb = JSON.parse(sbRaw);
-            var u = sb.user || (sb.currentSession && sb.currentSession.user);
-            if (u) {
-              var meta = u.user_metadata || {};
-              return {
-                id: u.id,
-                email: u.email || "",
-                displayName: meta.display_name || meta.full_name || meta.name || (u.email ? u.email.split("@")[0] : "User")
-              };
-            }
-          }
-        }
+      if (typeof SUPABASE_URL === "string" && SUPABASE_URL) {
+        return "sb-" + new URL(SUPABASE_URL).hostname.split(".")[0] + "-auth-token";
       }
-    } catch (e) { }
+    } catch (e) { /* invalid SUPABASE_URL: no key can be derived, so nobody is logged in */ }
     return null;
   }
 
-  // Check if user is currently authenticated
-  function isLoggedIn() {
-    if (getCurrentUser()) return true;
+  // Synchronous hint from this project's stored session (no network). Used for instant decisions such as link
+  // interception; page-level gates also confirm with verifySession().
+  function getCurrentUser() {
     try {
-      if (localStorage.getItem(AUTH_KEY) === "true") return true;
-    } catch (e) { }
-    if (document.documentElement.classList.contains("auth-user-signed-in")) return true;
-    return false;
+      var key = projectTokenKey();
+      if (!key) return null;
+      var raw = localStorage.getItem(key);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      var u = data && (data.user || (data.currentSession && data.currentSession.user));
+      if (!u || !u.id) return null;
+      var meta = u.user_metadata || {};
+      return {
+        id: u.id,
+        email: u.email || "",
+        displayName: meta.display_name || meta.full_name || meta.name || (u.email ? u.email.split("@")[0] : "User")
+      };
+    } catch (e) { return null; }
+  }
+
+  function isLoggedIn() {
+    return !!getCurrentUser();
+  }
+
+  // Authoritative check through the Supabase client (refreshes an expired access token when possible).
+  // done(false) only when there is definitely no session; a transient error does not lock out a user who still
+  // has a stored session.
+  function verifySession(done) {
+    var client = window.supabaseClient;
+    if (!client || !client.auth) { done(false); return; }
+    client.auth.getSession().then(function (res) {
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) done(true);
+      else if (res && res.error && isLoggedIn()) done(true);
+      else done(false);
+    }).catch(function () { done(isLoggedIn()); });
   }
 
   // Get tomorrow's date formatted as YYYY-MM-DD
@@ -57,8 +84,12 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    var isClinicDetails = window.location.pathname.indexOf("clinic-details.html") !== -1;
-    var isConsultationSummary = window.location.pathname.indexOf("consultation-summary.html") !== -1;
+    var currentFile = window.location.pathname.split("/").pop();
+    var isClinicDetails = currentFile === "clinic-details.html";
+    var isConsultationSummary = currentFile === "consultation-summary.html";
+    var isAiPage = currentFile === "ai-assistant-intro.html" || currentFile === "ai-chat.html";
+    // On an AI page the gate blocks the whole page, so dismissing it goes back home.
+    var redirectHomeOnClose = isAiPage;
 
     // Build Login Gate Modal
     var gateModal = document.createElement("div");
@@ -70,7 +101,7 @@
     gateModal.innerHTML =
       '<div class="login-gate-panel">' +
       '<button type="button" class="modal-close-btn" data-gate-close aria-label="Close modal">&times;</button>' +
-      '<div style="width:52px; height:52px; margin:0 auto 16px; border-radius:50%; background:var(--pale-cyan); color:var(--navy); display:flex; align-items:center; justify-content:center;">' +
+      '<div class="login-gate-icon" aria-hidden="true">' +
       '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
       '</div>' +
       '<h3 id="login-gate-title">Log in to view summary</h3>' +
@@ -81,6 +112,28 @@
       '</div>';
     document.body.appendChild(gateModal);
 
+    // Focus management: the page behind the modal is made inert, Tab is trapped inside, and focus returns to the
+    // element that opened it.
+    var lastFocus = null;
+    var inertedNodes = [];
+
+    function setBackgroundInert(on) {
+      if (on) {
+        Array.prototype.forEach.call(document.body.children, function (el) {
+          if (el === gateModal || el.tagName === "SCRIPT" || el.hasAttribute("inert")) return;
+          el.setAttribute("inert", "");
+          inertedNodes.push(el);
+        });
+      } else {
+        inertedNodes.forEach(function (el) { el.removeAttribute("inert"); });
+        inertedNodes = [];
+      }
+    }
+
+    function gateFocusables() {
+      return Array.prototype.slice.call(gateModal.querySelectorAll("a[href], button:not([disabled])"));
+    }
+
     function openLoginGate(title, description, nextPage) {
       var titleEl = document.getElementById("login-gate-title");
       var descEl = document.getElementById("login-gate-desc");
@@ -90,15 +143,29 @@
       if (title && titleEl) titleEl.textContent = title;
       if (description && descEl) descEl.textContent = description;
 
-      var targetPage = nextPage || (window.location.pathname.split("/").pop() || "clinic-details.html");
-      if (loginLink) loginLink.href = "login.html?next=" + encodeURIComponent(targetPage);
-      if (signupLink) signupLink.href = "signup.html?next=" + encodeURIComponent(targetPage);
+      var target = safeNext(nextPage || currentFile);
+      var query = target ? "?next=" + encodeURIComponent(target) : "";
+      if (loginLink) loginLink.href = "login.html" + query;
+      if (signupLink) signupLink.href = "signup.html" + query;
 
-      gateModal.classList.add("show");
+      if (!gateModal.classList.contains("show")) {
+        lastFocus = document.activeElement;
+        setBackgroundInert(true);
+        gateModal.classList.add("show");
+        if (loginLink) loginLink.focus();
+      }
     }
 
     function closeLoginGate() {
+      if (!gateModal.classList.contains("show")) return;
       gateModal.classList.remove("show");
+      setBackgroundInert(false);
+      if (redirectHomeOnClose) {
+        window.location.replace(HOME_PAGE);
+        return;
+      }
+      if (lastFocus && document.contains(lastFocus) && typeof lastFocus.focus === "function") lastFocus.focus();
+      lastFocus = null;
     }
 
     gateModal.addEventListener("click", function (e) {
@@ -325,43 +392,61 @@
       }
     }
 
-    if (isConsultationSummary) {
-      if (!isLoggedIn()) {
-        openLoginGate(
-          "Log in to view your summary",
-          "Please log in or create a free account to view and save your complete consultation summary.",
-          "consultation-summary.html"
-        );
+    // ---- Page protection (AI Skin Assistant + consultation summary) ----
+    var AI_GATE_TITLE = "Log in to use the AI Skin Assistant";
+    var AI_GATE_DESC = "Please log in or create a free account to chat with the AI Skin Assistant.";
+    var SUMMARY_GATE_TITLE = "Log in to view your summary";
+    var SUMMARY_GATE_DESC = "Please log in or create a free account to view and save your complete consultation summary.";
+
+    function enforcePage() {
+      var open = null;
+      if (isAiPage) open = function () { openLoginGate(AI_GATE_TITLE, AI_GATE_DESC, currentFile); };
+      else if (isConsultationSummary) open = function () { openLoginGate(SUMMARY_GATE_TITLE, SUMMARY_GATE_DESC, "consultation-summary.html"); };
+      if (!open) return;
+      if (!isLoggedIn()) { open(); return; }          // no stored session for this project: gate immediately
+      verifySession(function (ok) { if (!ok) open(); }); // stored session: confirm it is still valid
+    }
+
+    // 1) Clicking any link to the AI pages while logged out (header, footer, buttons, cards: delegated)
+    document.addEventListener("click", function (e) {
+      if (isLoggedIn()) return;
+      var a = e.target.closest && e.target.closest("a[href]");
+      if (!a || a.origin !== window.location.origin) return;
+      var file = a.pathname.split("/").pop();
+      if (file === "ai-assistant-intro.html" || file === "ai-chat.html") {
+        e.preventDefault();
+        e.stopPropagation();
+        openLoginGate(AI_GATE_TITLE, AI_GATE_DESC, file);
       }
+    }, true);
 
-      window.addEventListener("pageshow", function () {
-        if (!isLoggedIn()) {
-          openLoginGate(
-            "Log in to view your summary",
-            "Please log in or create a free account to view and save your complete consultation summary.",
-            "consultation-summary.html"
-          );
-        }
-      });
-
-      window.addEventListener("storage", function (e) {
-        if (e.key === "skinsight_user" && !e.newValue) {
-          if (!isLoggedIn()) {
-            openLoginGate(
-              "Log in to view your summary",
-              "Please log in or create a free account to view and save your complete consultation summary.",
-              "consultation-summary.html"
-            );
-          }
-        }
+    // 2) Direct URL, Back/Forward (bfcache), another tab signing out, session ending
+    enforcePage();
+    window.addEventListener("pageshow", enforcePage);
+    window.addEventListener("storage", function (e) {
+      if (e.key === null || e.key === USER_CACHE_KEY || e.key === projectTokenKey()) enforcePage();
+    });
+    if (window.supabaseClient && window.supabaseClient.auth) {
+      window.supabaseClient.auth.onAuthStateChange(function (event) {
+        // deferred: never call back into supabase-js from inside its own callback
+        if (event === "SIGNED_OUT") setTimeout(enforcePage, 0);
       });
     }
 
-    // Global escape key handler to close active modal
+    // Keyboard: Escape closes the open modal; Tab stays inside the login gate while it is open
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
         closeLoginGate();
         closeAppointmentModal();
+        return;
+      }
+      if (e.key === "Tab" && gateModal.classList.contains("show")) {
+        var items = gateFocusables();
+        if (!items.length) return;
+        var first = items[0], last = items[items.length - 1];
+        if (!gateModal.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     });
   });

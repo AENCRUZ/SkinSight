@@ -692,6 +692,18 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   }
 }
 
+.login-gate-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--pale-cyan);
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .login-gate-panel h3 {
   margin-bottom: 8px;
   color: var(--navy);
