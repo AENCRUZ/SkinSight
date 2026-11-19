@@ -1,0 +1,170 @@
+/* ==========================================================================
+   SKINSIGHT — Feature pages
+   Loads after style.css on: clinic-finder, clinic-details, no-clinic-available,
+   medication-tracker, add-medication, medication-history, about.
+
+   Sections
+     1. Preview / sample-data components
+     2. Page scaffolding
+     3. Clinic finder
+     4. Clinic details (+ summary sharing)
+     5. Self-care page
+     6. Shared form helpers (also used by the medication form)
+     7. About
+     8. Responsive
+   Medication tracker / add / history styles live in css/medication-tracker.css.
+   ========================================================================== */
+
+/* ---------- 1. Preview / sample-data components ---------- */
+.preview-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: 12px 16px;
+  border: 1px solid #EBD08F;
+  border-radius: var(--radius-md);
+  background: var(--amber-soft);
+  color: #5A3B00;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.preview-banner .i { width: 20px; height: 20px; margin-top: 1px; color: #8A5A00; }
+.preview-banner p { margin: 0; color: inherit; }
+.preview-banner strong { font-family: var(--font-display); }
+
+.badge-preview { background: var(--amber-soft); color: var(--warning); border: 1px solid #EBD08F; }
+.badge-done { background: var(--success-bg); color: var(--success); }
+
+/* Large static cards shouldn't lift on hover like the small clickable ones */
+.card-static, .card-static:hover { transform: none; }
+.card-static:hover { box-shadow: var(--shadow-sm); border-color: var(--border); }
+
+/* ---------- 2. Page scaffolding ---------- */
+.feature-section { padding-top: var(--space-6); }
+.wrap-narrow { max-width: 760px; }
+.wrap-mid { max-width: 860px; }
+.wrap-form { max-width: 640px; }
+.page-header .eyebrow { margin-bottom: var(--space-2); }
+.page-header h1 { margin-bottom: var(--space-2); }
+.section-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.section-bar h2 { margin: 0; font-size: 1.25rem; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: var(--space-4); font-weight: 600; font-size: 0.92rem; }
+.back-link .i { width: 16px; height: 16px; }
+
+/* ---------- 3. Clinic finder ---------- */
+.finder-panel { margin-bottom: var(--space-5); padding: var(--space-5); }
+.finder-fields { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.finder-fields:disabled { opacity: 0.72; }
+.finder-row, .finder-filters { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.finder-search { position: relative; flex: 1; min-width: 220px; }
+.finder-search .i { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; margin-top: -9px; color: var(--ink-faint); pointer-events: none; }
+.finder-search input { padding-left: 42px; min-height: 48px; }
+.finder-filters .select-wrap { flex: 0 1 auto; }
+.finder-filters select { width: auto; min-height: 44px; }
+
+.finder-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-5); align-items: start; }
+.results-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.results-head h2 { margin: 0; font-size: 1.1rem; }
+
+.clinic-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+  margin-bottom: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--dur) ease, border-color var(--dur) ease;
+}
+.clinic-card:hover { box-shadow: var(--shadow); border-color: var(--light-cyan); }
+.clinic-card-icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--teal-soft); color: #0A6F7A; }
+.clinic-card.is-closed .clinic-card-icon { background: var(--surface-warm); color: var(--ink-soft); }
+.clinic-card-icon .i { width: 24px; height: 24px; }
+.clinic-card h3 { margin-bottom: 2px; font-size: 1.05rem; }
+.clinic-meta { margin: 0 0 var(--space-2); font-size: var(--text-sm); }
+.clinic-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.clinic-card-actions { display: flex; flex-direction: column; gap: var(--space-2); align-items: stretch; }
+
+.finder-map { margin: 0; padding: var(--space-3); position: sticky; top: calc(var(--navbar-h) + 16px); }
+.finder-map img { width: 100%; height: auto; border-radius: var(--radius-md); }
+.finder-map figcaption { padding: var(--space-3) var(--space-2) var(--space-1); font-size: var(--text-sm); color: var(--ink-soft); }
+.finder-map figcaption strong { display: block; color: var(--navy); font-family: var(--font-display); }
+
+/* ---------- 4. Clinic details ---------- */
+.clinic-hero { margin-bottom: var(--space-4); }
+.clinic-hero-top { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--space-3); }
+.clinic-hero h1 { font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem); margin-bottom: var(--space-4); }
+.info-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.info-list li { display: flex; align-items: flex-start; gap: var(--space-3); color: var(--ink); }
+.info-list .i { width: 20px; height: 20px; margin-top: 2px; color: var(--teal); }
+.info-list strong { color: var(--navy); }
+
+.card-title { font-size: 1.15rem; margin-bottom: var(--space-4); }
+.derm-list { display: grid; gap: var(--space-3); }
+.derm-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); }
+.derm-avatar { width: 44px; height: 44px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--navy); color: var(--white); font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; }
+.derm-row strong { color: var(--navy); font-family: var(--font-display); }
+.derm-row p { margin: 0; font-size: var(--text-sm); }
+.derm-row .badge { margin-left: auto; flex-shrink: 0; }
+
+.send-card { margin-bottom: var(--space-5); }
+.send-card .intro { margin-bottom: var(--space-4); }
+.send-option-title { font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--navy); margin: 0 0 6px; }
+.send-option .btn { padding-inline: 12px; white-space: nowrap; }
+.sample-note { display: flex; gap: 8px; align-items: flex-start; margin: var(--space-4) 0 0; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--amber-soft); color: #5A3B00; font-size: var(--text-sm); }
+.sample-note .i { width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0; }
+
+/* The simulated-appointment modal (built by login-gate.js): amber "preview" badge */
+.appt-modal-header .appt-badge { background: var(--amber-soft); color: var(--warning); border: 1px solid #EBD08F; }
+
+/* ---------- 5. Self-care page ---------- */
+.selfcare-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-6); }
+.selfcare-grid h3 { font-size: 1.05rem; }
+.selfcare-grid p { margin: 0; font-size: 0.95rem; }
+.selfcare-note { margin-bottom: 28px; max-width: 720px; }
+.selfcare-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.coming-soon { display: inline-flex; align-items: center; gap: 8px; }
+.coming-soon .badge { font-size: 0.7rem; padding: 2px 8px; }
+
+/* ---------- 6. Shared form helpers ---------- */
+[aria-invalid="true"] { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.14); }
+.field-error { margin: 6px 0 0; font-size: var(--text-sm); font-weight: 600; color: var(--danger); display: flex; align-items: center; gap: 6px; }
+.field-error[hidden] { display: none; }
+.form-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-5); }
+.form-actions .btn { flex: 1 1 160px; }
+
+/* ---------- 7. About ---------- */
+.about-hero .eyebrow { justify-content: center; }
+.about-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
+.about-card { display: flex; gap: var(--space-4); align-items: flex-start; padding: var(--space-5); }
+.about-card .card-icon { margin: 0; flex-shrink: 0; }
+.about-card h3 { margin-bottom: 4px; }
+.about-card p { margin: 0; }
+.about-safety { padding: var(--space-8) 0; }
+.about-safety-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+.about-safety-icon { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: var(--space-4); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.3); color: var(--light-cyan); }
+.about-safety-icon .i { width: 28px; height: 28px; }
+.about-safety h2 { color: var(--white); }
+.about-safety p { color: var(--pale-cyan); font-size: 1.05rem; }
+
+/* ---------- 8. Responsive ---------- */
+@media (max-width: 1000px) {
+  .finder-layout { grid-template-columns: 1fr; }
+  .finder-map { display: none; }
+  .selfcare-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .clinic-card { grid-template-columns: auto minmax(0, 1fr); }
+  .clinic-card-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+  .clinic-card-actions .btn { flex: 1 1 160px; }
+  .about-grid { grid-template-columns: 1fr; }
+  .derm-row { flex-wrap: wrap; }
+  .derm-row .badge { margin-left: 0; }
+}
+@media (max-width: 600px) {
+  .selfcare-grid { grid-template-columns: 1fr; }
+}

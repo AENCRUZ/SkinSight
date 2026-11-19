@@ -4,10 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SKINSIGHT — Understand Your Skin. Prepare for Better Care.</title>
+<meta name="description" content="SKINSIGHT is an AI-assisted skin health platform that helps you document skin concerns, prepare for dermatology consultations, track skin medications and find dermatologists. It does not diagnose.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#FBF9F5">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/home.css">
+<script src="js/ui.js"></script>
 <script>
   (function () {
     try {
@@ -30,284 +38,223 @@
 </head>
 <body>
 
-<header class="navbar">
-  <div class="wrap">
-    <a href="index.html" class="brand">SKIN<span>SIGHT</span></a>
-    <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="hamburger-label" aria-label="Toggle navigation menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
-    <ul class="nav-links">
-      <li><a href="index.html" class="active">Home</a></li>
-      <li><a href="ai-assistant-intro.html">AI Skin Assistant</a></li>
-      <li><a href="clinic-finder.html">Find a Dermatologist</a></li>
-      <li><a href="medication-tracker.html">Medication Tracker</a></li>
-      <li><a href="about.html">About</a></li>
-      <li class="nav-login-item"><a href="login.html">Log In</a></li>
-    </ul>
-    <div class="nav-auth-actions">
-      <a href="login.html" class="btn btn-ghost btn-sm">Log In</a>
-      <a href="ai-assistant-intro.html" class="btn btn-primary btn-sm">Get Started</a>
-    </div>
-  </div>
-</header>
+<site-header data-nav="home"></site-header>
+<noscript><p class="noscript-note">SKINSIGHT needs JavaScript for navigation and the AI assistant. Please enable it to continue.</p></noscript>
+<main id="main">
 
-<section class="hero">
-  <div class="wrap">
-    <div class="hero-text">
+<!-- Hero -->
+<section class="home-hero">
+  <div class="wrap home-hero-grid">
+    <div class="home-hero-copy">
       <span class="eyebrow">AI-Assisted Skin Health</span>
-      <h1 class="hero-title">
-        <span>Understand your skin.</span>
-       <span class="bold-text">Prepare for better care.</span>
+      <h1 class="home-title">
+        <span class="home-title-soft">Understand your skin.</span>
+        <span>Prepare for better care.</span>
       </h1>
       <p class="lead">AI-assisted tools that help you document skin concerns, prepare for dermatology consultations, manage skin medications, and find dermatologists.</p>
-      <div class="hero-actions">
-        <a href="ai-assistant-intro.html" class="btn btn-primary">Start Skin Assessment</a>
-        <a href="clinic-finder.html" class="btn btn-secondary">Find a Dermatologist</a>
+      <div class="home-hero-actions">
+        <a href="ai-assistant-intro.html" class="btn btn-primary btn-lg">Start Skin Assessment <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+        <a href="clinic-finder.html" class="btn btn-secondary btn-lg">Find a Dermatologist</a>
       </div>
+      <ul class="home-trust">
+        <li><svg class="i" aria-hidden="true"><use href="#i-shield-check"/></svg>Organizes, never diagnoses</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-camera"/></svg>Photo upload is optional</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-file-text"/></svg>Downloadable summary</li>
+      </ul>
     </div>
-    <div class="hero-visual">
-      <div class="hero-art">
-        <div class="hero-art-top">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain preview-icon"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg>
-          <span>What SKINSIGHT Is For</span>
-        </div>
-        <ul class="hero-facts">
-          <li>
-            <span class="num">01</span>
-            <div>
-              <strong>Organize, don't diagnose</strong>
-              <p>Turns what you're noticing into clear, structured information.</p>
-            </div>
-          </li>
-          <li>
-            <span class="num">02</span>
-            <div>
-              <strong>Built around your visit</strong>
-              <p>Every tool leads toward a better dermatology consultation.</p>
-            </div>
-          </li>
-          <li>
-            <span class="num">03</span>
-            <div>
-              <strong>Support, not replacement</strong>
-              <p>Dermatologists diagnose and prescribe — SKINSIGHT prepares you.</p>
-            </div>
-          </li>
-        </ul>
-      </div>
+    <div class="home-hero-art">
+      <img src="img/hero.svg" alt="" width="560" height="520" fetchpriority="high">
     </div>
   </div>
 </section>
 
-<section>
+<!-- Principles -->
+<section class="home-values" aria-labelledby="values-title">
   <div class="wrap">
-    <div class="section-head left" style="max-width:640px;">
+    <h2 id="values-title" class="visually-hidden">What SKINSIGHT is for</h2>
+    <ul class="home-values-list">
+      <li>
+        <span class="home-values-icon"><svg class="i" aria-hidden="true"><use href="#i-file-text"/></svg></span>
+        <div>
+          <strong>Organize, don't diagnose</strong>
+          <p>Turns what you're noticing into clear, structured information.</p>
+        </div>
+      </li>
+      <li>
+        <span class="home-values-icon"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg></span>
+        <div>
+          <strong>Built around your visit</strong>
+          <p>Every tool leads toward a better dermatology consultation.</p>
+        </div>
+      </li>
+      <li>
+        <span class="home-values-icon"><svg class="i" aria-hidden="true"><use href="#i-shield-check"/></svg></span>
+        <div>
+          <strong>Support, not replacement</strong>
+          <p>Dermatologists diagnose and prescribe. SKINSIGHT prepares you.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- Tools -->
+<section class="home-tools-section">
+  <div class="wrap">
+    <div class="section-head left">
       <span class="eyebrow">How SKINSIGHT Helps</span>
       <h2>Four tools, one path to better skin care</h2>
       <p>Everything here is built to support your skin care journey, from first concern to ongoing treatment.</p>
     </div>
-    <div class="grid-2">
-      <div class="card card-row">
-        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-message-square preview-icon"><path d="M12 6V2H8"/><path d="M15 11v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M20 16a2 2 0 0 1-2 2H8.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 4 20.286V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M9 11v2"/></svg></div>
-        <div class="card-body">
-          <h3>AI Skin Assistant</h3>
-          <p>Describe a skin concern and chat with SKINSIGHT to organize information for a dermatology consultation — symptoms, duration, location, and possible triggers, gathered in one place.</p>
-          <a href="ai-assistant-intro.html" style="font-weight:600; font-size:0.9rem; margin-top:auto;">Start a conversation &rarr;</a>
-        </div>
+    <div class="home-tools">
+      <div class="card home-tool">
+        <div class="card-icon"><svg class="i" aria-hidden="true"><use href="#i-message"/></svg></div>
+        <h3>AI Skin Assistant</h3>
+        <p>Describe a skin concern and chat with SKINSIGHT to organize information for a dermatology consultation: symptoms, duration, location and possible triggers, gathered in one place.</p>
+        <a href="ai-assistant-intro.html" class="home-tool-link">Start a conversation <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
       </div>
-      <div class="card card-row">
-        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scan-eye preview-icon"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/><path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0"/></svg></div>
-        <div class="card-body">
-          <h3>Skin Image Assessment</h3>
-          <p>Add a photo of a visible skin concern right in your AI conversation and receive general, non-diagnostic observations you can bring up with a dermatologist.</p>
-          <a href="ai-chat.html" style="font-weight:600; font-size:0.9rem; margin-top:auto;">Continue the conversation &rarr;</a>
-        </div>
+      <div class="card home-tool">
+        <div class="card-icon"><svg class="i" aria-hidden="true"><use href="#i-camera"/></svg></div>
+        <h3>Skin Image Assessment</h3>
+        <p>Add a photo of a visible skin concern right in your AI conversation and receive general, non-diagnostic observations you can bring up with a dermatologist.</p>
+        <a href="ai-chat.html" class="home-tool-link">Continue the conversation <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
       </div>
-      <div class="card card-row">
-        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pinned preview-icon"><path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 01-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0112 0"/><path d="M4.474 15h-.197a1 1 0 00-.969.753l-1.097 4.35a1.5 1.5 0 001.444 1.898L20.344 22a1.5 1.5 0 001.446-1.897l-1.098-4.35a1 1 0 00-.969-.753h-.197"/><circle cx="12" cy="8" r="2"/></svg></div>
-        <div class="card-body">
-          <h3>Find a Dermatologist</h3>
-          <p>Find nearby dermatologists and clinics, review their contact details, and prepare what to say before you reach out.</p>
-          <a href="clinic-finder.html" style="font-weight:600; font-size:0.9rem; margin-top:auto;">Search nearby clinics &rarr;</a>
-        </div>
+      <div class="card home-tool">
+        <div class="card-icon"><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg></div>
+        <h3>Find a Dermatologist</h3>
+        <p>Find nearby dermatologists and clinics, review their contact details, and prepare what to say before you reach out.</p>
+        <a href="clinic-finder.html" class="home-tool-link">Search nearby clinics <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
       </div>
-      <div class="card card-row">
-        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-chart-gantt preview-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 8h7"/><path d="M8 12h6"/><path d="M11 16h5"/></svg></div>
-        <div class="card-body">
-          <h3>Medication Tracker</h3>
-          <p>Track prescribed skin medications, schedules, and completed or missed doses, all in a simple daily view.</p>
-          <a href="medication-tracker.html" style="font-weight:600; font-size:0.9rem; margin-top:auto;">View my medications &rarr;</a>
-        </div>
+      <div class="card home-tool">
+        <div class="card-icon"><svg class="i" aria-hidden="true"><use href="#i-pill"/></svg></div>
+        <h3>Medication Tracker</h3>
+        <p>Track prescribed skin medications, schedules, and completed or missed doses, all in a simple daily view.</p>
+        <a href="medication-tracker.html" class="home-tool-link">View my medications <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
       </div>
     </div>
   </div>
 </section>
 
-<section class="bg-pale">
+<!-- How it works -->
+<section class="bg-pale home-flow-section">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow" style="justify-content:center;">The Process</span>
+      <span class="eyebrow eyebrow-center">The Process</span>
       <h2>How It Works</h2>
       <p>A simple path from noticing a concern to getting professional care.</p>
     </div>
-    <div class="hiw-carousel" id="hiwCarousel" role="group" aria-roledescription="carousel" aria-label="How It Works steps">
-      <div class="hiw-viewport">
-        <button type="button" class="hiw-arrow hiw-prev" aria-label="Previous step">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <div class="hiw-mask">
-          <div class="hiw-track">
-            <div class="hiw-slide is-active">
-              <div class="hiw-slide-inner">
-                <div class="step-num">01</div>
-                <h3>Tell Us Your Concern</h3>
-                <p>Describe symptoms, duration, location, and possible triggers.</p>
-              </div>
-            </div>
-            <div class="hiw-slide">
-              <div class="hiw-slide-inner">
-                <div class="step-num">02</div>
-                <h3>Add a Photo</h3>
-                <p>Optionally upload a photo of the visible skin concern.</p>
-              </div>
-            </div>
-            <div class="hiw-slide">
-              <div class="hiw-slide-inner">
-                <div class="step-num">03</div>
-                <h3>Get Organized</h3>
-                <p>SKINSIGHT organizes the information into a consultation summary.</p>
-              </div>
-            </div>
-            <div class="hiw-slide">
-              <div class="hiw-slide-inner">
-                <div class="step-num">04</div>
-                <h3>Prepare for Care</h3>
-                <p>Find a dermatologist and use the summary during your consultation.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button type="button" class="hiw-arrow hiw-next" aria-label="Next step">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-      </div>
-
-      <div class="hiw-controls">
-        <div class="hiw-dots">
-          <button type="button" class="hiw-dot active" aria-label="Go to step 1"></button>
-          <button type="button" class="hiw-dot" aria-label="Go to step 2"></button>
-          <button type="button" class="hiw-dot" aria-label="Go to step 3"></button>
-          <button type="button" class="hiw-dot" aria-label="Go to step 4"></button>
-        </div>
-      </div>
-    </div>
+    <ol class="home-flow">
+      <li class="home-flow-step">
+        <span class="home-flow-num">01</span>
+        <h3>Tell Us Your Concern</h3>
+        <p>Describe symptoms, duration, location, and possible triggers.</p>
+      </li>
+      <li class="home-flow-step">
+        <span class="home-flow-num">02</span>
+        <h3>Add a Photo</h3>
+        <p>Optionally upload a photo of the visible skin concern.</p>
+      </li>
+      <li class="home-flow-step">
+        <span class="home-flow-num">03</span>
+        <h3>Get Organized</h3>
+        <p>SKINSIGHT organizes the information into a consultation summary.</p>
+      </li>
+      <li class="home-flow-step">
+        <span class="home-flow-num">04</span>
+        <h3>Prepare for Care</h3>
+        <p>Find a dermatologist and use the summary during your consultation.</p>
+      </li>
+    </ol>
   </div>
 </section>
 
-<section>
-  <div class="wrap">
-    <div class="section-head left" style="max-width:640px;">
+<!-- See it in action -->
+<section class="home-demo-section">
+  <div class="wrap home-demo-grid">
+    <div class="home-demo-copy">
       <span class="eyebrow">See It In Action</span>
       <h2>Start a conversation about your skin</h2>
-      <p>A quick look at the AI Skin Assistant chat experience.</p>
+      <p>A quick look at the AI Skin Assistant chat experience. Answer a few friendly questions and SKINSIGHT turns your answers into a summary for your appointment.</p>
+      <ul class="home-checks">
+        <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Plain-language questions, one at a time</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Attach a photo whenever you're ready</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Revisit earlier consultations from your session</li>
+      </ul>
+      <a href="ai-assistant-intro.html" class="btn btn-primary btn-lg">Start AI Skin Assistant <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
     </div>
-    <div class="chat-shell">
-      <div class="chat-topbar">
+
+    <div class="demo-chat" role="group" aria-label="Example conversation with the AI Skin Assistant">
+      <div class="demo-chat-top">
+        <span class="demo-avatar" aria-hidden="true"><svg class="i"><use href="#i-sparkles"/></svg></span>
         <strong>SKINSIGHT AI Skin Assistant</strong>
-        <span class="status-pill">Consultation Support</span>
+        <span class="demo-pill">Example</span>
       </div>
-      <div class="chat-body">
-        <div class="msg msg-ai">Hi! What skin concern would you like to talk about today?</div>
+      <div class="demo-chat-body">
+        <p class="demo-msg demo-ai">Hi! What skin concern would you like to talk about today?</p>
+        <p class="demo-msg demo-user">I have an itchy red patch on my forearm that showed up a few days ago.</p>
+        <p class="demo-msg demo-ai">Thanks for sharing. Has anything new touched that area recently, like a plant, a detergent or a lotion?</p>
       </div>
-      <div class="chat-inputbar">
-        <button class="icon-btn" aria-label="Attach photo" type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-images preview-icon"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16"/><path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/><circle cx="13" cy="7" r="1" fill="currentColor"/><rect x="8" y="2" width="14" height="14" rx="2"/></svg>
-        </button>
-        <input type="text" placeholder="Type your message…" disabled>
-        <button class="icon-btn send" aria-label="Send" type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal preview-icon"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
-        </button>
+      <div class="demo-composer" aria-hidden="true">
+        <span class="demo-composer-icon"><svg class="i"><use href="#i-image"/></svg></span>
+        <span class="demo-composer-text">Describe your concern…</span>
+        <span class="demo-send"><svg class="i"><use href="#i-send"/></svg></span>
       </div>
-    </div>
-    <div style="text-align:center; margin-top:28px;">
-      <a href="ai-assistant-intro.html" class="btn btn-primary">Start AI Skin Assistant</a>
     </div>
   </div>
 </section>
 
-<section class="bg-navy">
-  <div class="wrap" style="max-width:820px;">
-    <div class="section-head left" style="max-width:none; margin-bottom:28px;">
+<!-- Approach -->
+<section class="bg-navy home-approach">
+  <div class="wrap">
+    <div class="home-approach-head">
       <span class="eyebrow">Our Approach</span>
       <h2>Designed to Support, Not Replace, Dermatologists</h2>
       <p>SKINSIGHT provides general information, consultation preparation, and organizational support. It does not provide a definitive diagnosis or prescribe medication.</p>
     </div>
-    <ul class="support-list">
+    <ul class="home-approach-list">
       <li>
-        <div class="support-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info preview-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
-        <div>
-          <h3>General Skin Information</h3>
-          <p>Plain-language context about visible skin characteristics.</p>
-        </div>
+        <span class="home-approach-icon"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg></span>
+        <h3>General Skin Information</h3>
+        <p>Plain-language context about visible skin characteristics.</p>
       </li>
       <li>
-        <div class="support-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text preview-icon"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></div>
-        <div>
-          <h3>Consultation Preparation</h3>
-          <p>A clear summary to bring to your dermatologist.</p>
-        </div>
+        <span class="home-approach-icon"><svg class="i" aria-hidden="true"><use href="#i-file-text"/></svg></span>
+        <h3>Consultation Preparation</h3>
+        <p>A clear summary to bring to your dermatologist.</p>
       </li>
       <li>
-        <div class="support-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pinned preview-icon"><path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 01-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0112 0"/><path d="M4.474 15h-.197a1 1 0 00-.969.753l-1.097 4.35a1.5 1.5 0 001.444 1.898L20.344 22a1.5 1.5 0 001.446-1.897l-1.098-4.35a1 1 0 00-.969-.753h-.197"/><circle cx="12" cy="8" r="2"/></svg></div>
-        <div>
-          <h3>Dermatologist Recommendations</h3>
-          <p>Help finding qualified professionals near you.</p>
-        </div>
+        <span class="home-approach-icon"><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg></span>
+        <h3>Dermatologist Recommendations</h3>
+        <p>Help finding qualified professionals near you.</p>
       </li>
     </ul>
   </div>
 </section>
 
-<section>
+<!-- Final call to action -->
+<section class="home-cta-section">
   <div class="wrap">
-    <div class="cta-band">
+    <div class="home-cta">
       <div>
-        <h2 style="font-size:1.6rem;">Ready to take the next step in caring for your skin?</h2>
+        <h2>Ready to take the next step in caring for your skin?</h2>
         <p>Start with the AI Skin Assistant, or go straight to finding a dermatologist near you.</p>
       </div>
-      <div class="cta-band-actions">
-        <a href="ai-assistant-intro.html" class="btn btn-primary">Start Skin Assessment</a>
-        <a href="clinic-finder.html" class="btn btn-secondary">Find a Dermatologist</a>
+      <div class="home-cta-actions">
+        <a href="ai-assistant-intro.html" class="btn btn-accent btn-lg">Start Skin Assessment</a>
+        <a href="clinic-finder.html" class="btn btn-on-dark btn-lg">Find a Dermatologist</a>
       </div>
     </div>
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div>
-      <div class="brand" style="margin-bottom:10px;">SKIN<span>SIGHT</span></div>
-      <p style="color:var(--light-cyan); max-width:32ch;">AI-Assisted Skin Health Platform.</p>
-    </div>
-    <ul class="footer-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="ai-assistant-intro.html">AI Skin Assistant</a></li>
-      <li><a href="clinic-finder.html">Find a Dermatologist</a></li>
-      <li><a href="medication-tracker.html">Medication Tracker</a></li>
-      <li><a href="about.html">About</a></li>
-    </ul>
-  </div>
-  <div class="wrap footer-bottom">
-    SKINSIGHT is not a substitute for professional medical advice, diagnosis, or treatment.
-  </div>
-</footer>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<site-footer></site-footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
 <script src="js/supabase-config.js"></script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
+<script src="js/login-gate.js" defer></script>
 </body>
 </html>

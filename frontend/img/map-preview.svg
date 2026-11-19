@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" width="400" height="320" role="img" aria-labelledby="t">
+  <title id="t">Stylized map with three clinic pins</title>
+  <defs>
+    <filter id="pin" x="-40%" y="-30%" width="180%" height="190%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#03045E" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="400" height="320" rx="20" fill="#EFE9DD"/>
+  <!-- water -->
+  <path d="M0 232c60-24 110 14 176-6 70-22 140 8 224-14v108H0z" fill="#CFEFF7"/>
+  <path d="M0 262c60-20 110 10 176-6 70-18 140 6 224-12" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.7"/>
+  <!-- park -->
+  <rect x="268" y="40" width="96" height="70" rx="16" fill="#DCEBD5"/>
+  <!-- blocks -->
+  <rect x="26" y="34" width="84" height="56" rx="8" fill="#E4DCCB"/>
+  <rect x="130" y="34" width="110" height="56" rx="8" fill="#E4DCCB"/>
+  <rect x="26" y="116" width="84" height="64" rx="8" fill="#E4DCCB"/>
+  <rect x="130" y="116" width="110" height="64" rx="8" fill="#E4DCCB"/>
+  <rect x="268" y="130" width="106" height="50" rx="8" fill="#E4DCCB"/>
+  <!-- roads -->
+  <g stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" fill="none">
+    <path d="M0 103h400"/><path d="M120 0v230"/><path d="M254 0v230"/><path d="M0 196c80 0 150-26 400-10"/>
+  </g>
+  <g stroke="#FBF9F5" stroke-width="2" stroke-dasharray="8 8" fill="none" opacity="0.9">
+    <path d="M0 103h400"/><path d="M120 0v230"/><path d="M254 0v230"/>
+  </g>
+  <!-- pins -->
+  <g filter="url(#pin)">
+    <path d="M118 88c-14 0-24 10-24 23 0 17 24 38 24 38s24-21 24-38c0-13-10-23-24-23z" fill="#0E8F9B"/>
+    <path d="M256 150c-12 0-21 9-21 20 0 15 21 33 21 33s21-18 21-33c0-11-9-20-21-20z" fill="#0E8F9B"/>
+    <path d="M326 60c-11 0-19 8-19 18 0 13 19 29 19 29s19-16 19-29c0-10-8-18-19-18z" fill="#8A93A8"/>
+  </g>
+  <circle cx="118" cy="111" r="8" fill="#FFFFFF"/>
+  <circle cx="256" cy="170" r="7" fill="#FFFFFF"/>
+  <circle cx="326" cy="78" r="6.5" fill="#FFFFFF"/>
+  <!-- you are here -->
+  <circle cx="180" cy="146" r="16" fill="#0077B6" opacity="0.18"/>
+  <circle cx="180" cy="146" r="7" fill="#0077B6" stroke="#FFFFFF" stroke-width="3"/>
+</svg>

@@ -5,7 +5,7 @@
 
 (function () {
   const chatBody = document.querySelector('.chat-body');
-  const chatInput = document.querySelector('.chat-inputbar input[type="text"]');
+  const chatInput = document.querySelector('.chat-inputbar textarea, .chat-inputbar input[type="text"]');
   const sendBtn = document.querySelector('.chat-inputbar button.send');
   const attachToggle = document.getElementById('attach-toggle');
   const fileInputs = document.querySelectorAll('.attach-panel input[type="file"]');
@@ -20,8 +20,8 @@
   if (!previewBar) {
     previewBar = document.createElement('div');
     previewBar.id = 'selected-image-preview';
-    previewBar.style.cssText =
-      'display:none; padding:8px 16px; background:#e6f8f8; border-top:1px solid #bceae9; font-size:0.85rem; color:#0d6966; display:flex; align-items:center; justify-content:space-between;';
+    previewBar.className = 'attach-preview';
+    previewBar.style.display = 'none';
     const inputBar = document.querySelector('.chat-inputbar');
     if (inputBar && inputBar.parentNode) {
       inputBar.parentNode.insertBefore(previewBar, inputBar);
@@ -97,15 +97,31 @@
     }
   }
 
+  let previewUrl = '';
+
+  function revokePreviewUrl() {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = '';
+    }
+  }
+
   function showImagePreview(filename) {
+    revokePreviewUrl();
+    try {
+      previewUrl = selectedImageFile ? URL.createObjectURL(selectedImageFile) : '';
+    } catch (e) {
+      previewUrl = '';
+    }
     previewBar.style.display = 'flex';
-    previewBar.innerHTML = `
-      <span>📷 Attached photo: <strong>${escapeHtml(filename)}</strong></span>
-      <button type="button" style="background:none; border:none; color:#0d6966; font-size:1.1rem; cursor:pointer; font-weight:bold;" title="Remove photo">&times;</button>
-    `;
+    previewBar.innerHTML =
+      (previewUrl ? '<img class="attach-preview-thumb" src="' + previewUrl + '" alt="">' : '') +
+      '<span class="attach-preview-name">Attached photo: <strong>' + escapeHtml(filename) + '</strong></span>' +
+      '<button type="button" class="attach-preview-remove" aria-label="Remove attached photo" title="Remove photo">&times;</button>';
     const removeBtn = previewBar.querySelector('button');
     removeBtn.addEventListener('click', () => {
       selectedImageFile = null;
+      revokePreviewUrl();
       previewBar.style.display = 'none';
       fileInputs.forEach((i) => (i.value = ''));
     });
@@ -113,6 +129,7 @@
 
   function clearImagePreview() {
     selectedImageFile = null;
+    revokePreviewUrl();
     previewBar.style.display = 'none';
     fileInputs.forEach((i) => (i.value = ''));
   }
@@ -127,6 +144,17 @@
         </div>
         <p class="msg-caption">${escapeHtml(imageFile.name)}</p>
       `;
+      try {
+        const thumbUrl = URL.createObjectURL(imageFile);
+        const img = document.createElement('img');
+        img.alt = 'Photo you attached: ' + imageFile.name;
+        img.onload = function () { URL.revokeObjectURL(thumbUrl); scrollToBottom(); };
+        img.onerror = function () { URL.revokeObjectURL(thumbUrl); img.remove(); };
+        img.src = thumbUrl;
+        const holder = photoWrap.querySelector('.msg-photo');
+        holder.textContent = '';
+        holder.appendChild(img);
+      } catch (e) { /* keep the icon placeholder */ }
       chatBody.appendChild(photoWrap);
     }
 
@@ -152,7 +180,10 @@
     const typing = document.createElement('div');
     typing.className = 'msg msg-ai typing-indicator';
     typing.id = 'typingIndicator';
-    typing.innerHTML = '<em>SKINSIGHT is reviewing and preparing questions…</em>';
+    typing.setAttribute('role', 'status');
+    typing.innerHTML =
+      '<span class="typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>' +
+      '<span class="visually-hidden">SKINSIGHT is reviewing and preparing questions…</span>';
     chatBody.appendChild(typing);
     scrollToBottom();
   }
@@ -218,7 +249,7 @@
       } else {
         appendAIMessage(
           `⚠️ **Error connecting to AI service:** ${err.message || 'Server error'}.\n\n` +
-          "Please ensure the backend server is running (`npm run dev` in `backend/`) and that your `GEMINI_API_KEY` is configured in `backend/.env`."
+          "Please check your connection and try again. If the problem continues, the assistant may be temporarily unavailable."
         );
       }
     } finally {
@@ -244,19 +275,52 @@
     scrollToBottom();
   }
 
-  // Simple Markdown to HTML helper for bold, lists, and line breaks
+  // Simple Markdown to HTML helper: **bold**, bullet / numbered lists, paragraphs
   function formatMarkdownToHTML(text) {
     if (!text) return '';
-    let html = escapeHtml(text);
-    // Bold
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Bullet points
-    html = html.replace(/(?:^|\n)[*-] (.*)/g, '<li>$1</li>');
-    html = html.replace(/(<li>.*<\/li>)/gs, '<ul style="margin:8px 0; padding-left:20px;">$1</ul>');
-    // Paragraph breaks
-    html = html.replace(/\n\n/g, '<br><br>');
-    html = html.replace(/\n/g, '<br>');
-    return html;
+    const out = [];
+    let para = [];
+    let list = null;
+
+    const inline = (str) => str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    const flushPara = () => {
+      if (para.length) {
+        out.push('<p>' + para.join('<br>') + '</p>');
+        para = [];
+      }
+    };
+    const closeList = () => {
+      if (list) {
+        out.push('</' + list + '>');
+        list = null;
+      }
+    };
+
+    escapeHtml(text).split('\n').forEach((raw) => {
+      const line = raw.replace(/\s+$/, '');
+      const bullet = line.match(/^\s*[*-]\s+(.*)$/);
+      const numbered = line.match(/^\s*\d+[.)]\s+(.*)$/);
+
+      if (bullet || numbered) {
+        flushPara();
+        const type = bullet ? 'ul' : 'ol';
+        if (list !== type) {
+          closeList();
+          out.push('<' + type + ' class="msg-list">');
+          list = type;
+        }
+        out.push('<li>' + inline((bullet || numbered)[1]) + '</li>');
+      } else if (line.trim() === '') {
+        closeList();
+        flushPara();
+      } else {
+        closeList();
+        para.push(inline(line));
+      }
+    });
+    closeList();
+    flushPara();
+    return out.join('');
   }
 
   function escapeHtml(str) {

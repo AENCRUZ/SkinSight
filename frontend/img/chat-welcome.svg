@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 440" width="520" height="440" role="img" aria-labelledby="t d">
+  <title id="t">A friendly chat about skin health</title>
+  <desc id="d">A chat window with an assistant message, a reply, a photo attachment and a shield badge, surrounded by soft shapes.</desc>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E3F5FA"/>
+      <stop offset="1" stop-color="#F5F0E8"/>
+    </linearGradient>
+    <linearGradient id="photoGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F3C9B8"/>
+      <stop offset="1" stop-color="#E8A58F"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#03045E" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <!-- soft background shapes -->
+  <rect x="10" y="20" width="500" height="400" rx="44" fill="url(#bgGrad)"/>
+  <circle cx="452" cy="82" r="46" fill="#90E0EF" opacity="0.55"/>
+  <circle cx="62" cy="372" r="34" fill="#E8674D" opacity="0.18"/>
+  <circle cx="478" cy="360" r="14" fill="#00B4D8" opacity="0.5"/>
+
+  <!-- chat window -->
+  <g filter="url(#soft)">
+    <rect x="64" y="56" width="392" height="320" rx="26" fill="#FFFFFF"/>
+  </g>
+  <path d="M64 82a26 26 0 0 1 26-26h340a26 26 0 0 1 26 26v26H64z" fill="#03045E"/>
+  <circle cx="92" cy="82" r="11" fill="#00B4D8"/>
+  <path d="m92 75.5 1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z" fill="#FFFFFF"/>
+  <rect x="112" y="76" width="108" height="9" rx="4.5" fill="#FFFFFF" opacity="0.92"/>
+  <rect x="112" y="90" width="64" height="6" rx="3" fill="#90E0EF" opacity="0.8"/>
+
+  <!-- assistant bubble -->
+  <rect x="86" y="128" width="236" height="64" rx="18" fill="#E3F5FA"/>
+  <rect x="104" y="146" width="196" height="8" rx="4" fill="#03045E" opacity="0.78"/>
+  <rect x="104" y="164" width="140" height="8" rx="4" fill="#0077B6" opacity="0.55"/>
+
+  <!-- user bubble -->
+  <rect x="204" y="208" width="232" height="52" rx="18" fill="#0077B6"/>
+  <rect x="222" y="224" width="170" height="8" rx="4" fill="#FFFFFF" opacity="0.95"/>
+  <rect x="222" y="240" width="108" height="8" rx="4" fill="#FFFFFF" opacity="0.6"/>
+
+  <!-- photo attachment -->
+  <rect x="316" y="276" width="120" height="84" rx="16" fill="url(#photoGrad)"/>
+  <circle cx="372" cy="316" r="20" fill="#FFFFFF" opacity="0.35"/>
+  <circle cx="372" cy="316" r="9" fill="#E8674D" opacity="0.55"/>
+  <rect x="326" y="342" width="52" height="8" rx="4" fill="#FFFFFF" opacity="0.75"/>
+
+  <!-- composer -->
+  <rect x="86" y="306" width="206" height="40" rx="20" fill="#FBF9F5" stroke="#C7CDD6" stroke-width="1.5"/>
+  <rect x="104" y="323" width="104" height="7" rx="3.5" fill="#4B5675" opacity="0.4"/>
+  <circle cx="270" cy="326" r="13" fill="#0077B6"/>
+  <path d="m264 326 12-0m-5-5 5 5-5 5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- shield badge -->
+  <g filter="url(#soft)">
+    <circle cx="444" cy="150" r="34" fill="#FFFFFF"/>
+  </g>
+  <path d="M444 129c6 4 12 5 18 5v14c0 10-8 16-18 20-10-4-18-10-18-20v-14c6 0 12-1 18-5z" fill="#0E8F9B"/>
+  <path d="m435.5 148 6 6 11.5-12" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

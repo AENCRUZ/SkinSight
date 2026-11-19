@@ -73,13 +73,6 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 }
 
 /* ---------- Auth panel shell ---------- */
-.auth-panel {
-  max-width: 440px;
-}
-
-.auth-panel.wide {
-  max-width: 480px;
-}
 
 .auth-head {
   text-align: center;
@@ -212,14 +205,6 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   color: var(--danger);
   margin-top: 6px;
   font-weight: 600;
-}
-
-.field.has-error input {
-  border-color: var(--danger);
-}
-
-.field.has-error .field-error {
-  display: block;
 }
 
 /* ---------- Small back-link used on Forgot Password ---------- */
@@ -661,7 +646,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 
 .auth-divider span {
   font-size: 0.82rem;
-  color: #888;
+  color: var(--ink-faint);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -707,6 +692,18 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   }
 }
 
+.login-gate-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--pale-cyan);
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .login-gate-panel h3 {
   margin-bottom: 8px;
   color: var(--navy);
@@ -739,7 +736,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   border: none;
   font-size: 1.6rem;
   line-height: 1;
-  color: #718096;
+  color: var(--ink-soft);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
@@ -927,7 +924,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 
 .appt-subtext {
   font-size: 0.82rem !important;
-  color: #718096 !important;
+  color: var(--ink-soft) !important;
   margin-bottom: 20px !important;
 }
 

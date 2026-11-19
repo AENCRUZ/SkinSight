@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>SKINSIGHT</title>
+  <rect width="32" height="32" rx="8" fill="#03045E"/>
+  <path d="m16 6.5 2.1 6.1 6.1 2.1-6.1 2.1L16 23l-2.1-6.1-6.1-2.1 6.1-2.1z" fill="#90E0EF"/>
+  <circle cx="24.2" cy="8.2" r="2.2" fill="#00B4D8"/>
+</svg>

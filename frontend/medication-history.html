@@ -4,10 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Medication History — SKINSIGHT</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#FBF9F5">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/features.css">
+<link rel="stylesheet" href="css/medication-tracker.css">
+<script src="js/ui.js"></script>
 <script>
   (function () {
     try {
@@ -30,104 +38,67 @@
 </head>
 <body>
 
-<header class="navbar">
-  <div class="wrap">
-    <a href="index.html" class="brand">SKIN<span>SIGHT</span></a>
-    <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="hamburger-label" aria-label="Toggle navigation menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="ai-assistant-intro.html">AI Skin Assistant</a></li>
-      <li><a href="clinic-finder.html">Find a Dermatologist</a></li>
-      <li><a href="medication-tracker.html" class="active">Medication Tracker</a></li>
-      <li><a href="about.html">About</a></li>
-      <li class="nav-login-item"><a href="login.html">Log In</a></li>
-    </ul>
-    <div class="nav-auth-actions">
-      <a href="login.html" class="btn btn-ghost btn-sm">Log In</a>
-      <a href="ai-assistant-intro.html" class="btn btn-primary btn-sm">Get Started</a>
-    </div>
-  </div>
-</header>
+<site-header data-nav="meds"></site-header>
+<noscript><p class="noscript-note">SKINSIGHT needs JavaScript for navigation and the AI assistant. Please enable it to continue.</p></noscript>
+<main id="main">
 
 <div class="page-header">
   <div class="wrap">
-    <h1 style="font-size:2rem;">Medication History</h1>
-    <p>A record of completed and missed doses over time.</p>
+    <span class="eyebrow">Medication Tracker</span>
+    <h1>Medication History</h1>
+    <p>A record of the doses you marked as completed, and the scheduled doses you didn't, over time.</p>
   </div>
 </div>
 
-<section style="padding-top:36px;">
-  <div class="wrap">
-    <div class="tabs">
-      <span class="tab active">All</span>
-      <span class="tab">Completed</span>
-      <span class="tab">Missed</span>
+<section class="feature-section">
+  <div class="wrap wrap-mid" id="medApp">
+    <noscript><div class="med-alert is-warning"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert-circle"/></svg><p><strong>JavaScript is required.</strong> The medication tracker runs in your browser and stores its data on this device, so it can't work without JavaScript.</p></div></noscript>
+    <div id="medNotice"></div>
+    <div class="med-alerts" id="medAlerts"></div>
+
+    <div class="hist-stats">
+      <div class="card card-static hist-stat is-good"><span class="num" id="statDone">0</span><span class="label">Completed</span></div>
+      <div class="card card-static hist-stat"><span class="num" id="statNotLogged">0</span><span class="label">Not logged</span></div>
+      <div class="card card-static hist-stat"><span class="num" id="statRate">&ndash;</span><span class="label">Completion rate (scheduled doses)</span></div>
     </div>
 
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>Medication</th><th>Date</th><th>Status</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Tretinoin Cream 0.025%</td>
-            <td>Sept 22, 2026 · 8:00 PM</td>
-            <td><span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span></td>
-          </tr>
-          <tr>
-            <td>Hydrocortisone Cream 1%</td>
-            <td>Sept 22, 2026 · 9:00 AM</td>
-            <td><span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span></td>
-          </tr>
-          <tr>
-            <td>Hydrocortisone Cream 1%</td>
-            <td>Sept 21, 2026 · 9:00 AM</td>
-            <td><span class="badge badge-closed">Missed</span></td>
-          </tr>
-          <tr>
-            <td>Tretinoin Cream 0.025%</td>
-            <td>Sept 21, 2026 · 8:00 PM</td>
-            <td><span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span></td>
-          </tr>
-          <tr>
-            <td>Hydrocortisone Cream 1%</td>
-            <td>Sept 20, 2026 · 9:00 AM</td>
-            <td><span class="badge" style="background:var(--success-bg); color:var(--success);">Completed</span></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="tabs" role="tablist" aria-label="Filter medication history">
+      <button type="button" class="tab" role="tab" id="tab-all" data-filter="all" aria-selected="true" aria-controls="histPanel">All</button>
+      <button type="button" class="tab" role="tab" id="tab-completed" data-filter="completed" aria-selected="false" tabindex="-1" aria-controls="histPanel">Completed</button>
+      <button type="button" class="tab" role="tab" id="tab-not-logged" data-filter="not_logged" aria-selected="false" tabindex="-1" aria-controls="histPanel">Not logged</button>
+      <button type="button" class="tab" role="tab" id="tab-as-needed" data-filter="as_needed" aria-selected="false" tabindex="-1" aria-controls="histPanel">As needed</button>
     </div>
+
+    <div class="card card-static table-card" id="histPanel" role="tabpanel" aria-label="Dose history">
+      <table class="hist-table" id="histTable">
+        <caption class="visually-hidden">Dose history, newest first</caption>
+        <thead>
+          <tr><th scope="col">Medication</th><th scope="col">Date</th><th scope="col">Status</th></tr>
+        </thead>
+        <tbody id="histBody"></tbody>
+      </table>
+      <p class="hist-empty" id="histEmpty" hidden></p>
+      <div class="hist-more" id="histMore" hidden><button type="button" class="btn btn-secondary btn-sm" id="histMoreBtn">Show more</button></div>
+    </div>
+
+    <p class="hist-note">&ldquo;Not logged&rdquo; means you didn't mark that scheduled dose as completed. SKINSIGHT can't tell whether it was taken, so this isn't a record of missed doses. As-needed doses appear when you log them and aren't part of the completion rate.</p>
+
+    <div class="med-footer">
+      <a href="medication-tracker.html" class="btn btn-ghost">Back to the tracker</a>
+    </div>
+    <p class="visually-hidden" id="medLive" role="status" aria-live="polite"></p>
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div>
-      <div class="brand" style="margin-bottom:10px;">SKIN<span>SIGHT</span></div>
-      <p style="color:var(--light-cyan); max-width:32ch;">AI-Assisted Skin Health Platform.</p>
-    </div>
-    <ul class="footer-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="ai-assistant-intro.html">AI Skin Assistant</a></li>
-      <li><a href="clinic-finder.html">Find a Dermatologist</a></li>
-      <li><a href="medication-tracker.html" class="active">Medication Tracker</a></li>
-      <li><a href="about.html">About</a></li>
-    </ul>
-  </div>
-  <div class="wrap footer-bottom">
-    SKINSIGHT is not a substitute for professional medical advice, diagnosis, or treatment.
-  </div>
-</footer>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<site-footer></site-footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
 <script src="js/supabase-config.js"></script>
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
+<script src="js/medication-store.js" defer></script>
+<script src="js/meds-ui.js" defer></script>
 </body>
 </html>
