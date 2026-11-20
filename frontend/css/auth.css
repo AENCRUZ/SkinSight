@@ -147,11 +147,37 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   display: flex;
 }
 
-/* ---------- Field meta row (e.g. Forgot password?) ---------- */
+/* ---------- Field meta row (e.g. Forgot password? & Keep me signed in) ---------- */
 .field-meta {
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
+}
+
+.login-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.remember-me-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted, #555);
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--teal-600, #0E6257);
+  margin: 0;
 }
 
 .auth-link-sm {

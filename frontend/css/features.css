@@ -52,20 +52,21 @@
 .back-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: var(--space-4); font-weight: 600; font-size: 0.92rem; }
 .back-link .i { width: 16px; height: 16px; }
 
-/* ---------- 3. Clinic finder ---------- */
+/* ---------- 3. Clinic finder & Interactive Maps ---------- */
 .finder-panel { margin-bottom: var(--space-5); padding: var(--space-5); }
 .finder-fields { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.finder-fields:disabled { opacity: 0.72; }
 .finder-row, .finder-filters { display: flex; gap: var(--space-3); flex-wrap: wrap; }
 .finder-search { position: relative; flex: 1; min-width: 220px; }
 .finder-search .i { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; margin-top: -9px; color: var(--ink-faint); pointer-events: none; }
-.finder-search input { padding-left: 42px; min-height: 48px; }
+.finder-search input { padding-left: 42px; min-height: 48px; width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+.finder-search input:focus { outline: none; border-color: var(--blue); box-shadow: var(--focus-ring); }
 .finder-filters .select-wrap { flex: 0 1 auto; }
 .finder-filters select { width: auto; min-height: 44px; }
 
-.finder-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-5); align-items: start; }
-.results-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
-.results-head h2 { margin: 0; font-size: 1.1rem; }
+.finder-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--space-5); align-items: start; }
+.results-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); flex-wrap: wrap; }
+.results-head h2 { margin: 0; font-size: 1.15rem; color: var(--navy); }
+.badge-location { background: var(--teal-soft); color: #0A6F7A; border: 1px solid #B8E4E7; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; font-weight: 600; border-radius: var(--radius-pill); font-size: 0.82rem; }
 
 .clinic-card {
   display: grid;
@@ -78,21 +79,719 @@
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--dur) ease, border-color var(--dur) ease;
+  transition: box-shadow var(--dur) ease, border-color var(--dur) ease, transform var(--dur) ease;
+  cursor: pointer;
 }
-.clinic-card:hover { box-shadow: var(--shadow); border-color: var(--light-cyan); }
-.clinic-card-icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--teal-soft); color: #0A6F7A; }
+.clinic-card:hover { box-shadow: var(--shadow); border-color: var(--blue); transform: translateY(-2px); }
+.clinic-card.is-highlighted { border-color: var(--teal); background: #F6FBFB; box-shadow: 0 0 0 2px var(--teal), var(--shadow); }
+.clinic-card-icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--teal-soft); color: #0A6F7A; flex-shrink: 0; }
 .clinic-card.is-closed .clinic-card-icon { background: var(--surface-warm); color: var(--ink-soft); }
 .clinic-card-icon .i { width: 24px; height: 24px; }
-.clinic-card h3 { margin-bottom: 2px; font-size: 1.05rem; }
-.clinic-meta { margin: 0 0 var(--space-2); font-size: var(--text-sm); }
+.clinic-card h3 { margin: 0 0 4px; font-size: 1.08rem; color: var(--navy); }
+.clinic-meta { margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--ink-soft); }
 .clinic-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.clinic-card-actions { display: flex; flex-direction: column; gap: var(--space-2); align-items: stretch; }
+.clinic-card-actions { display: flex; flex-direction: column; gap: var(--space-2); align-items: stretch; min-width: 170px; }
+.clinic-dir-link { font-size: 0.8rem; text-align: center; color: var(--blue); padding: 4px 8px; }
 
-.finder-map { margin: 0; padding: var(--space-3); position: sticky; top: calc(var(--navbar-h) + 16px); }
-.finder-map img { width: 100%; height: auto; border-radius: var(--radius-md); }
-.finder-map figcaption { padding: var(--space-3) var(--space-2) var(--space-1); font-size: var(--text-sm); color: var(--ink-soft); }
-.finder-map figcaption strong { display: block; color: var(--navy); font-family: var(--font-display); }
+.badge-inperson { background: #EAEFF5; color: var(--navy); border: 1px solid #D2DCEA; }
+.badge-teleconsult { background: #E8F4EC; color: #155724; border: 1px solid #C3E6CB; }
+.badge-open { background: var(--success-bg); color: var(--success); border: 1px solid #B7E4C7; }
+.badge-closed { background: var(--danger-bg); color: var(--danger); border: 1px solid #F5C6CB; }
+.badge-gmaps { background: #E8F0FE; color: #1A73E8; border: 1px solid #C2D7FA; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
+
+/* Empty state */
+.empty-clinics-card { text-align: center; padding: var(--space-6) var(--space-5); }
+.empty-clinics-card .empty-icon { width: 56px; height: 56px; margin: 0 auto var(--space-3); display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--surface-warm); color: var(--ink-faint); }
+.empty-clinics-card .empty-icon .i { width: 28px; height: 28px; }
+.empty-clinics-card h3 { margin-bottom: var(--space-2); color: var(--navy); }
+.empty-clinics-card p { max-width: 440px; margin: 0 auto var(--space-4); color: var(--ink-soft); font-size: 0.95rem; }
+.empty-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+/* Mini Map Card (Right column) */
+.finder-map-card {
+  margin: 0;
+  padding: 0;
+  position: sticky;
+  top: calc(var(--navbar-h) + 16px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  z-index: 10;
+}
+.finder-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.finder-map-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--navy);
+}
+.finder-map-title .i { width: 18px; height: 18px; color: var(--teal); }
+.finder-map-header-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.map-view-toggle, .modal-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface-warm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+}
+.view-toggle-btn {
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.16s ease;
+}
+.view-toggle-btn .i { width: 14px; height: 14px; }
+.view-toggle-btn:hover {
+  color: var(--navy);
+}
+.view-toggle-btn.is-active {
+  background: var(--navy);
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(3, 4, 94, 0.2);
+}
+.view-toggle-btn.is-active .i {
+  color: #FFFFFF;
+}
+
+.mini-map-viewport-wrap {
+  position: relative;
+  width: 100%;
+  height: 330px;
+  background: #EBF0F3;
+}
+.mini-map-viewport {
+  width: 100%;
+  height: 100%;
+  min-height: 330px;
+  background: #EBF0F3;
+  position: relative;
+  z-index: 1;
+}
+.mini-google-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 330px;
+  border: 0;
+  display: block;
+}
+.modal-google-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  display: block;
+}
+.finder-map-footer {
+  padding: 14px 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.finder-map-loc-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+.map-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #0077B6;
+  box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.25);
+  display: inline-block;
+  animation: pulseDot 2s infinite ease-in-out;
+  flex-shrink: 0;
+}
+@keyframes pulseDot {
+  0% { transform: scale(0.9); box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.4); }
+  50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(0, 119, 182, 0.1); }
+  100% { transform: scale(0.9); box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.4); }
+}
+.mini-map-loc-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mini-map-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+.finder-map-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.finder-map-actions .btn { flex: 1 1 120px; font-size: 0.82rem; padding: 6px 10px; }
+
+/* Custom Marker Styling */
+.user-pin-wrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.user-pin-core {
+  width: 22px;
+  height: 22px;
+  background: #0077B6;
+  border: 3px solid #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 119, 182, 0.5);
+  position: relative;
+  z-index: 2;
+  cursor: grab;
+}
+.user-pin-pulse {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 119, 182, 0.25);
+  animation: pinPulse 2s infinite ease-out;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes pinPulse {
+  0% { transform: scale(0.5); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.user-pin-tag {
+  position: absolute;
+  bottom: -20px;
+  background: #03045E;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  pointer-events: none;
+  font-family: var(--font-display);
+}
+
+.clinic-pin-wrap {
+  position: relative;
+  width: 36px;
+  height: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  filter: drop-shadow(0 3px 6px rgba(3, 4, 94, 0.28));
+  transition: transform 0.18s ease;
+}
+.clinic-pin-wrap:hover {
+  transform: translateY(-4px) scale(1.08);
+}
+.clinic-pin-badge {
+  width: 32px;
+  height: 32px;
+  background: #0E8F9B;
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FFFFFF;
+}
+.custom-clinic-marker.is-closed .clinic-pin-badge {
+  background: #5E6784;
+}
+.custom-clinic-marker.is-selected .clinic-pin-badge {
+  background: #E8674D;
+  box-shadow: 0 0 0 3px rgba(232, 103, 77, 0.35);
+}
+.clinic-pin-arrow {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid #0E8F9B;
+  margin-top: -2px;
+}
+.custom-clinic-marker.is-closed .clinic-pin-arrow {
+  border-top-color: #5E6784;
+}
+.custom-clinic-marker.is-selected .clinic-pin-arrow {
+  border-top-color: #E8674D;
+}
+
+/* Leaflet Popup Styling */
+.skinsight-leaflet-popup .leaflet-popup-content-wrapper {
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  font-family: var(--font-body);
+}
+.skinsight-leaflet-popup .leaflet-popup-content {
+  margin: 0;
+  line-height: 1.4;
+}
+.map-clinic-popup .popup-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.map-clinic-popup .popup-dist {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+.map-clinic-popup .popup-title {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  color: var(--navy);
+  margin: 0 0 4px;
+}
+.map-clinic-popup .popup-address {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin: 0 0 4px;
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+.map-clinic-popup .popup-i { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+.map-clinic-popup .popup-rating {
+  font-size: 0.82rem;
+  color: var(--amber);
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+.map-clinic-popup .popup-reviews {
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+.map-clinic-popup .popup-phone {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+.map-clinic-popup .popup-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.map-clinic-popup .popup-dir-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Google Maps Location Picker Modal */
+body.modal-open { overflow: hidden; }
+.map-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none !important;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.map-modal.is-active,
+.map-modal.show {
+  display: flex !important;
+}
+.map-modal[hidden] {
+  display: none !important;
+}
+.map-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 4, 94, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.map-modal-dialog {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 980px;
+  height: 86vh;
+  max-height: 90vh;
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 60px rgba(3, 4, 94, 0.35);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalScaleUp 0.24s var(--ease);
+}
+@keyframes modalScaleUp {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.map-modal-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.map-modal-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--blue);
+  margin-bottom: 2px;
+}
+.map-modal-header h2 {
+  margin: 0 0 2px;
+  font-size: 1.35rem;
+  color: var(--navy);
+}
+.map-modal-header p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+.map-modal-close {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--ink-faint);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.map-modal-close:hover {
+  background: var(--surface-warm);
+  color: var(--navy);
+}
+.map-modal-close .i { width: 22px; height: 22px; }
+
+.map-modal-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  background: var(--surface-warm);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.map-modal-search {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  gap: 8px;
+}
+.map-modal-search .i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+.map-modal-search input {
+  flex: 1;
+  padding-left: 36px;
+  min-height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.9rem;
+}
+.map-modal-search input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: var(--focus-ring);
+}
+.map-modal-chips-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 24px;
+  background: var(--surface-warm);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.map-modal-chips-bar .chips-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.modal-city-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.city-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--navy);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 4px 11px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.city-chip:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: #FFFFFF;
+}
+.city-chip.is-active {
+  background: var(--navy);
+  color: #FFFFFF;
+  border-color: var(--navy);
+  font-weight: 600;
+}
+.map-modal-viewport-wrap {
+  position: relative;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 200px;
+  height: auto;
+  overflow: hidden;
+  background: #E8ECEF;
+}
+.modal-map-viewport {
+  width: 100%;
+  height: 100%;
+  background: #E8ECEF;
+  z-index: 1;
+}
+.map-modal-overlay-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(6px);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.map-modal-overlay-badge .i { width: 15px; height: 15px; color: var(--teal); }
+
+.map-modal-footer {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap;
+}
+.modal-footer-info {
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+.modal-footer-info strong { color: var(--navy); }
+.modal-clinic-count { color: var(--teal); font-weight: 600; }
+.modal-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Google Maps Live Sync Banner */
+.gmaps-sync-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--teal);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 4px rgba(3, 4, 94, 0.05);
+  flex-wrap: wrap;
+}
+.gmaps-sync-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 220px;
+}
+.gmaps-sync-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0E8F9B;
+  box-shadow: 0 0 0 3px rgba(14, 143, 155, 0.25);
+  flex-shrink: 0;
+}
+.gmaps-sync-text strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--navy);
+  font-family: var(--font-display);
+}
+.gmaps-sync-text p {
+  margin: 1px 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+.gmaps-sync-btn {
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+
+/* Toast Notifications */
+.skinsight-map-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  background: var(--navy);
+  color: var(--white);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 10000;
+  opacity: 0;
+  transition: transform 0.24s var(--ease), opacity 0.24s ease;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.skinsight-map-toast.is-visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* Spinner for Geolocation button */
+.loc-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Consultation Summary — Next Steps Banner */
+.summary-clinic-cta {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid #BFE6EE;
+  background: linear-gradient(135deg, #FFFFFF 0%, var(--pale-cyan) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.summary-clinic-cta-body {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+.summary-clinic-cta-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--teal-soft);
+  color: var(--teal);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.summary-clinic-cta-icon .i { width: 24px; height: 24px; }
+.summary-clinic-cta-text h3 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  color: var(--navy);
+}
+.summary-clinic-cta-text p {
+  margin: 0;
+  font-size: 0.94rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.summary-clinic-cta-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
 
 /* ---------- 4. Clinic details ---------- */
 .clinic-hero { margin-bottom: var(--space-4); }
@@ -102,6 +801,104 @@
 .info-list li { display: flex; align-items: flex-start; gap: var(--space-3); color: var(--ink); }
 .info-list .i { width: 20px; height: 20px; margin-top: 2px; color: var(--teal); }
 .info-list strong { color: var(--navy); }
+.info-link { color: var(--blue); text-decoration: none; font-weight: 500; }
+.info-link:hover { text-decoration: underline; }
+
+.clinic-hero-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-4); }
+.clinic-hero-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+
+.clinic-services-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.service-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-warm);
+  border: 1px solid var(--border);
+  color: var(--navy);
+  font-size: 0.86rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+}
+.service-chip .i { color: var(--teal); }
+
+.clinic-details-map-wrap {
+  width: 100%;
+  height: 280px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #E8ECEF;
+}
+.clinic-details-iframe { width: 100%; height: 100%; border: 0; display: block; }
+.clinic-map-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: var(--space-3);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  flex-wrap: wrap;
+}
+
+.inquiry-card { margin-bottom: var(--space-5); }
+.inquiry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+@media (max-width: 640px) {
+  .inquiry-grid { grid-template-columns: 1fr; }
+}
+.inquiry-field label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.inquiry-field input,
+.inquiry-field select,
+.inquiry-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--ink);
+}
+.inquiry-field input:focus,
+.inquiry-field select:focus,
+.inquiry-field textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: var(--focus-ring);
+}
+.inquiry-preview-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+  display: block;
+}
+.inquiry-preview-box {
+  background: var(--surface-warm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: var(--space-4);
+}
 
 .card-title { font-size: 1.15rem; margin-bottom: var(--space-4); }
 .derm-list { display: grid; gap: var(--space-3); }
@@ -154,7 +951,8 @@
 /* ---------- 8. Responsive ---------- */
 @media (max-width: 1000px) {
   .finder-layout { grid-template-columns: 1fr; }
-  .finder-map { display: none; }
+  .finder-map-card { position: static; margin-bottom: var(--space-5); }
+  .mini-map-viewport { height: 280px; }
   .selfcare-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 700px) {

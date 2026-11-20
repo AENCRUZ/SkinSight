@@ -99,7 +99,40 @@
 .auth-card input::placeholder { color: var(--ink-faint); }
 
 .field-meta { display: flex; justify-content: flex-end; margin-top: 8px; }
-.auth-link-sm { font-size: 0.86rem; font-weight: 700; color: var(--blue-600); }
+.field-meta.login-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 12px;
+  padding: 0;
+}
+.remember-me-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+}
+.remember-me-label .remember-checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--blue-600);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.remember-me-label span {
+  display: inline-block;
+  line-height: 1.2;
+}
+.auth-link-sm { font-size: 0.86rem; font-weight: 700; color: var(--blue-600); line-height: 1.2; }
 .auth-link-sm:hover { color: var(--navy); text-decoration: underline; }
 
 .field-check { display: flex; align-items: flex-start; gap: 12px; margin: var(--space-5) 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); }
