@@ -166,19 +166,19 @@
         </div>
 
         <div class="inquiry-field mb-16">
-          <label for="patientNotesInput">Additional Notes / Questions for the Dermatologist (Optional):</label>
+          <label for="patientNotesInput">Additional Notes for the Clinic (Optional):</label>
           <textarea id="patientNotesInput" rows="2" placeholder="e.g. I have had this rash for 4 days and would like an evaluation."></textarea>
         </div>
 
-        <span class="inquiry-preview-label">Live Message Preview (with your AI Consultation Summary attached):</span>
+        <span class="inquiry-preview-label">Live Message Preview:</span>
         <div class="inquiry-preview-box" id="inquiryPreviewBox">Loading summary...</div>
 
         <div class="send-options">
           <div class="send-option">
             <div class="send-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></div>
             <h3 class="send-option-title">Email Clinic</h3>
-            <p>Opens your email app with this message and summary pre-filled.</p>
-            <a class="btn btn-primary btn-sm" id="sendEmailBtn" href="#">Send Email Inquiry</a>
+            <p>Opens Gmail in a new tab with your inquiry and summary pre-filled.</p>
+            <a class="btn btn-primary btn-sm" id="sendEmailBtn" href="#" target="_blank" rel="noopener noreferrer">Send Email Inquiry</a>
           </div>
 
           <div class="send-option">
@@ -391,37 +391,67 @@
       var patientContact = (contactInput && contactInput.value.trim()) || "Not provided";
       var patientDate = (document.getElementById("patientDateInput") && document.getElementById("patientDateInput").value.trim()) || "Flexible / Next available slot";
       var consultMode = (document.getElementById("consultTypeSelect") && document.getElementById("consultTypeSelect").value) || "In-person Consultation";
-      var patientNotes = (document.getElementById("patientNotesInput") && document.getElementById("patientNotesInput").value.trim()) || "None";
+      var patientNotes = (document.getElementById("patientNotesInput") && document.getElementById("patientNotesInput").value.trim()) || "";
 
-      var baseSummary = getActiveSummaryText(clinic.name);
+      var summary = getActiveSummaryData();
+      var mainConcern = summary.mainConcern || "Dermatology consultation";
+      var symptoms = summary.symptoms || "Skin evaluation";
+      var duration = summary.duration || "";
+      var affectedArea = summary.affectedArea || "";
 
-      var fullMessage =
-        "SKINSIGHT APPOINTMENT INQUIRY & SUMMARY\n" +
-        "=========================================\n" +
-        "TO: " + clinic.name + "\n" +
-        "LOCATION: " + clinic.address + "\n\n" +
-        "PATIENT INFORMATION:\n" +
-        "- Name: " + patientName + "\n" +
-        "- Contact: " + patientContact + "\n" +
-        "- Preferred Schedule: " + patientDate + "\n" +
-        "- Mode: " + consultMode + "\n" +
-        (patientNotes !== "None" ? "- Patient Notes: " + patientNotes + "\n\n" : "\n") +
-        "=========================================\n" +
-        "ATTACHED CONSULTATION SUMMARY:\n" +
-        "=========================================\n\n" +
-        baseSummary;
+      var lines = [
+        "Good day " + clinic.name + " Team,",
+        "",
+        "I would like to inquire about booking a dermatology consultation. Here are my details:",
+        "",
+        "• Patient Name: " + patientName,
+        "• Contact Number / Email: " + patientContact,
+        "• Preferred Schedule: " + patientDate,
+        "• Consultation Mode: " + consultMode,
+        "",
+        "Reason for Visit / Skin Concern:",
+        "• Chief Concern: " + mainConcern
+      ];
+
+      if (symptoms && symptoms !== "None reported") {
+        var symptomLine = "• Symptoms: " + symptoms;
+        if (duration && duration !== "Not specified") {
+          symptomLine += " (" + duration + ")";
+        }
+        lines.push(symptomLine);
+      } else if (duration && duration !== "Not specified") {
+        lines.push("• Duration: " + duration);
+      }
+
+      if (affectedArea && affectedArea !== "Not specified") {
+        lines.push("• Affected Area: " + affectedArea);
+      }
+
+      if (patientNotes) {
+        lines.push("• Additional Notes: " + patientNotes);
+      }
+
+      lines.push(
+        "",
+        "Could you please confirm if this schedule is available, or advise your nearest open slot and consultation fees?",
+        "",
+        "Thank you,",
+        patientName
+      );
+
+      var fullMessage = lines.join("\n");
 
       var previewBox = document.getElementById("inquiryPreviewBox");
       if (previewBox) {
         previewBox.textContent = fullMessage;
       }
 
-      // Update Email Button
+      // Update Email Button — opens Gmail compose in a new tab
       var emailBtn = document.getElementById("sendEmailBtn");
       if (emailBtn) {
-        var subject = encodeURIComponent("Consultation & Appointment Inquiry — " + patientName + " for " + clinic.name);
+        var subject = encodeURIComponent("Consultation & Appointment Inquiry — " + patientName);
         var body = encodeURIComponent(fullMessage);
-        emailBtn.href = "mailto:" + clinic.email + "?subject=" + subject + "&body=" + body;
+        emailBtn.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(clinic.email) + "&su=" + subject + "&body=" + body;
       }
 
       // Update Download Button
@@ -474,7 +504,7 @@
     initClinicDetails();
   }
 
-  function getActiveSummaryText(clinicName) {
+  function getActiveSummaryData() {
     var noteEl = document.getElementById("summarySourceText");
 
     // 1. Try to load saved consultation summary from session
@@ -483,69 +513,22 @@
       try {
         var parsed = JSON.parse(rawSummary);
         if (parsed && typeof parsed === "object") {
-          if (noteEl) noteEl.textContent = "Using your saved consultation summary from the AI Skin Assistant.";
-          return formatSummaryObject(parsed, clinicName);
+          if (noteEl) noteEl.textContent = "Using your consultation summary from your AI Skin Assistant session.";
+          return parsed;
         }
       } catch (e) {}
     }
 
-    // 2. Fallback to default structure
+    // 2. Fallback to default concern
     if (noteEl) {
-      noteEl.textContent = "Sample summary format. You can start a consultation with the AI Skin Assistant to generate a personalized summary.";
+      noteEl.textContent = "Sample consultation format. Complete an AI Skin Assistant session to auto-fill your specific symptoms.";
     }
-    return "SKINSIGHT AI Consultation Summary\n" +
-      "Date: " + new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) + "\n\n" +
-      "MAIN CONCERN:\nRed, itchy patch on the forearm.\n\n" +
-      "SYMPTOMS REPORTED:\nRedness, itching, mild swelling.\n\n" +
-      "DURATION:\nApproximately 4–5 days.\n\n" +
-      "AFFECTED AREA:\nLeft forearm, inner side.\n\n" +
-      "TRIGGERS / RECENT CHANGES:\nNew laundry detergent introduced last week.\n\n" +
-      "IMAGE OBSERVATIONS (general, non-diagnostic):\nSlightly raised, reddened patch with an irregular but well-defined border.\n\n" +
-      "QUESTIONS TO DISCUSS WITH DERMATOLOGIST:\n" +
-      "- Could the new laundry detergent be causing contact dermatitis?\n" +
-      "- What topical cream or soothing care is recommended?\n" +
-      "- Are there warning signs that require urgent clinical intervention?\n\n" +
-      "---\nPrepared via SKINSIGHT AI Platform. Non-diagnostic informational documentation.";
-  }
-
-  function formatSummaryObject(data, clinicName) {
-    var lines = [
-      "SKINSIGHT AI Consultation Summary",
-      "Date: " + new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
-      "",
-      "MAIN CONCERN:",
-      data.mainConcern || "Not specified",
-      "",
-      "SYMPTOMS REPORTED:",
-      data.symptoms || "None reported",
-      "",
-      "DURATION:",
-      data.duration || "Not specified",
-      "",
-      "AFFECTED AREA:",
-      data.affectedArea || "Not specified",
-      "",
-      "TRIGGERS / RECENT CHANGES:",
-      data.triggers || "None reported",
-      "",
-      "IMAGE OBSERVATIONS (general, non-diagnostic):",
-      data.observations || "No specific observations",
-      "",
-      "QUESTIONS TO DISCUSS WITH DERMATOLOGIST:"
-    ];
-
-    if (Array.isArray(data.questions)) {
-      data.questions.forEach(function (q) { lines.push("- " + q); });
-    } else if (data.questions) {
-      lines.push("- " + data.questions);
-    } else {
-      lines.push("- None specified");
-    }
-
-    lines.push("");
-    lines.push("---");
-    lines.push("Prepared via SKINSIGHT AI Platform. Non-diagnostic informational documentation.");
-    return lines.join("\n");
+    return {
+      mainConcern: "Red, itchy patch on the forearm",
+      symptoms: "Redness, itching, mild swelling",
+      duration: "4–5 days",
+      affectedArea: "Left forearm, inner side"
+    };
   }
 
   function escapeHtml(str) {
