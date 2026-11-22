@@ -75,7 +75,7 @@
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: 12px;
   background: var(--teal-soft);
-  color: #0A6F7A;
+  color: #006399;
 }
 .home-values-icon .i { width: 22px; height: 22px; }
 .home-values-list strong { display: block; color: var(--navy); font-family: var(--font-display); font-size: 1rem; margin-bottom: 2px; }
