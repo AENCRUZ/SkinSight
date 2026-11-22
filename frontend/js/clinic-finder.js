@@ -1,6 +1,12 @@
 /**
  * SKINSIGHT — Clinic Finder & Google Maps Controller
  *
+ * Coverage: the directory currently lists clinics in Batangas Province only (SkinsightClinics.COVERAGE).
+ * Users may pin ANY location; outside coverage the list is replaced by an explanation, never by far-away clinics.
+ *
+ * Directory details are unverified: availability is computed from the LISTED hours only
+ * (clinics-data.js getOpenStatus) and wording avoids "verified" claims.
+ *
  * Implements:
  * - Live Google Maps Embed integration (NO API KEY REQUIRED, ZERO WATERMARKS)
  * - Geolocation ("Use My Location") with automatic state reset and fallback
@@ -69,8 +75,9 @@
       sessionStorage.setItem("skinsight_filter_availability", state.filterAvailability);
       sessionStorage.setItem("skinsight_filter_type", state.filterType);
       if (state.userActualLocation) {
+        // Precise GPS coordinates are kept for this browser SESSION only (never in localStorage), so they are
+        // gone when the tab closes or the user signs out, and are not left behind for the next person on a shared device.
         sessionStorage.setItem("skinsight_user_actual_location", JSON.stringify(state.userActualLocation));
-        localStorage.setItem("skinsight_user_actual_location", JSON.stringify(state.userActualLocation));
       }
     } catch (e) {}
   }
@@ -79,7 +86,9 @@
     var restored = false;
     try {
       // 1. Restore user's actual physical location if previously acquired
-      var rawActual = sessionStorage.getItem("skinsight_user_actual_location") || localStorage.getItem("skinsight_user_actual_location");
+      // Earlier versions also saved the position in localStorage; remove that leftover copy.
+      localStorage.removeItem("skinsight_user_actual_location");
+      var rawActual = sessionStorage.getItem("skinsight_user_actual_location");
       if (rawActual) {
         var parsedActual = JSON.parse(rawActual);
         if (parsedActual && typeof parsedActual.lat === "number" && typeof parsedActual.lng === "number") {
@@ -96,7 +105,7 @@
           restored = true;
         }
       } else if (state.userActualLocation) {
-        state.location = Object.assign({}, state.userActualLocation);
+        state.location = Object.assign({}, state.userActualLocation, { name: "Your current location", isUserGps: true });
         restored = true;
       }
 
@@ -172,11 +181,9 @@
           navigator.geolocation.getCurrentPosition(function (pos) {
             var lat = pos.coords.latitude;
             var lng = pos.coords.longitude;
-            if (lat >= 13.45 && lat <= 14.30 && lng >= 120.45 && lng <= 121.50) {
-              state.userActualLocation = { lat: lat, lng: lng, isGps: true };
-              saveCurrentLocation();
-              renderClinicsList();
-            }
+            state.userActualLocation = { lat: lat, lng: lng, isGps: true };
+            saveCurrentLocation();
+            renderClinicsList();
           }, function () {}, { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 });
         }
       }).catch(function () {});
@@ -197,8 +204,7 @@
      Google Maps Embed Helpers
      -------------------------------------------------------------------------- */
   function getGoogleMapsEmbedUrl(lat, lng, name) {
-    var areaName = name ? name.split(",")[0].trim() : "Batangas City";
-    var query = "dermatologist skin clinic in " + areaName + " Batangas";
+    var query = "dermatologist skin clinic in " + (name || DEFAULT_LOCATION.name);
     return "https://maps.google.com/maps?q=" + encodeURIComponent(query) + "&t=&z=13&ie=UTF8&iwloc=&output=embed";
   }
 
@@ -237,11 +243,10 @@
 
     var googleBtn = document.getElementById("miniMapGoogleBtn");
     if (googleBtn) {
-      var areaName = state.location.name ? state.location.name.split(",")[0].trim() : "Batangas City";
       googleBtn.href = window.SkinsightClinics.getGoogleMapsSearchUrl(
         state.location.lat,
         state.location.lng,
-        "dermatologist skin clinic in " + areaName + ", Batangas"
+        "dermatologist skin clinic in " + state.location.name
       );
     }
   }
@@ -262,20 +267,23 @@
 
     var countText = document.getElementById("modalClinicCountText");
     if (countText) {
-      var visibleCount = countClinicsNearLocation(state.location.lat, state.location.lng);
-      var countScope = state.filterDistance === "area"
-        ? "in this town"
-        : (state.filterDistance === "all" ? "across Batangas" : "within " + state.filterDistance + " km");
-      countText.textContent = " · " + visibleCount + " clinic" + (visibleCount === 1 ? "" : "s") + " on Google Maps " + countScope;
+      if (!window.SkinsightClinics.getCoverageAt(state.location.lat, state.location.lng)) {
+        countText.textContent = " · outside current directory coverage";
+      } else {
+        var visibleCount = countClinicsNearLocation(state.location.lat, state.location.lng);
+        var countScope = state.filterDistance === "area"
+          ? "in this town"
+          : (state.filterDistance === "all" ? "across the covered area" : "within " + state.filterDistance + " km");
+        countText.textContent = " · " + visibleCount + " listed clinic" + (visibleCount === 1 ? "" : "s") + " " + countScope;
+      }
     }
 
     var externalLink = document.getElementById("modalExternalGoogleMapsLink");
     if (externalLink) {
-      var areaName = state.location.name ? state.location.name.split(",")[0].trim() : "Batangas City";
       externalLink.href = window.SkinsightClinics.getGoogleMapsSearchUrl(
         state.location.lat,
         state.location.lng,
-        "dermatologist skin clinic in " + areaName + ", Batangas"
+        "dermatologist skin clinic in " + state.location.name
       );
     }
 
@@ -285,7 +293,7 @@
 
   function countClinicsNearLocation(lat, lng) {
     var count = 0;
-    var selectedCity = (state.location.name || "").toLowerCase().split(",")[0].trim();
+    var selectedCity = areaCityFor(state.location);
     window.SkinsightClinics.DATA.forEach(function (c) {
       var clinicCity = (c.city || "").toLowerCase();
       var isSameCity = clinicCity === selectedCity ||
@@ -397,6 +405,18 @@
     renderClinicsList();
   }
 
+  // Which listed town is this pinned location "in"? Used by the "This town / city only" filter.
+  // 1) the location's own name when it is a listed town, 2) otherwise the nearest listed town within 18 km
+  // (a GPS fix in a barangay, or a reverse-geocoded street name, still maps to its town), 3) otherwise the name.
+  function areaCityFor(loc) {
+    var first = String((loc && loc.name) || "").split(",")[0].trim().toLowerCase();
+    var isListedTown = CITY_PRESETS.some(function (c) { return c.name.toLowerCase() === first; }) ||
+      window.SkinsightClinics.DATA.some(function (c) { return (c.city || "").toLowerCase() === first; });
+    if (isListedTown) return first;
+    var near = loc ? findClosestCityPreset(loc.lat, loc.lng) : null;
+    return near ? near.toLowerCase() : first;
+  }
+
   function findClosestCityPreset(lat, lng) {
     var closest = null;
     var minDist = Infinity;
@@ -432,51 +452,51 @@
       });
   }
 
-  function geocodeAddress(query, callback) {
-    var q = query.trim().toLowerCase();
+  // Lowercase, strip punctuation and extra spaces so "Lipa City," and "lipa city" compare equal.
+  function normalizePlace(s) {
+    return String(s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  // Exact match against a covered town (or one of its aliases), optionally followed by "batangas".
+  // Loose substring matching is deliberately NOT used: "San Jose, California" must not resolve to San Jose, Batangas.
+  function findPreset(query) {
+    var q = normalizePlace(query).replace(/ batangas( philippines)?$/, "");
     for (var i = 0; i < CITY_PRESETS.length; i++) {
       var city = CITY_PRESETS[i];
-      if (city.name.toLowerCase().indexOf(q) !== -1) {
-        return callback({ lat: city.lat, lng: city.lng, name: city.name + ", Batangas" });
-      }
+      if (normalizePlace(city.name) === q) return city;
       for (var a = 0; a < city.alias.length; a++) {
-        if (q.indexOf(city.alias[a]) !== -1 || city.alias[a].indexOf(q) !== -1) {
-          return callback({ lat: city.lat, lng: city.lng, name: city.name + ", Batangas" });
-        }
+        if (normalizePlace(city.alias[a]) === q) return city;
       }
     }
+    return null;
+  }
 
-    var searchTerm = query.toLowerCase().indexOf("batangas") !== -1
-      ? query + ", Philippines"
-      : query + ", Batangas, Philippines";
+  function geocodeAddress(query, callback, quiet) {
+    var preset = findPreset(query);
+    if (preset) {
+      return callback({ lat: preset.lat, lng: preset.lng, name: preset.name + ", Batangas" });
+    }
 
-    var url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" +
-      encodeURIComponent(searchTerm);
+    // Any place worldwide can be pinned; whether we LIST clinics there is decided later from the coverage data.
+    var url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(query);
 
-    fetch(url)
+    fetch(url, { headers: { "Accept-Language": "en" } })
       .then(function (r) { return r.json(); })
       .then(function (results) {
         if (results && results.length > 0) {
           var item = results[0];
-          var lat = parseFloat(item.lat);
-          var lon = parseFloat(item.lon);
-
-          // Check if coordinates fall within Batangas Province bounding box
-          if (lat < 13.45 || lat > 14.30 || lon < 120.45 || lon > 121.50) {
-            showToast("Search is currently limited to Batangas Province.");
-            return callback(null);
-          }
-
           callback({
-            lat: lat,
-            lng: lon,
-            name: item.display_name.split(",").slice(0, 2).join(",") + ", Batangas"
+            lat: parseFloat(item.lat),
+            lng: parseFloat(item.lon),
+            name: item.display_name.split(",").slice(0, 2).join(",").trim()
           });
         } else {
+          if (!quiet) showToast("We couldn't find that place. Try a city or town name.");
           callback(null);
         }
       })
       .catch(function () {
+        if (!quiet) showToast("Place search is unavailable right now. Please try again.");
         callback(null);
       });
   }
@@ -540,8 +560,7 @@
 
     if (!navigator.geolocation) {
       resetLocateButtons();
-      showToast("Geolocation is not supported by your browser. Centered on Batangas City.");
-      setLocation(DEFAULT_LOCATION.lat, DEFAULT_LOCATION.lng, DEFAULT_LOCATION.name, true);
+      showToast("Your browser doesn't support location. Search for a city or town instead.");
       if (autoOpenModal) openMapModal();
       return;
     }
@@ -552,23 +571,19 @@
         var lat = pos.coords.latitude;
         var lng = pos.coords.longitude;
 
-        // Check if within Batangas Province bounding box
-        var isWithinBatangas = lat >= 13.45 && lat <= 14.30 && lng >= 120.45 && lng <= 121.50;
+        state.userActualLocation = {
+          lat: lat,
+          lng: lng,
+          isGps: true
+        };
+        state.location.isUserGps = true;
+        saveCurrentLocation();
 
-        if (!isWithinBatangas) {
-          showToast("📍 Map is limited to Batangas Province. Centered on Batangas City.");
-          setLocation(DEFAULT_LOCATION.lat, DEFAULT_LOCATION.lng, DEFAULT_LOCATION.name, true);
-        } else {
-          state.userActualLocation = {
-            lat: lat,
-            lng: lng,
-            isGps: true
-          };
-          state.location.isUserGps = true;
-          saveCurrentLocation();
-
-          setLocation(lat, lng, null, true);
+        setLocation(lat, lng, null, true);
+        if (window.SkinsightClinics.getCoverageAt(lat, lng)) {
           showToast("📍 Located! Distance counts now start from your actual location.");
+        } else {
+          showToast("📍 Located. We don't list clinics in your area yet; see the coverage note below.");
         }
         if (autoOpenModal) {
           openMapModal();
@@ -576,12 +591,11 @@
       },
       function (err) {
         resetLocateButtons();
-        var msg = "Could not retrieve GPS location. Showing Batangas City clinics.";
+        var msg = "Could not get your location. You can search for a city or town instead.";
         if (err && err.code === err.PERMISSION_DENIED) {
-          msg = "Location permission denied. Showing Batangas City clinics. You can select another town anytime.";
+          msg = "Location permission denied. You can search for a city or town instead.";
         }
         showToast(msg);
-        setLocation(DEFAULT_LOCATION.lat, DEFAULT_LOCATION.lng, DEFAULT_LOCATION.name, true);
         if (autoOpenModal) {
           openMapModal();
         }
@@ -595,27 +609,80 @@
   }
 
   /* --------------------------------------------------------------------------
+     Outside current coverage
+     -------------------------------------------------------------------------- */
+  function renderOutsideCoverage(areaDisplayName) {
+    var container = document.getElementById("clinicsList");
+    var resultsCountEl = document.getElementById("resultsCount");
+    if (resultsCountEl) resultsCountEl.textContent = "No listed clinics for this location yet";
+    var locationNameText = document.getElementById("locationNameText");
+    if (locationNameText) locationNameText.textContent = state.location.name;
+    if (!container) return;
+
+    var covered = window.SkinsightClinics.COVERAGE.map(function (c) { return c.name + ", " + c.country; }).join("; ");
+    var url = window.SkinsightClinics.getGoogleMapsSearchUrl(
+      state.location.lat, state.location.lng, "dermatologist skin clinic in " + state.location.name
+    );
+
+    container.innerHTML =
+      '<div class="card card-static empty-clinics-card" id="outsideCoverageCard" role="status">' +
+        '<div class="empty-icon"><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg></div>' +
+        '<h3>No clinics listed for ' + escapeHtml(areaDisplayName) + ' yet</h3>' +
+        '<p>The SKINSIGHT directory currently lists clinics in <strong>' + escapeHtml(covered) + '</strong> only. ' +
+        'We\'ll add more places over time, and we won\'t show clinics that are far away as if they were nearby.</p>' +
+        '<p class="empty-nearest-hint">You can still search Google Maps for dermatologists near ' + escapeHtml(areaDisplayName) +
+        '. Those results are not reviewed by SKINSIGHT, so please check credentials and contact details yourself.</p>' +
+        '<div class="empty-actions">' +
+          '<a href="' + url + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">' +
+            'Search "' + escapeHtml(areaDisplayName) + '" on Google Maps &rarr;' +
+          '</a>' +
+          '<button type="button" id="browseCoveredBtn" class="btn btn-secondary btn-sm">Browse the Batangas directory</button>' +
+        '</div>' +
+      '</div>';
+
+    var browse = document.getElementById("browseCoveredBtn");
+    if (browse) {
+      browse.addEventListener("click", function () {
+        clearTextFilter(document.getElementById("clinic-q"));
+        state.location.isUserGps = false;
+        setLocation(DEFAULT_LOCATION.lat, DEFAULT_LOCATION.lng, DEFAULT_LOCATION.name, true);
+        showToast("Showing the Batangas directory (current coverage).");
+      });
+    }
+  }
+
+  /* --------------------------------------------------------------------------
      Render Clinic Results (Area-Based & Radius Filtering)
      -------------------------------------------------------------------------- */
   function renderClinicsList() {
     // Search origin is ALWAYS the user's selected location (e.g. Tanauan City, Lipa City, Batangas City, or GPS location)
     var searchOrigin = state.location;
+    if (!state.location.name) state.location.name = "Your current location"; // never render with an unnamed location
     var isUserGps = !!state.location.isUserGps;
     var hasActualUserGps = !!state.userActualLocation;
 
     // Sort clinics by proximity to the chosen search location
     var sortedClinics = window.SkinsightClinics.getClinicsSorted(searchOrigin.lat, searchOrigin.lng);
     var selectedCityName = (state.location.name || "").toLowerCase();
-    var cleanTargetCity = selectedCityName.split(",")[0].trim();
+    var cleanTargetCity = areaCityFor(state.location);
     var areaDisplayName = state.location.name.split(",")[0].trim();
+
+    var coverage = window.SkinsightClinics.getCoverageAt(searchOrigin.lat, searchOrigin.lng);
+    var coverageName = coverage ? coverage.name : "the covered area";
 
     var filterScopeLabel = "";
     if (state.filterDistance === "area") {
       filterScopeLabel = "in " + areaDisplayName;
     } else if (state.filterDistance === "all") {
-      filterScopeLabel = "across Batangas Province";
+      filterScopeLabel = "across " + (window.SkinsightClinics.COVERAGE[0] ? window.SkinsightClinics.COVERAGE[0].name : "the directory");
     } else {
       filterScopeLabel = "within " + state.filterDistance + " km of " + areaDisplayName;
+    }
+
+    // Outside the places we list clinics for: say so, never show far-away clinics as if they were nearby.
+    if (!coverage) {
+      renderOutsideCoverage(areaDisplayName);
+      return;
     }
 
     var filtered = sortedClinics.filter(function (clinic) {
@@ -645,7 +712,7 @@
       }
 
       // 3. Operating Status Filter
-      if (state.filterAvailability === "open" && !clinic.isOpen) {
+      if (state.filterAvailability === "open" && window.SkinsightClinics.getOpenStatus(clinic).state !== "open") {
         return false;
       }
 
@@ -659,12 +726,12 @@
 
     var resultsCountEl = document.getElementById("resultsCount");
     if (resultsCountEl) {
-      resultsCountEl.textContent = filtered.length + " clinic" + (filtered.length === 1 ? "" : "s") + " on Google Maps " + filterScopeLabel;
+      resultsCountEl.textContent = filtered.length + " listed clinic" + (filtered.length === 1 ? "" : "s") + " " + filterScopeLabel;
     }
 
     var locationNameText = document.getElementById("locationNameText");
     if (locationNameText) {
-      locationNameText.textContent = areaDisplayName + ", Batangas";
+      locationNameText.textContent = state.location.name;
     }
 
     var container = document.getElementById("clinicsList");
@@ -674,27 +741,27 @@
       var nearest = sortedClinics.length > 0 ? sortedClinics[0] : null;
       var nearestHint = "";
       if (nearest && nearest.distance != null) {
-        nearestHint = '<p class="empty-nearest-hint">Nearest verified clinic on Google Maps is <strong>' + escapeHtml(nearest.name) +
+        nearestHint = '<p class="empty-nearest-hint">Nearest listed clinic is <strong>' + escapeHtml(nearest.name) +
           '</strong> in ' + escapeHtml(nearest.city) + ' (~' + nearest.distance + ' km from ' + escapeHtml(areaDisplayName) + ').</p>';
       }
 
       var gmapsSearchUrlEmpty = window.SkinsightClinics.getGoogleMapsSearchUrl(
         state.location.lat,
         state.location.lng,
-        "dermatologist skin clinic in " + state.location.name + ", Batangas"
+        "dermatologist skin clinic in " + state.location.name
       );
 
       container.innerHTML =
         '<div class="card card-static empty-clinics-card" role="status">' +
           '<div class="empty-icon"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg></div>' +
-          '<h3>No clinics listed on Google Maps ' + escapeHtml(filterScopeLabel) + '</h3>' +
-          '<p>We couldn\'t find any verified dermatology clinics ' + escapeHtml(filterScopeLabel) + '. You can expand your search distance or view all clinics across Batangas Province below.</p>' +
+          '<h3>No listed clinics ' + escapeHtml(filterScopeLabel) + '</h3>' +
+          '<p>We couldn\'t find any listed dermatology clinics ' + escapeHtml(filterScopeLabel) + '. You can expand your search distance or view all listed clinics in ' + escapeHtml(coverageName) + ' below.</p>' +
           nearestHint +
           '<div class="empty-actions">' +
             '<a href="' + gmapsSearchUrlEmpty + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">' +
-              'Search "' + escapeHtml(areaDisplayName) + ', Batangas" on Google Maps &rarr;' +
+              'Search "' + escapeHtml(areaDisplayName) + '" on Google Maps &rarr;' +
             '</a>' +
-            '<button type="button" id="expandRadiusBtn" class="btn btn-secondary btn-sm">Show All Batangas Clinics</button>' +
+            '<button type="button" id="expandRadiusBtn" class="btn btn-secondary btn-sm">Show all listed clinics</button>' +
             '<button type="button" id="resetFiltersBtn" class="btn btn-ghost btn-sm">Reset Filters</button>' +
           '</div>' +
         '</div>';
@@ -706,7 +773,7 @@
           var fDist = document.getElementById("f-distance");
           if (fDist) fDist.value = "all";
           renderClinicsList();
-          showToast("Showing all verified clinics across Batangas Province.");
+          showToast("Showing all listed clinics in " + coverageName + ".");
         });
       }
 
@@ -720,7 +787,7 @@
     var gmapsSearchUrl = window.SkinsightClinics.getGoogleMapsSearchUrl(
       state.location.lat,
       state.location.lng,
-      "dermatologist skin clinic in " + state.location.name + ", Batangas"
+      "dermatologist skin clinic in " + state.location.name
     );
 
     var originNote = isUserGps
@@ -732,17 +799,18 @@
         '<div class="gmaps-sync-left">' +
           '<span class="gmaps-sync-pulse"></span>' +
           '<div class="gmaps-sync-text">' +
-            '<strong>Google Maps Matched &middot; ' + filtered.length + ' verified clinic' + (filtered.length === 1 ? '' : 's') + ' ' + escapeHtml(filterScopeLabel) + '</strong>' +
+            '<strong>Directory &middot; ' + filtered.length + ' listed clinic' + (filtered.length === 1 ? '' : 's') + ' ' + escapeHtml(filterScopeLabel) + '</strong>' +
             '<p>' + originNote + '</p>' +
           '</div>' +
         '</div>' +
-        '<a href="' + gmapsSearchUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-xs gmaps-sync-btn" title="View live Google Maps pins across Batangas">' +
+        '<a href="' + gmapsSearchUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-xs gmaps-sync-btn" title="Search Google Maps for dermatologists near this location">' +
           'Open Google Maps <svg class="i" style="width:12px;height:12px;" aria-hidden="true"><use href="#i-arrow-right"/></svg>' +
         '</a>' +
       '</div>';
 
     var html = filtered.map(function (clinic) {
-      var isClosed = !clinic.isOpen;
+      var openStatus = window.SkinsightClinics.getOpenStatus(clinic);
+      var isClosed = openStatus.state === "closed";
       var cardClass = "clinic-card" + (isClosed ? " is-closed" : "") + (clinic.id === state.selectedClinicId ? " is-highlighted" : "");
 
       var distanceDisplay = "";
@@ -766,13 +834,14 @@
       }
       var metaText = distanceDisplay + " &middot; " + escapeHtml(clinic.city);
 
-      var statusBadge = clinic.isOpen
-        ? '<span class="badge badge-open">Open Now</span>'
-        : '<span class="badge badge-closed">' + escapeHtml(clinic.reopenText || "Closed") + '</span>';
+      var statusTitle = "Based on the hours listed in SKINSIGHT's directory, which have not been verified. Please confirm with the clinic.";
+      var statusBadge = openStatus.state === "open"
+        ? '<span class="badge badge-open" title="' + statusTitle + '">' + openStatus.label + '</span>'
+        : openStatus.state === "closed"
+          ? '<span class="badge badge-closed" title="' + statusTitle + '">' + openStatus.label + '</span>'
+          : '<span class="badge badge-info" title="' + statusTitle + '">' + openStatus.label + '</span>';
 
-      var gmapsBadge = '<span class="badge badge-gmaps">📍 On Google Maps</span>';
-
-      var docBadge = '<span class="badge badge-info">' + clinic.doctors.length + ' dermatologist' + (clinic.doctors.length === 1 ? '' : 's') + '</span>';
+      var docBadge = '<span class="badge badge-info" title="Doctor details are not verified">' + clinic.doctors.length + ' listed doctor' + (clinic.doctors.length === 1 ? '' : 's') + '</span>';
 
       var typeBadges = clinic.consultationTypes.map(function (t) {
         return t === "teleconsult"
@@ -795,7 +864,6 @@
           '<p class="clinic-meta">' + metaText + '</p>' +
           '<div class="clinic-tags">' +
             statusBadge +
-            gmapsBadge +
             docBadge +
             typeBadges +
           '</div>' +
@@ -915,6 +983,13 @@
   /* --------------------------------------------------------------------------
      Setup DOM Form Controls
      -------------------------------------------------------------------------- */
+  // The box doubles as a clinic-name filter and a place search; once its text has been used as a place,
+  // keeping it as a filter would hide every clinic at the new location.
+  function clearTextFilter(inputEl) {
+    state.searchQuery = "";
+    if (inputEl) inputEl.value = "";
+  }
+
   function setupFormControls() {
     var searchInput = document.getElementById("clinic-q");
     if (searchInput) {
@@ -932,12 +1007,20 @@
           e.preventDefault();
           var val = this.value.trim();
           if (val) {
+            var inputEl = this;
+            var q = val.toLowerCase();
+            var looksLikeClinicSearch = window.SkinsightClinics.DATA.some(function (c) {
+              return c.name.toLowerCase().indexOf(q) !== -1 ||
+                c.doctors.some(function (d) { return d.name.toLowerCase().indexOf(q) !== -1; }) ||
+                c.services.some(function (s) { return s.toLowerCase().indexOf(q) !== -1; });
+            });
             geocodeAddress(val, function (res) {
               if (res) {
+                clearTextFilter(inputEl);
                 setLocation(res.lat, res.lng, res.name, true);
                 showToast("📍 Moved to " + res.name);
               }
-            });
+            }, looksLikeClinicSearch);
           }
         }
       });

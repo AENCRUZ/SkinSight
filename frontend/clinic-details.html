@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
@@ -18,7 +18,7 @@
 <script>
   (function () {
     try {
-      var k = localStorage.getItem("skinsight_user");
+      var k = localStorage.getItem("skinsight_user") || sessionStorage.getItem("skinsight_user");
       if (!k) {
         for (var i = 0; i < localStorage.length; i++) {
           var key = localStorage.key(i);
@@ -47,11 +47,13 @@
       <svg class="i" aria-hidden="true" focusable="false"><use href="#i-chevron-left"/></svg> Back to Find a Dermatologist
     </a>
 
+    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Directory details aren't verified.</strong> Hours, contact details, doctors and services below are from our directory and have not been independently confirmed. Please check with the clinic first.</p></div>
+
     <!-- Clinic Header & Core Contacts -->
     <div class="card card-static clinic-hero">
       <div class="clinic-hero-top">
-        <span class="badge badge-open" id="clinicStatusBadge">Open Now</span>
-        <span class="badge badge-preview" id="clinicTypeBadge">In-person Only</span>
+        <span class="badge badge-info" id="clinicStatusBadge">Hours unconfirmed</span>
+        <span class="badge badge-info" id="clinicTypeBadge">In-person</span>
         <span class="badge badge-location" id="clinicCityBadge">📍 Batangas City</span>
       </div>
       <h1 id="clinicName">SkinStation — SM City Batangas</h1>
@@ -136,7 +138,7 @@
     <!-- Direct Reach-out & Summary Sharing Section -->
     <div class="card card-static inquiry-card" id="contactSection">
       <h2 class="card-title mb-6">Contact &amp; Share Consultation Summary</h2>
-      <p class="intro">Fill in your preferred schedule and contact details below. SKINSIGHT formats your consultation summary so you can reach out directly via Phone, Email, SMS, or Messenger.</p>
+      <p class="intro">Fill in your preferred schedule and contact details below. SKINSIGHT formats a message from your own consultation summary so you can reach out directly via Phone, Email, SMS, or Messenger. SKINSIGHT does not send anything for you.</p>
 
       <!-- Interactive Patient Inquiry Form -->
       <form class="inquiry-form" onsubmit="return false">
@@ -164,18 +166,19 @@
 
         <div class="inquiry-field mb-16">
           <label for="patientNotesInput">Additional Notes for the Clinic (Optional):</label>
-          <textarea id="patientNotesInput" rows="2" placeholder="e.g. I have had this rash for 4 days and would like an evaluation."></textarea>
+          <textarea id="patientNotesInput" rows="2" maxlength="500" placeholder="e.g. Describe your concern in your own words if you haven't used the AI assistant."></textarea>
         </div>
 
         <span class="inquiry-preview-label">Live Message Preview:</span>
-        <div class="inquiry-preview-box" id="inquiryPreviewBox">Loading summary...</div>
+        <div class="inquiry-preview-box" id="inquiryPreviewBox" aria-live="polite">Loading…</div>
+        <p class="helper" id="inquiryNeeds" role="status" hidden></p>
 
         <div class="send-options">
           <div class="send-option">
             <div class="send-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></div>
             <h3 class="send-option-title">Email Clinic</h3>
-            <p>Opens Gmail in a new tab with your inquiry and summary pre-filled.</p>
-            <a class="btn btn-primary btn-sm" id="sendEmailBtn" href="#" target="_blank" rel="noopener noreferrer">Send Email Inquiry</a>
+            <p>Opens Gmail in a new tab with your message pre-filled. Review it before sending: it contains what you reported about your skin and your contact details.</p>
+            <a class="btn btn-primary btn-sm" id="sendEmailBtn" href="#" target="_blank" rel="noopener noreferrer">Open Email Draft</a>
           </div>
 
           <div class="send-option">
@@ -205,7 +208,7 @@
 
     <div class="notice strong">
       <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
-      <span>SKINSIGHT does not charge booking fees or act as an intermediary. You communicate directly with the clinic using the verified contact details above.</span>
+      <span>SKINSIGHT does not charge booking fees or act as an intermediary. You communicate directly with the clinic using the contact details listed above. Those details are not independently verified, so please confirm them with the clinic.</span>
     </div>
   </div>
 </section>
@@ -260,7 +263,7 @@
     }
 
     // 1. Populate Clinic Details Header
-    document.title = clinic.name + " — SKINSIGHT Batangas";
+    document.title = clinic.name + " — SKINSIGHT";
     var nameEl = document.getElementById("clinicName");
     if (nameEl) nameEl.textContent = clinic.name;
 
@@ -302,20 +305,22 @@
 
     var statusEl = document.getElementById("clinicStatusBadge");
     if (statusEl) {
-      statusEl.className = "badge " + (clinic.isOpen ? "badge-open" : "badge-closed");
-      statusEl.textContent = clinic.isOpen ? "Open Now" : (clinic.reopenText || "Closed");
+      var open = window.SkinsightClinics.getOpenStatus(clinic);
+      statusEl.className = "badge " + (open.state === "open" ? "badge-open" : open.state === "closed" ? "badge-closed" : "badge-info");
+      statusEl.textContent = open.label;
+      statusEl.title = "Based on the hours listed in SKINSIGHT's directory, which have not been verified. Please confirm with the clinic.";
     }
 
     var typeEl = document.getElementById("clinicTypeBadge");
     if (typeEl) {
       typeEl.textContent = (clinic.consultationTypes && clinic.consultationTypes.indexOf("teleconsult") !== -1)
-        ? "In-person & Teleconsult"
-        : "In-person Only";
+        ? "In-person & Teleconsult (unconfirmed)"
+        : "In-person";
     }
 
     var cityBadge = document.getElementById("clinicCityBadge");
     if (cityBadge) {
-      cityBadge.textContent = "📍 " + (clinic.city || "Batangas");
+      cityBadge.textContent = "📍 " + (clinic.city || "Location not listed");
     }
 
     // Google Maps Links & Embed
@@ -328,7 +333,7 @@
 
     var userActualLoc = null;
     try {
-      var rawActual = sessionStorage.getItem("skinsight_user_actual_location") || localStorage.getItem("skinsight_user_actual_location");
+      var rawActual = sessionStorage.getItem("skinsight_user_actual_location");
       if (rawActual) userActualLoc = JSON.parse(rawActual);
     } catch (e) {}
 
@@ -367,7 +372,7 @@
         return '<div class="derm-row">' +
           '<span class="derm-avatar" aria-hidden="true">' + (doc.initials || doc.name.slice(0, 2).toUpperCase()) + '</span>' +
           '<div><strong>' + escapeHtml(doc.name) + '</strong><p>' + escapeHtml(doc.role) + '</p></div>' +
-          '<span class="badge badge-info">Accepting patients</span>' +
+          '<span class="badge badge-info">Availability not confirmed</span>' +
         '</div>';
       }).join("");
     }
@@ -375,7 +380,7 @@
     // 4. Initialize User Profile Prefill
     var storedUser = null;
     try {
-      var rawUser = localStorage.getItem("skinsight_user");
+      var rawUser = sessionStorage.getItem("skinsight_user") || localStorage.getItem("skinsight_user");
       if (rawUser) storedUser = JSON.parse(rawUser);
     } catch (e) {}
 
@@ -390,6 +395,24 @@
     }
 
     // 5. Dynamic Message Generation & Reach-out Handlers
+    // The message is built ONLY from what the user actually provided: their saved consultation summary and the
+    // fields they type here. There is no sample/fallback patient text. Without a concern the buttons stay disabled.
+    function isReal(v) {
+      return typeof v === "string" && v.trim() && !/^(not reported|not specified|none reported|n\/a)$/i.test(v.trim());
+    }
+
+    function setSendEnabled(enabled) {
+      ["sendEmailBtn", "downloadDetailsBtn"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.setAttribute("aria-disabled", enabled ? "false" : "true");
+        el.classList.toggle("is-disabled", !enabled);
+        if (!enabled) { el.removeAttribute("href"); el.removeAttribute("target"); }
+      });
+      var copy = document.getElementById("copyDetailsBtn");
+      if (copy) copy.disabled = !enabled;
+    }
+
     function updateInquiryMessage() {
       var patientName = (nameInput && nameInput.value.trim()) || "Patient";
       var patientContact = (contactInput && contactInput.value.trim()) || "Not provided";
@@ -398,10 +421,21 @@
       var patientNotes = (document.getElementById("patientNotesInput") && document.getElementById("patientNotesInput").value.trim()) || "";
 
       var summary = getActiveSummaryData();
-      var mainConcern = summary.mainConcern || "Dermatology consultation";
-      var symptoms = summary.symptoms || "Skin evaluation";
-      var duration = summary.duration || "";
-      var affectedArea = summary.affectedArea || "";
+      var hasConcern = !!(summary && isReal(summary.mainConcern)) || !!patientNotes;
+
+      var needsEl = document.getElementById("inquiryNeeds");
+      var previewBox = document.getElementById("inquiryPreviewBox");
+
+      if (!hasConcern) {
+        setSendEnabled(false);
+        if (previewBox) previewBox.textContent = "Your message will appear here once there is a skin concern to share.";
+        if (needsEl) {
+          needsEl.hidden = false;
+          needsEl.innerHTML = 'No consultation summary was found. <a href="ai-chat.html">Describe your concern to the AI Skin Assistant</a> to generate one, or type your concern in the notes field above.';
+        }
+        return "";
+      }
+      if (needsEl) needsEl.hidden = true;
 
       var lines = [
         "Good day " + clinic.name + " Team,",
@@ -413,26 +447,24 @@
         "• Preferred Schedule: " + patientDate,
         "• Consultation Mode: " + consultMode,
         "",
-        "Reason for Visit / Skin Concern:",
-        "• Chief Concern: " + mainConcern
+        "Reason for Visit / Skin Concern:"
       ];
 
-      if (symptoms && symptoms !== "None reported") {
-        var symptomLine = "• Symptoms: " + symptoms;
-        if (duration && duration !== "Not specified") {
-          symptomLine += " (" + duration + ")";
+      if (summary && isReal(summary.mainConcern)) {
+        lines.push("• Chief Concern (as I reported): " + summary.mainConcern);
+        if (isReal(summary.symptoms)) {
+          var symptomLine = "• Symptoms: " + summary.symptoms;
+          if (isReal(summary.duration)) symptomLine += " (" + summary.duration + ")";
+          lines.push(symptomLine);
+        } else if (isReal(summary.duration)) {
+          lines.push("• Duration: " + summary.duration);
         }
-        lines.push(symptomLine);
-      } else if (duration && duration !== "Not specified") {
-        lines.push("• Duration: " + duration);
-      }
-
-      if (affectedArea && affectedArea !== "Not specified") {
-        lines.push("• Affected Area: " + affectedArea);
+        if (isReal(summary.affectedArea)) lines.push("• Affected Area: " + summary.affectedArea);
+        if (isReal(summary.triggers)) lines.push("• Recent changes / triggers: " + summary.triggers);
       }
 
       if (patientNotes) {
-        lines.push("• Additional Notes: " + patientNotes);
+        lines.push("• " + (summary && isReal(summary.mainConcern) ? "Additional Notes" : "Concern") + ": " + patientNotes);
       }
 
       lines.push(
@@ -444,21 +476,19 @@
       );
 
       var fullMessage = lines.join("\n");
+      if (previewBox) previewBox.textContent = fullMessage;
+      setSendEnabled(true);
 
-      var previewBox = document.getElementById("inquiryPreviewBox");
-      if (previewBox) {
-        previewBox.textContent = fullMessage;
-      }
-
-      // Update Email Button — opens Gmail compose in a new tab
+      // Email button: opens Gmail compose in a new tab (nothing is sent by SKINSIGHT)
       var emailBtn = document.getElementById("sendEmailBtn");
       if (emailBtn) {
         var subject = encodeURIComponent("Consultation & Appointment Inquiry — " + patientName);
         var body = encodeURIComponent(fullMessage);
         emailBtn.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(clinic.email) + "&su=" + subject + "&body=" + body;
+        emailBtn.target = "_blank";
+        emailBtn.rel = "noopener noreferrer";
       }
 
-      // Update Download Button
       var downloadBtn = document.getElementById("downloadDetailsBtn");
       if (downloadBtn) {
         downloadBtn.href = "data:text/plain;charset=utf-8," + encodeURIComponent(fullMessage);
@@ -466,6 +496,12 @@
 
       return fullMessage;
     }
+
+    // Disabled links must not navigate
+    ["sendEmailBtn", "downloadDetailsBtn"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener("click", function (e) { if (el.getAttribute("aria-disabled") === "true") e.preventDefault(); });
+    });
 
     // Hook inputs to update message in real time
     ["patientNameInput", "patientContactInput", "patientDateInput", "consultTypeSelect", "patientNotesInput"].forEach(function (id) {
@@ -511,8 +547,9 @@
   function getActiveSummaryData() {
     var noteEl = document.getElementById("summarySourceText");
 
-    // 1. Try to load saved consultation summary from session
-    var rawSummary = sessionStorage.getItem("skinsight_consultation_summary");
+    // Only the user's own consultation summary (saved in this browser session) is ever used.
+    var rawSummary = null;
+    try { rawSummary = sessionStorage.getItem("skinsight_consultation_summary"); } catch (e) {}
     if (rawSummary) {
       try {
         var parsed = JSON.parse(rawSummary);
@@ -523,16 +560,10 @@
       } catch (e) {}
     }
 
-    // 2. Fallback to default concern
     if (noteEl) {
-      noteEl.textContent = "Sample consultation format. Complete an AI Skin Assistant session to auto-fill your specific symptoms.";
+      noteEl.textContent = "No consultation summary found. Complete an AI Skin Assistant session and open your summary to include your reported symptoms.";
     }
-    return {
-      mainConcern: "Red, itchy patch on the forearm",
-      symptoms: "Redness, itching, mild swelling",
-      duration: "4–5 days",
-      affectedArea: "Left forearm, inner side"
-    };
+    return null;
   }
 
   function escapeHtml(str) {

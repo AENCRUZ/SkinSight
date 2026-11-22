@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
@@ -19,7 +19,7 @@
 <script>
   (function () {
     try {
-      var k = localStorage.getItem("skinsight_user");
+      var k = localStorage.getItem("skinsight_user") || sessionStorage.getItem("skinsight_user");
       if (!k) {
         for (var i = 0; i < localStorage.length; i++) {
           var key = localStorage.key(i);
@@ -44,14 +44,16 @@
 
 <div class="page-header">
   <div class="wrap">
-    <span class="eyebrow">Batangas Province Clinics</span>
-    <h1>Find a Dermatologist in Batangas</h1>
-    <p>Find licensed skin clinics across Batangas Province, pin your location on Google Maps, and reach out directly to share your consultation summary.</p>
+    <span class="eyebrow">Dermatologist directory</span>
+    <h1>Find a Dermatologist</h1>
+    <p>Search for dermatologist clinics, pin your location on Google Maps, and reach out directly to share your consultation summary.</p>
   </div>
 </div>
 
 <section class="feature-section">
   <div class="wrap">
+    <div class="coverage-note" id="coverageNote" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg><p><strong>Current coverage: Batangas Province, Philippines only.</strong> This is a demo directory. You can pin any location, but we only list clinics in Batangas for now, and more places will be added over time.</p></div>
+    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Directory details aren't verified.</strong> Hours, phone numbers, emails and doctors come from our own directory and have not been independently confirmed. Please contact the clinic to confirm before you visit.</p></div>
     <!-- Active Search & Location Panel -->
     <form class="card card-static finder-panel" role="search" aria-label="Search clinics and choose location" onsubmit="return false">
       <fieldset class="finder-fields">
@@ -60,7 +62,7 @@
           <div class="finder-search">
             <label class="visually-hidden" for="clinic-q">Search location, clinic name, or doctor</label>
             <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
-            <input type="search" id="clinic-q" placeholder="Search clinic, doctor, or town in Batangas (e.g. Batangas City, Lipa, Tanauan, Lemery)...">
+            <input type="search" id="clinic-q" placeholder="Search a clinic or doctor, or type a city or town and press Enter (e.g. Lipa)...">
           </div>
           <button class="btn btn-primary" type="button" id="useLocationBtn">
             <svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg> Use My Location
@@ -72,14 +74,14 @@
               <option value="area" selected>This town / city only</option>
               <option value="15">Within 15 km</option>
               <option value="25">Within 25 km</option>
-              <option value="all">All Batangas Province</option>
+              <option value="all">All listed clinics</option>
             </select>
             <svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg>
           </div>
           <div class="select-wrap">
             <select id="f-availability" aria-label="Operating status">
               <option value="all">Availability: Any</option>
-              <option value="open">Open Now</option>
+              <option value="open">Open now (listed hours)</option>
             </select>
             <svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg>
           </div>
@@ -153,9 +155,9 @@
   <div class="map-modal-dialog">
     <div class="map-modal-header">
       <div>
-        <div class="map-modal-eyebrow">Google Maps &middot; Batangas Province</div>
-        <h2 id="mapModalTitle">Choose Your Location in Batangas</h2>
-        <p>Explore dermatologist clinics across Batangas Province or select a town below to find nearby clinics.</p>
+        <div class="map-modal-eyebrow">Google Maps</div>
+        <h2 id="mapModalTitle">Choose your location</h2>
+        <p>Search any city, town or address, or pick one of the towns with listed clinics below. Clinics are currently listed in Batangas Province only.</p>
       </div>
       <button type="button" class="map-modal-close" id="closeMapModalBtn" aria-label="Close map modal">
         <svg class="i" aria-hidden="true"><use href="#i-x"/></svg>
@@ -165,7 +167,7 @@
     <div class="map-modal-toolbar">
       <div class="map-modal-search">
         <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
-        <input type="text" id="modalMapSearchInput" placeholder="Search town or area in Batangas (e.g. Lipa, Tanauan, Bauan, Lemery)...">
+        <input type="text" id="modalMapSearchInput" placeholder="Search any city, town or address...">
         <button type="button" id="modalMapSearchBtn" class="btn btn-primary btn-sm">Search</button>
       </div>
       <button type="button" id="modalUseLocationBtn" class="btn btn-secondary btn-sm">
@@ -173,10 +175,10 @@
       </button>
     </div>
 
-    <!-- Quick Area Select Chips (Batangas Towns) -->
+    <!-- Quick Area Select Chips: towns that currently have listed clinics (Batangas Province) -->
     <div class="map-modal-chips-bar">
-      <span class="chips-label">Quick select town:</span>
-      <div class="modal-city-chips" role="group" aria-label="Batangas towns and cities">
+      <span class="chips-label">Towns with listed clinics (Batangas):</span>
+      <div class="modal-city-chips" role="group" aria-label="Towns with listed clinics in Batangas Province">
         <button type="button" class="city-chip is-active" data-city="Batangas City">📍 Batangas City</button>
         <button type="button" class="city-chip" data-city="Lipa City">📍 Lipa City</button>
         <button type="button" class="city-chip" data-city="Tanauan City">📍 Tanauan City</button>
