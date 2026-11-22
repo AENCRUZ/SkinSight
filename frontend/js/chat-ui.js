@@ -1,20 +1,18 @@
 /*
- * SKINSIGHT — Chat UI enhancements + conversation history sidebar
+ * SKINSIGHT — Chat UI enhancements + saved-consultation sidebar
  *
- * FRONTEND ONLY. No network calls, no new API integrations.
- *
- * chat.js keeps the live conversation in sessionStorage ("skinsight_chat_history")
- * and talks to the backend. This file never touches that contract; it only:
- *   - lays out and drives the history sidebar (collapse, search, grouping, delete)
- *   - lets users start a new consultation and revisit earlier ones from THIS
- *     browser session (kept in sessionStorage under skinsight_ui_* keys, so they
- *     vanish when the tab closes or the user signs out — auth.js clears sessionStorage)
- *   - shows clearly labelled SAMPLE conversations (mock data, read-only preview;
- *     never loaded into the live chat, so fake transcripts are never sent to the AI)
+ * chat.js keeps the CURRENT conversation in sessionStorage ("skinsight_chat_history") and talks to the
+ * backend. This file never touches that contract. It:
+ *   - lays out and drives the sidebar (collapse, search, grouping, delete)
+ *   - SAVES the current conversation to the user's account (js/history-store.js -> Supabase table
+ *     public.consultations, protected by Row Level Security) after every assistant reply
+ *   - lists the user's saved consultations and lets them reopen one, also after signing out and back in
+ *     or on another device. Reopening copies the saved messages back into the sessionStorage "current
+ *     conversation", which is exactly what chat.js already renders and continues.
+ *   - if the table is not available, says so plainly (no demo data is ever shown)
  *   - starter prompts, auto-growing composer, attach-menu accessibility, error styling
  *
- * BACKEND WORK NEEDED FOR REAL, PERSISTENT HISTORY (not implemented here):
- *   see "REAL_HISTORY_API" at the bottom of this file.
+ * sessionStorage is only the working copy of the open conversation; the saved history lives in the database.
  */
 (function () {
   "use strict";
@@ -22,11 +20,12 @@
   // ---------------------------------------------------------------- constants
   var KEY_LIVE = "skinsight_chat_history";             // owned by chat.js (read/write only to restore a saved chat)
   var KEY_SUMMARY = "skinsight_consultation_summary";  // owned by summary.js (cleared when the live chat changes)
-  var KEY_CONVOS = "skinsight_ui_convos";              // archived conversations from this session
+  var KEY_CONVOS_LEGACY = "skinsight_ui_convos";       // old session-only archive (removed on load)
   var KEY_CURRENT = "skinsight_ui_current";            // metadata of the live conversation
-  var KEY_HIDDEN = "skinsight_ui_mock_hidden";         // sample conversations the user deleted
+  var KEY_HIDDEN_LEGACY = "skinsight_ui_mock_hidden";  // from the removed sample conversations (cleaned up on load)
   var LS_SIDEBAR = "skinsight_ui_sidebar";             // per-viewer convenience: "open" | "closed"
-  var MAX_SAVED = 30;
+  var SAVE_DELAY_MS = 700;
+  var History = window.SkinsightHistory || null;
 
   // ------------------------------------------------------------------- dom
   var app = document.getElementById("chatApp");
@@ -43,13 +42,17 @@
   var listEl = document.getElementById("historyList");
   var statusEl = document.getElementById("historyStatus");
   var titleEl = document.getElementById("chatTitle");
-  var previewEl = document.getElementById("chatPreview");
   var textarea = document.querySelector(".chat-inputbar textarea");
   var sendBtn = document.querySelector(".chat-inputbar button.send");
   var attachToggle = document.getElementById("attach-toggle");
   var mobileMq = window.matchMedia("(max-width: 900px)");
 
-  var state = { query: "", preview: null, confirmId: null, lastFocusId: null };
+  var state = { query: "", confirmId: null, lastFocusId: null, busyId: null };
+  // Saved consultations from the database: status is "loading" | "ready" | "unavailable" | "error".
+  var remote = { status: "loading", items: [], message: "", saveError: "" };
+  var lastSavedSig = null;
+  var saveTimer = null;
+  var savePromise = Promise.resolve();
 
   // --------------------------------------------------------------- storage
   function readJSON(storage, key, fallback) {
@@ -64,37 +67,16 @@
   function removeKey(storage, key) {
     try { storage.removeItem(key); } catch (e) { }
   }
-  function uid() { return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-
-  // ---------------------------------------------------------------- mock data
-  // MOCK DATA — clearly labelled "Sample" in the UI. Replace with real history from the
-  // API once persistent conversations exist (see REAL_HISTORY_API).
-  function buildMocks() {
-    var H = 3600 * 1000, D = 24 * H, now = Date.now();
-    return [
-      { id: "mock-1", title: "Dry patches around my nose", updatedAt: now - 2.5 * H, messages: [
-        ["user", "I've had dry, flaky patches around my nose for about a week."],
-        ["ai", "Thanks for sharing that. To organize this for your dermatologist: is the skin itchy, burning or tender? And have you changed any skincare products recently?"],
-        ["user", "Slightly itchy. I started a new moisturizer last week."],
-        ["ai", "Noted: dry, flaky patches around the nose for about a week, mild itching, and a new moisturizer started a week ago. Would you like to add a photo before I prepare your summary?"] ] },
-      { id: "mock-2", title: "Itchy rash on my forearm", updatedAt: now - 1 * D - 3 * H, messages: [
-        ["user", "There's a red, itchy rash on my left forearm that appeared two days ago."],
-        ["ai", "I'm sorry it's bothering you. Has anything new touched that area, such as a plant, a detergent, jewelry or a new lotion?"],
-        ["user", "I did some gardening the day before."],
-        ["ai", "Thank you. I'll record the timing, location and the gardening as a possible trigger so you can discuss it with your dermatologist."] ] },
-      { id: "mock-3", title: "Acne flare on my jawline", updatedAt: now - 3 * D, messages: [
-        ["user", "My acne is getting worse along my jawline this month."],
-        ["ai", "Let's document that. Roughly when did the flare begin, and have there been any changes in stress, sleep, diet or products?"],
-        ["user", "About three weeks ago, right when exams started."] ] },
-      { id: "mock-4", title: "Scalp flaking and redness", updatedAt: now - 12 * D, messages: [
-        ["user", "My scalp is flaking and red behind my ears."],
-        ["ai", "Thanks. Is it itchy, and does it get better or worse after washing your hair? I'll note what you share for your visit."] ] },
-      { id: "mock-5", title: "Questions about a changing mole", updatedAt: now - 41 * D, messages: [
-        ["user", "I have a mole on my back that looks darker than before."],
-        ["ai", "A change like that is worth showing a professional. I can't assess it, but I can organize when you noticed the change and any other details to bring to a dermatologist."] ] }
-    ];
+  // Conversation ids are stored in a uuid column, so they must be real UUIDs.
+  var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  function uid() {
+    if (History && History.newId) return History.newId();
+    var c = window.crypto;
+    if (c && c.randomUUID) return c.randomUUID();
+    var b = new Uint8Array(16); c.getRandomValues(b); b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+    var h = Array.prototype.map.call(b, function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
+    return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
   }
-  var MOCKS = buildMocks();
 
   // ----------------------------------------------------------------- helpers
   function turnText(turn) {
@@ -138,7 +120,7 @@
       return null;
     }
     var last = history.length + ":" + turnText(history[history.length - 1]).length;
-    if (!meta || !meta.id) {
+    if (!meta || !UUID_RE.test(String(meta.id || ""))) { // also replaces ids left over from older versions
       meta = { id: uid(), createdAt: Date.now(), updatedAt: Date.now(), sig: last };
       writeJSON(sessionStorage, KEY_CURRENT, meta);
     } else if (meta.sig !== last) {
@@ -149,23 +131,72 @@
     return meta;
   }
 
-  function savedConvos() {
-    var c = readJSON(sessionStorage, KEY_CONVOS, []);
-    return Array.isArray(c) ? c : [];
-  }
-  function hiddenMocks() {
-    var h = readJSON(sessionStorage, KEY_HIDDEN, []);
-    return Array.isArray(h) ? h : [];
+  // ---------------------------------------------------------- saved history
+  function liveSignature(history) {
+    return history.length + ":" + turnText(history[history.length - 1]).length;
   }
 
-  // Move the live conversation into the archive (no-op when empty).
-  function archiveLive() {
+  function setSaveError(msg) {
+    remote.saveError = msg || "";
+    render();
+  }
+
+  // Save the open conversation (debounced). Skips when nothing changed since the last successful save.
+  function scheduleSave() {
+    if (!History || remote.status === "unavailable") return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () { flushSave(); }, SAVE_DELAY_MS);
+  }
+
+  function flushSave() {
+    clearTimeout(saveTimer);
+    if (!History || remote.status === "unavailable") return Promise.resolve();
     var history = liveHistory();
-    if (!history.length) return;
+    if (!history.length) return savePromise;
     var meta = currentMeta(history);
-    var saved = savedConvos().filter(function (c) { return c.id !== meta.id; });
-    saved.unshift({ id: meta.id, title: titleFromHistory(history), createdAt: meta.createdAt, updatedAt: meta.updatedAt, history: history });
-    writeJSON(sessionStorage, KEY_CONVOS, saved.slice(0, MAX_SAVED));
+    var sig = meta.id + "|" + liveSignature(history);
+    if (sig === lastSavedSig) return savePromise;
+    var title = titleFromHistory(history);
+    savePromise = savePromise.then(function () {
+      return History.save(meta.id, title, history);
+    }).then(function (res) {
+      if (res.ok) {
+        lastSavedSig = sig;
+        if (remote.saveError) setSaveError("");
+      } else if (res.reason === "unavailable") {
+        remote.status = "unavailable"; remote.message = res.message; render(); syncFoot();
+      } else if (res.reason !== "signed-out") {
+        setSaveError("This consultation couldn’t be saved to your account. It will be retried after your next message.");
+      }
+    });
+    return savePromise;
+  }
+
+  function withTimeout(promise, ms) {
+    return Promise.race([promise, new Promise(function (resolve) { setTimeout(resolve, ms); })]);
+  }
+
+  function refreshRemote() {
+    if (!History) { remote.status = "unavailable"; remote.message = "History is not available."; render(); syncFoot(); return Promise.resolve(); }
+    remote.status = "loading"; render();
+    return History.list().then(function (res) {
+      if (res.ok) { remote.status = "ready"; remote.items = res.items; remote.message = ""; }
+      else if (res.reason === "unavailable") { remote.status = "unavailable"; remote.items = []; remote.message = res.message; }
+      else if (res.reason === "signed-out") { remote.status = "ready"; remote.items = []; }
+      else { remote.status = "error"; remote.items = []; remote.message = res.message || "Couldn’t load your saved consultations."; }
+      render(); syncFoot();
+    });
+  }
+
+  function syncFoot() {
+    var foot = document.getElementById("historyFoot");
+    if (!foot) return;
+    foot.textContent = "";
+    var off = remote.status === "unavailable";
+    foot.appendChild(el("strong", null, off ? "Not saved. " : "Saved to your account. "));
+    foot.appendChild(document.createTextNode(off
+      ? "Saved consultations aren’t available right now, so this conversation only lasts until you close this tab or sign out."
+      : "Your consultations are saved to your SKINSIGHT account and listed only when you are signed in. Only the text of your messages is saved. Photos are never stored."));
   }
 
   // ------------------------------------------------------------- collection
@@ -176,13 +207,9 @@
     if (meta) {
       items.push({ id: meta.id, kind: "live", title: titleFromHistory(history), updatedAt: meta.updatedAt, text: searchText(history) });
     }
-    savedConvos().forEach(function (c) {
-      items.push({ id: c.id, kind: "saved", title: c.title || titleFromHistory(c.history || []), updatedAt: c.updatedAt || c.createdAt || 0, text: searchText(c.history || []), ref: c });
-    });
-    var hidden = hiddenMocks();
-    MOCKS.forEach(function (m) {
-      if (hidden.indexOf(m.id) !== -1) return;
-      items.push({ id: m.id, kind: "mock", title: m.title, updatedAt: m.updatedAt, text: m.messages.map(function (x) { return x[1]; }).join(" ").toLowerCase(), ref: m });
+    remote.items.forEach(function (c) {
+      if (meta && c.id === meta.id) return; // the open conversation is already listed as "Current"
+      items.push({ id: c.id, kind: "saved", title: c.title || titleFromHistory(c.messages || []), updatedAt: c.updatedAt || c.createdAt || 0, text: searchText(c.messages || []), ref: c });
     });
     return items;
   }
@@ -219,7 +246,7 @@
   }
 
   function renderItem(item) {
-    var isActive = item.kind === "live" ? !state.preview : state.preview === item.id;
+    var isActive = item.kind === "live";
     var li = el("li", "cs-item" + (isActive ? " is-active" : ""));
     li.setAttribute("data-id", item.id);
 
@@ -242,6 +269,7 @@
 
     var open = el("button", "cs-open");
     open.type = "button";
+    if (state.busyId === item.id) { open.disabled = true; open.setAttribute("aria-busy", "true"); }
     open.setAttribute("data-act", "open");
     if (isActive) open.setAttribute("aria-current", "true");
     open.appendChild(el("span", "cs-title", item.title));
@@ -250,7 +278,6 @@
     time.setAttribute("datetime", new Date(item.updatedAt).toISOString());
     time.title = new Date(item.updatedAt).toLocaleString();
     meta.appendChild(time);
-    if (item.kind === "mock") meta.appendChild(el("span", "cs-badge is-sample", "Sample"));
     if (item.kind === "live") meta.appendChild(el("span", "cs-badge is-current", "Current"));
     open.appendChild(meta);
     li.appendChild(open);
@@ -271,6 +298,29 @@
 
     listEl.textContent = "";
 
+    if (remote.saveError) {
+      var warn = el("p", "cs-note is-error", remote.saveError);
+      warn.setAttribute("role", "alert");
+      listEl.appendChild(warn);
+    }
+    if (remote.status === "loading" && !all.length) {
+      var loading = el("p", "cs-note", "Loading your saved consultations…");
+      loading.setAttribute("role", "status");
+      listEl.appendChild(loading);
+      return;
+    }
+    if (remote.status === "error") {
+      var err = el("div", "cs-note is-error");
+      err.setAttribute("role", "alert");
+      err.appendChild(el("p", null, remote.message || "Couldn’t load your saved consultations."));
+      var retry = el("button", "btn btn-ghost btn-sm", "Try again");
+      retry.type = "button"; retry.setAttribute("data-act", "retry-load");
+      err.appendChild(retry);
+      listEl.appendChild(err);
+    } else if (remote.status === "unavailable") {
+      listEl.appendChild(el("p", "cs-note", "Saved consultations aren’t available right now. This conversation won’t be kept after you close the tab or sign out."));
+    }
+
     if (!items.length) {
       var empty = el("div", "cs-empty");
       empty.appendChild(iconSvg(q ? "search" : "message"));
@@ -281,11 +331,6 @@
         empty.appendChild(clear);
       } else {
         empty.appendChild(el("p", null, "No conversations yet. Start a new consultation to begin."));
-        if (hiddenMocks().length) {
-          var show = el("button", "btn btn-ghost btn-sm", "Show sample conversations");
-          show.type = "button"; show.setAttribute("data-act", "restore-samples");
-          empty.appendChild(show);
-        }
       }
       listEl.appendChild(empty);
       announce(q ? "No conversations match your search." : "No conversations.");
@@ -325,9 +370,7 @@
 
   function syncTitle() {
     var history = liveHistory();
-    var title = state.preview
-      ? ((MOCKS.filter(function (m) { return m.id === state.preview; })[0] || {}).title || "Sample conversation") + " (sample)"
-      : history.length ? titleFromHistory(history) : "New consultation";
+    var title = history.length ? titleFromHistory(history) : "New consultation";
     if (titleEl) titleEl.textContent = title;
   }
 
@@ -335,38 +378,54 @@
   function reloadChat() { window.location.reload(); }
 
   function newConsultation() {
-    archiveLive();
-    clearLive();
-    reloadChat();
+    // The current conversation is already saved after every reply; make sure the latest turn is flushed.
+    withTimeout(flushSave(), 4000).then(function () {
+      clearLive();
+      reloadChat();
+    });
   }
 
   function openItem(item) {
-    if (item.kind === "mock") { showPreview(item.ref); closeSidebarIfMobile(); return; }
-    if (item.kind === "live") { hidePreview(); closeSidebarIfMobile(); return; }
-    // Restore an archived conversation of this session into the live chat.
-    var target = item.ref;
-    archiveLive();
-    var remaining = savedConvos().filter(function (c) { return c.id !== target.id; });
-    writeJSON(sessionStorage, KEY_CONVOS, remaining);
-    writeJSON(sessionStorage, KEY_LIVE, target.history || []);
-    removeKey(sessionStorage, KEY_SUMMARY);
-    var last = (target.history || []).length + ":" + turnText((target.history || [])[(target.history || []).length - 1]).length;
-    writeJSON(sessionStorage, KEY_CURRENT, { id: target.id, createdAt: target.createdAt || Date.now(), updatedAt: target.updatedAt || Date.now(), sig: last });
-    reloadChat();
+    if (item.kind === "live") { closeSidebarIfMobile(); return; }
+    // Reopen a saved consultation: copy it into the "current conversation" that chat.js renders.
+    state.busyId = item.id; render();
+    announce("Opening consultation…");
+    withTimeout(flushSave(), 4000).then(function () {
+      return History.get(item.id);
+    }).then(function (res) {
+      state.busyId = null;
+      if (!res || !res.ok) {
+        remote.saveError = (res && res.message) || "Couldn’t open that consultation. Please try again.";
+        render();
+        return;
+      }
+      var t = res.item;
+      writeJSON(sessionStorage, KEY_LIVE, t.messages);
+      if (t.summary) writeJSON(sessionStorage, KEY_SUMMARY, t.summary); else removeKey(sessionStorage, KEY_SUMMARY);
+      writeJSON(sessionStorage, KEY_CURRENT, { id: t.id, createdAt: t.createdAt, updatedAt: t.updatedAt, sig: liveSignature(t.messages) });
+      lastSavedSig = t.id + "|" + liveSignature(t.messages);
+      reloadChat();
+    });
   }
 
   function deleteItem(item) {
-    if (item.kind === "mock") {
-      var hidden = hiddenMocks(); hidden.push(item.id);
-      writeJSON(sessionStorage, KEY_HIDDEN, hidden);
-      if (state.preview === item.id) hidePreview();
-    } else if (item.kind === "saved") {
-      writeJSON(sessionStorage, KEY_CONVOS, savedConvos().filter(function (c) { return c.id !== item.id; }));
-    } else if (item.kind === "live") {
-      clearLive();
-      reloadChat();
-      return;
-    }
+    // Real consultation (saved or current): delete it from the account first, then update the screen.
+    state.busyId = item.id; state.confirmId = null; render();
+    var done = History && remote.status !== "unavailable" ? History.remove(item.id) : Promise.resolve({ ok: true });
+    done.then(function (res) {
+      state.busyId = null;
+      if (res && !res.ok && res.reason !== "signed-out") {
+        remote.saveError = "Couldn’t delete that consultation. Please try again.";
+        render();
+        return;
+      }
+      remote.items = remote.items.filter(function (c) { return c.id !== item.id; });
+      if (item.kind === "live") { lastSavedSig = null; clearLive(); reloadChat(); return; }
+      finishDelete();
+    });
+  }
+
+  function finishDelete() {
     state.confirmId = null;
     render();
     syncTitle();
@@ -376,49 +435,6 @@
 
   function findItem(id) {
     return collectItems().filter(function (i) { return i.id === id; })[0] || null;
-  }
-
-  // ------------------------------------------------------- sample preview
-  function showPreview(mock) {
-    state.preview = mock.id;
-    previewEl.textContent = "";
-
-    var banner = el("div", "chat-preview-banner");
-    banner.setAttribute("tabindex", "-1");
-    banner.appendChild(el("strong", null, "Sample conversation"));
-    banner.appendChild(el("p", null, "This is demo data showing how saved consultations will look. It isn't your conversation, isn't sent to the assistant, and can't be continued."));
-    previewEl.appendChild(banner);
-
-    var thread = el("div", "chat-preview-thread");
-    thread.setAttribute("role", "log");
-    thread.setAttribute("tabindex", "0"); // scrollable region must be reachable by keyboard
-    thread.setAttribute("aria-label", "Sample conversation: " + mock.title);
-    mock.messages.forEach(function (m) {
-      thread.appendChild(el("div", "msg " + (m[0] === "user" ? "msg-user" : "msg-ai"), m[1]));
-    });
-    previewEl.appendChild(thread);
-
-    var actions = el("div", "chat-preview-actions");
-    var back = el("button", "btn btn-primary", "Back to my consultation");
-    back.type = "button"; back.addEventListener("click", function () { hidePreview(); textarea && textarea.focus(); });
-    var fresh = el("button", "btn btn-secondary", "Start a new consultation");
-    fresh.type = "button"; fresh.addEventListener("click", newConsultation);
-    actions.appendChild(back); actions.appendChild(fresh);
-    previewEl.appendChild(actions);
-
-    shell.classList.add("is-previewing");
-    render();
-    syncTitle();
-    banner.focus({ preventScroll: true });
-  }
-
-  function hidePreview() {
-    if (!state.preview) return;
-    state.preview = null;
-    shell.classList.remove("is-previewing");
-    previewEl.textContent = "";
-    render();
-    syncTitle();
   }
 
   // ----------------------------------------------------------------- sidebar
@@ -473,7 +489,7 @@
       if (!btn) return;
       var act = btn.getAttribute("data-act");
       if (act === "clear-search") { searchInput.value = ""; state.query = ""; render(); searchInput.focus(); return; }
-      if (act === "restore-samples") { removeKey(sessionStorage, KEY_HIDDEN); render(); return; }
+      if (act === "retry-load") { refreshRemote(); return; }
       var li = btn.closest(".cs-item");
       var id = li && li.getAttribute("data-id");
       if (!id) return;
@@ -542,6 +558,7 @@
       autosize();
       render();   // chat.js stores history right after rendering a reply; keep the list in step
       syncTitle();
+      scheduleSave();
     }, 0);
   }
 
@@ -564,9 +581,15 @@
     initHistory();
     initComposer();
     updateChatState();
+    removeKey(sessionStorage, KEY_CONVOS_LEGACY);
+    removeKey(sessionStorage, KEY_HIDDEN_LEGACY);
+    var existing = liveHistory();
+    if (existing.length) currentMeta(existing);
     render();
     syncTitle();
     autosize();
+    syncFoot();
+    refreshRemote().then(function () { if (existing.length) scheduleSave(); });
     new MutationObserver(onChatChanged).observe(chatBody, { childList: true });
 
     // Restored from bfcache or signed out in another tab.
@@ -576,23 +599,4 @@
 
   init();
 
-  /*
-   * REAL_HISTORY_API — what the backend would need before this can be real
-   * -----------------------------------------------------------------------
-   * Data (Supabase/Postgres, row-level security keyed on auth.uid()):
-   *   conversations(id uuid, user_id uuid, title text, created_at, updated_at, deleted_at)
-   *   messages(id, conversation_id, role 'user'|'model', content text, image_path text null, created_at)
-   *   summaries(conversation_id, json, created_at)            -- replaces the sessionStorage summary cache
-   *   Storage bucket for skin photos (private, signed URLs, size/type limits, lifecycle/retention).
-   * Endpoints (all behind requireAuth; strict auth, no guest fallback):
-   *   GET    /api/conversations?cursor=&q=      list newest-first, paginated, full-text search (tsvector)
-   *   POST   /api/conversations                 create -> { id }
-   *   GET    /api/conversations/:id             conversation + messages
-   *   PATCH  /api/conversations/:id             rename / auto-title
-   *   DELETE /api/conversations/:id             soft delete now, hard-delete job + image purge later
-   *   POST   /api/chat/message                  accept conversation_id; load history server-side
-   *                                             (stops trusting client-supplied history/roles)
-   * Also: LLM-generated titles, per-user quotas, account-deletion cascade, consent + retention
-   * policy for health data, audit logging, and an export-my-data path.
-   */
 })();
