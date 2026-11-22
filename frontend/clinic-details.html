@@ -74,7 +74,7 @@
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg>
           <div>
             <strong>Email:</strong>
-            <a id="clinicEmailLink" class="info-link" href="mailto:smbatangas@skinstation.ph"><span id="clinicEmail">smbatangas@skinstation.ph</span></a>
+            <a id="clinicEmailLink" class="info-link" href="https://mail.google.com/mail/?view=cm&fs=1&to=smbatangas@skinstation.ph" target="_blank" rel="noopener noreferrer"><span id="clinicEmail">smbatangas@skinstation.ph</span></a>
           </div>
         </li>
         <li>
@@ -87,10 +87,7 @@
       </ul>
 
       <div class="clinic-hero-actions">
-        <a id="clinicHeroCallBtn" href="tel:+63437238891" class="btn btn-primary btn-sm">
-          <svg class="i" aria-hidden="true"><use href="#i-phone"/></svg> Call Clinic
-        </a>
-        <a id="clinicHeroEmailBtn" href="mailto:smbatangas@skinstation.ph" class="btn btn-secondary btn-sm">
+        <a id="clinicHeroEmailBtn" href="https://mail.google.com/mail/?view=cm&fs=1&to=smbatangas@skinstation.ph" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
           <svg class="i" aria-hidden="true"><use href="#i-mail"/></svg> Email Clinic
         </a>
         <a id="clinicMapsLink" href="https://www.google.com/maps/search/?api=1&query=SkinStation%20SM%20City%20Batangas" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm">
@@ -281,17 +278,24 @@
     var phoneLink = document.getElementById("clinicPhoneLink");
     if (phoneLink) phoneLink.href = "tel:" + rawPhone;
 
-    var heroCallBtn = document.getElementById("clinicHeroCallBtn");
-    if (heroCallBtn) heroCallBtn.href = "tel:" + rawPhone;
-
     var emailEl = document.getElementById("clinicEmail");
     if (emailEl) emailEl.textContent = clinic.email;
 
+    var gmailDirectUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(clinic.email || "");
+
     var emailLink = document.getElementById("clinicEmailLink");
-    if (emailLink) emailLink.href = "mailto:" + clinic.email;
+    if (emailLink) {
+      emailLink.href = gmailDirectUrl;
+      emailLink.target = "_blank";
+      emailLink.rel = "noopener noreferrer";
+    }
 
     var heroEmailBtn = document.getElementById("clinicHeroEmailBtn");
-    if (heroEmailBtn) heroEmailBtn.href = "mailto:" + clinic.email;
+    if (heroEmailBtn) {
+      heroEmailBtn.href = gmailDirectUrl;
+      heroEmailBtn.target = "_blank";
+      heroEmailBtn.rel = "noopener noreferrer";
+    }
 
     var hoursEl = document.getElementById("clinicHours");
     if (hoursEl) hoursEl.textContent = clinic.hours;
