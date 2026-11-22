@@ -21,6 +21,7 @@ if (!isConfiguredKey) {
 const genAI = isConfiguredKey ? new GoogleGenerativeAI(apiKey.trim()) : null;
 
 export const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
+export const EMBEDDING_MODEL = process.env.GEMINI_EMBEDDING_MODEL || 'text-embedding-004';
 
 export function getGenerativeModel(modelName = DEFAULT_MODEL, systemInstruction) {
   if (!genAI) {
@@ -31,6 +32,13 @@ export function getGenerativeModel(modelName = DEFAULT_MODEL, systemInstruction)
     model: modelName,
     systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
   });
+}
+
+export function getEmbeddingModel(modelName = EMBEDDING_MODEL) {
+  if (!genAI) {
+    return null;
+  }
+  return genAI.getGenerativeModel({ model: modelName });
 }
 
 export default genAI;

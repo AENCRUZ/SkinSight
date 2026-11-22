@@ -5,6 +5,8 @@ import {
   handleChatMessage,
   handleGenerateSummary,
   handleDownloadReport,
+  handleSearchKnowledge,
+  handleGetKnowledgeStats,
 } from '../controllers/chatController.js';
 
 const router = express.Router();
@@ -17,5 +19,9 @@ router.post('/summary', requireAuth, handleGenerateSummary);
 
 // Download report as text file
 router.post('/download', requireAuth, handleDownloadReport);
+
+// RAG clinical knowledge base inspection & verification
+router.get('/knowledge/search', handleSearchKnowledge);
+router.get('/knowledge/stats', handleGetKnowledgeStats);
 
 export default router;
