@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — SKINSIGHT</title>
+<meta name="description" content="What data SKINSIGHT collects, where it goes, how long it is kept and what you can control.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#FBF9F5">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/legal.css">
+<script src="js/ui.js"></script>
+<script>
+  (function () {
+    try {
+      var k = localStorage.getItem("skinsight_user") || sessionStorage.getItem("skinsight_user");
+      if (!k) {
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          if (key && key.indexOf("sb-") === 0 && key.indexOf("-auth-token") !== -1) {
+            k = localStorage.getItem(key);
+            break;
+          }
+        }
+      }
+      if (k) {
+        document.documentElement.classList.add("auth-user-signed-in");
+      }
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+
+<site-header data-nav="none"></site-header>
+<noscript><p class="noscript-note">SKINSIGHT needs JavaScript for navigation and the AI assistant. Please enable it to continue.</p></noscript>
+<main id="main">
+
+<article class="legal">
+  <div class="wrap legal-wrap">
+    <span class="eyebrow">Legal</span>
+    <h1>Privacy Policy</h1>
+    <p class="legal-updated">Last updated: 22 November 2026</p>
+
+    <div class="legal-box" role="note">
+      <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
+      <p><strong>Please read this first.</strong> SKINSIGHT is an academic project. This policy describes what the app actually does today, based on how it is built. It is a plain-language explanation, <strong>not legal advice</strong>, and it has not yet been reviewed by a lawyer. Where we do not know something, we say so instead of guessing.</p>
+    </div>
+
+    <div class="legal-box is-open" role="note" id="open-items">
+      <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
+      <div>
+        <p><strong>Things we have not settled yet</strong> (so this policy deliberately makes no promise about them):</p>
+        <ul>
+          <li>How long our hosting and AI providers keep data, and how Google handles data sent to its Gemini AI service under the account we use.</li>
+          <li>Which country the saved-consultation database is hosted in.</li>
+          <li>How an account can be deleted completely (there is no self-service option yet).</li>
+          <li>A contact address for privacy questions.</li>
+          <li>Whether Philippine or other data-protection laws impose additional duties on this project. No legal review has been done.</li>
+          <li>An age requirement for using SKINSIGHT.</li>
+        </ul>
+      </div>
+    </div>
+
+    <nav class="legal-toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ol>
+        <li><a href="#what">What SKINSIGHT is</a></li>
+        <li><a href="#collect">What we collect and where it goes</a></li>
+        <li><a href="#ai">How the AI assistant uses your information</a></li>
+        <li><a href="#third">Other services involved</a></li>
+        <li><a href="#storage">What is saved in your browser</a></li>
+        <li><a href="#cookies">Cookies and tracking</a></li>
+        <li><a href="#keep">How long information is kept</a></li>
+        <li><a href="#choices">Your choices</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#sensitive">Health information and photos</a></li>
+        <li><a href="#children">Children</a></li>
+        <li><a href="#changes">Changes and contact</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="what">1. What SKINSIGHT is</h2>
+    <p>SKINSIGHT helps you write down a skin concern, prepare a summary for a dermatologist, find listed clinics and keep a personal medication list. It does not diagnose, treat or prescribe. See the <a href="terms.html">Terms of Use</a>.</p>
+
+    <h2 id="collect">2. What we collect and where it goes</h2>
+    <div class="legal-table-wrap" tabindex="0" role="region" aria-label="Table of the data SKINSIGHT handles">
+      <table class="legal-table">
+        <thead>
+          <tr><th scope="col">Information</th><th scope="col">When</th><th scope="col">Where it goes and is stored</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Account details</strong>: email address, password, display name. If you use Google sign-in: the name, email and profile details Google shares.</td>
+            <td>When you sign up or log in.</td>
+            <td>Sent to <strong>Supabase</strong>, the sign-in service. Supabase stores the account. The password is handled by Supabase and is not stored by SKINSIGHT's own code. A small copy of your name and email is also kept in your browser while you are signed in (see section 5).</td>
+          </tr>
+          <tr>
+            <td><strong>Chat messages</strong> you type to the AI assistant.</td>
+            <td>Each time you press Send.</td>
+            <td>Sent over the internet to the <strong>SKINSIGHT server</strong> (hosted on Render), which forwards them, with the earlier messages of the same consultation, to <strong>Google's Gemini AI service</strong> to write a reply. See section 3.</td>
+          </tr>
+          <tr>
+            <td><strong>Photos</strong> you attach in the chat (JPEG, PNG or WebP, up to 5 MB).</td>
+            <td>Only if you choose to attach one.</td>
+            <td>Sent to the SKINSIGHT server, which holds the file in memory while it passes it to Gemini. The server code does not save the photo to disk or to the database. Photos are <strong>not</strong> kept in your saved consultation; only your text is saved.</td>
+          </tr>
+          <tr>
+            <td><strong>Saved consultations</strong>: the text of your messages and the assistant's replies, a title taken from your first message, and the summary if you generated one.</td>
+            <td>Automatically, after each assistant reply, while you are signed in.</td>
+            <td>Stored in a <strong>Supabase</strong> database table linked to your account. Access rules in the database let each signed-in user read and change only their own rows. People who administer the project's database can technically access stored data.</td>
+          </tr>
+          <tr>
+            <td><strong>Medication tracker</strong> entries (names, schedules, notes, doses marked as taken).</td>
+            <td>When you add or change them.</td>
+            <td><strong>Only in your browser</strong> on this device. They are never sent to SKINSIGHT servers or any other service.</td>
+          </tr>
+          <tr>
+            <td><strong>Location</strong>: the place you type or pick, or your device position if you press "Use my location".</td>
+            <td>When you use the clinic finder.</td>
+            <td>Your browser asks for permission before sharing your position. Your position is used in your browser to sort clinics by distance and is kept for the current browser session only. To show a place name, the coordinates, or the place text you typed, are sent to <strong>OpenStreetMap's Nominatim</strong> service. The map view and Google Maps links send the area or clinic search text to <strong>Google</strong>.</td>
+          </tr>
+          <tr>
+            <td><strong>Clinic inquiry message</strong> (your name, contact details, preferred time, and the concern from your summary).</td>
+            <td>Only if you press "Open Email Draft".</td>
+            <td>SKINSIGHT does not send anything. The button opens a Gmail compose window in a new tab with the text filled in; the message is sent only if you send it, and then it is handled by your email provider and the clinic.</td>
+          </tr>
+          <tr>
+            <td><strong>Technical information</strong> such as your IP address and browser details.</td>
+            <td>Whenever your browser contacts a service listed here.</td>
+            <td>Each service receives this by the nature of the internet. The SKINSIGHT server limits how often one address can call the AI (rate limiting, kept in memory) and its own request log records the method and page path, not message contents. The hosting providers may keep their own logs; see section 7.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="ai">3. How the AI assistant uses your information</h2>
+    <ul>
+      <li>Your messages (and photo, if any) are processed by <strong>Google's Gemini</strong> to produce a reply or a summary. To keep a conversation coherent, the earlier messages of the open consultation are sent again with each new message.</li>
+      <li>The assistant is instructed to document what you report, not to name possible conditions and not to recommend medicines. An automatic check on its replies is a second safeguard, but it cannot guarantee that every reply is appropriate.</li>
+      <li>The consultation summary is written from what you said. It is shown to you, can be downloaded or copied by you, and is stored with the consultation.</li>
+      <li><strong>We have not confirmed</strong> how Google keeps or uses data sent to Gemini under the account this project uses (for example, whether it can be used to improve Google's products). That depends on the terms and plan of that account. Until that is confirmed, assume anything you send to the assistant may be processed under Google's terms, and do not send anything you would not want a third-party AI provider to handle.</li>
+    </ul>
+
+    <h2 id="third">4. Other services involved</h2>
+    <div class="legal-table-wrap" tabindex="0" role="region" aria-label="Table of other services">
+      <table class="legal-table">
+        <thead><tr><th scope="col">Service</th><th scope="col">Used for</th><th scope="col">What it can see</th></tr></thead>
+        <tbody>
+          <tr><td>Supabase</td><td>Sign-in and saved consultations</td><td>Account details, saved consultation text, sign-in tokens, your IP address.</td></tr>
+          <tr><td>Render</td><td>Hosts the SKINSIGHT server that talks to the AI</td><td>Your messages and photos in transit, your IP address, and whatever its own logs record.</td></tr>
+          <tr><td>Google (Gemini)</td><td>Writes assistant replies and summaries</td><td>Your messages and photos as described in section 3.</td></tr>
+          <tr><td>Google (sign-in, Fonts, Maps, Gmail link)</td><td>Optional Google login, page fonts, embedded map and map links, and opening a Gmail draft</td><td>Your IP address and the request made (for example the map search text). Google may set its own cookies.</td></tr>
+          <tr><td>OpenStreetMap Nominatim</td><td>Turning place names into coordinates and coordinates into place names</td><td>The place text or the coordinates, and your IP address.</td></tr>
+          <tr><td>jsDelivr and cdnjs (content delivery networks)</td><td>Deliver the sign-in library and the PDF library</td><td>Your IP address and browser details when the page loads.</td></tr>
+          <tr><td>GitHub Pages</td><td>Hosts the SKINSIGHT website pages</td><td>Your IP address and the pages you request.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>These services have their own privacy policies, which apply to what they do. We do not sell your information, and SKINSIGHT does not include advertising or analytics tools.</p>
+
+    <h2 id="storage">5. What is saved in your browser</h2>
+    <p>SKINSIGHT keeps some information in your browser's storage so the app works. You can clear it any time in your browser settings.</p>
+    <div class="legal-table-wrap" tabindex="0" role="region" aria-label="Table of browser storage">
+      <table class="legal-table">
+        <thead><tr><th scope="col">Kind</th><th scope="col">What</th><th scope="col">Lasts</th></tr></thead>
+        <tbody>
+          <tr><td>Session storage</td><td>Your sign-in session and a small copy of your name and email (unless you chose "Keep me signed in"), the consultation you have open and its summary, the selected clinic, your filters, the place you pinned, and your device position if you shared it.</td><td>Until you close the tab or sign out. Signing out clears it.</td></tr>
+          <tr><td>Local storage</td><td>Whether the history panel is open, your medication tracker data, and, only if you chose "Keep me signed in", that choice together with your sign-in session and a small copy of your name and email.</td><td>Until you sign out (sign-in items) or delete it. Medication data stays on the device until you delete it using the button on the medication pages.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>On a shared computer, use a private window or sign out, and delete medication data you do not want others to see.</p>
+
+    <h2 id="cookies">6. Cookies and tracking</h2>
+    <p>SKINSIGHT's own code does not set cookies, and we found no analytics, advertising or tracking tools in the app. Some services listed above (for example Google Maps and Google sign-in) may set their own cookies, which SKINSIGHT does not control.</p>
+
+    <h2 id="keep">7. How long information is kept</h2>
+    <ul>
+      <li><strong>Saved consultations</strong> stay in your account until you delete them. There is no automatic deletion yet.</li>
+      <li><strong>Browser session data</strong> ends when you close the tab or sign out.</li>
+      <li><strong>Medication data</strong> stays on your device until you delete it or clear your browser data.</li>
+      <li><strong>Data held by Google (Gemini), Render, Supabase backups, and the other services</strong> follows their own rules. We have not confirmed their retention periods, so we do not state one.</li>
+    </ul>
+
+    <h2 id="choices">8. Your choices</h2>
+    <ul>
+      <li><strong>Delete a saved consultation:</strong> use the bin button next to it in the AI assistant's history panel. This removes it from the database.</li>
+      <li><strong>Delete medication data:</strong> use "Delete medication data on this device" on the medication pages.</li>
+      <li><strong>Choose what you share:</strong> a photo and your location are optional. The browser asks before sharing your position, and you can refuse.</li>
+      <li><strong>Sign out</strong> to clear this session from the browser.</li>
+      <li><strong>Delete your whole account:</strong> there is no self-service option yet (see "Things we have not settled yet").</li>
+    </ul>
+
+    <h2 id="security">9. Security</h2>
+    <ul>
+      <li>Your browser connects to the SKINSIGHT server, Supabase and the other services over HTTPS, which encrypts data in transit.</li>
+      <li>Database rules stop other signed-in users from reading your saved consultations, and the AI service key is kept on the server, not in the web pages.</li>
+      <li>We have <strong>not</strong> verified how the hosting providers protect stored data, so we make no claim about encryption of stored data. No online service is perfectly secure.</li>
+    </ul>
+
+    <h2 id="sensitive">10. Health information and photos</h2>
+    <p>What you tell the assistant about your skin is health-related and can be sensitive. Share only what you are comfortable sharing. Avoid including names, ID numbers, addresses or other people's details in messages, and avoid photos that show your face or identifying marks unless that is necessary. Only upload photos of yourself, or of someone who has agreed.</p>
+    <p>If you have trouble breathing, swelling of the face or lips, or a rapidly spreading rash with fever, contact emergency services. Do not rely on SKINSIGHT.</p>
+
+    <h2 id="children">11. Children</h2>
+    <p>SKINSIGHT is not designed for children, and an age requirement has not been set yet (see "Things we have not settled yet").</p>
+
+    <h2 id="changes">12. Changes and contact</h2>
+    <p>We may update this policy as the app changes; the date at the top shows the latest version. A contact address for privacy questions has not been published yet and will be added here.</p>
+  </div>
+</article>
+
+</main>
+
+<site-footer></site-footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/site.js" defer></script>
+<script src="js/auth.js" defer></script>
+<script src="js/login-gate.js" defer></script>
+</body>
+</html>

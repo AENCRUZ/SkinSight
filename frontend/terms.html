@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms of Use — SKINSIGHT</title>
+<meta name="description" content="The rules for using SKINSIGHT, what it does and does not do, and your responsibilities.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#FBF9F5">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/legal.css">
+<script src="js/ui.js"></script>
+<script>
+  (function () {
+    try {
+      var k = localStorage.getItem("skinsight_user") || sessionStorage.getItem("skinsight_user");
+      if (!k) {
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          if (key && key.indexOf("sb-") === 0 && key.indexOf("-auth-token") !== -1) {
+            k = localStorage.getItem(key);
+            break;
+          }
+        }
+      }
+      if (k) {
+        document.documentElement.classList.add("auth-user-signed-in");
+      }
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+
+<site-header data-nav="none"></site-header>
+<noscript><p class="noscript-note">SKINSIGHT needs JavaScript for navigation and the AI assistant. Please enable it to continue.</p></noscript>
+<main id="main">
+
+<article class="legal">
+  <div class="wrap legal-wrap">
+    <span class="eyebrow">Legal</span>
+    <h1>Terms of Use</h1>
+    <p class="legal-updated">Last updated: 22 November 2026</p>
+
+    <div class="legal-box" role="note">
+      <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
+      <p><strong>Please read this first.</strong> SKINSIGHT is an academic project. These terms explain how it may be used in plain language. They are <strong>not legal advice</strong> and have not yet been reviewed by a lawyer.</p>
+    </div>
+
+    <div class="legal-box is-open" role="note" id="open-items">
+      <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
+      <div>
+        <p><strong>Things we have not settled yet:</strong></p>
+        <ul>
+          <li>Which country's law governs these terms.</li>
+          <li>A contact address for questions.</li>
+          <li>An age requirement for using SKINSIGHT.</li>
+        </ul>
+      </div>
+    </div>
+
+    <nav class="legal-toc" aria-label="On this page">
+      <h2>On this page</h2>
+      <ol>
+        <li><a href="#about">What SKINSIGHT is</a></li>
+        <li><a href="#medical">Not medical advice</a></li>
+        <li><a href="#ai">The AI assistant</a></li>
+        <li><a href="#account">Your account</a></li>
+        <li><a href="#use">Acceptable use</a></li>
+        <li><a href="#clinics">Clinic directory and contacting clinics</a></li>
+        <li><a href="#meds">Medication tracker</a></li>
+        <li><a href="#content">Your content</a></li>
+        <li><a href="#availability">Availability and changes</a></li>
+        <li><a href="#liability">Limits of responsibility</a></li>
+        <li><a href="#privacy">Privacy</a></li>
+        <li><a href="#contact">Changes and contact</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="about">1. What SKINSIGHT is</h2>
+    <p>SKINSIGHT is a tool that helps you organize what you notice about your skin, prepare a summary to bring to a dermatologist, find listed clinics, and keep a personal medication list. By creating an account or using the service you agree to these terms. If you do not agree, please do not use it.</p>
+
+    <h2 id="medical">2. Not medical advice</h2>
+    <ul>
+      <li>SKINSIGHT <strong>does not diagnose</strong> any condition, <strong>does not prescribe or recommend medication</strong>, and does not replace a dermatologist or other health professional.</li>
+      <li>Nothing in the app, including assistant replies, summaries and general information, is a medical opinion or a promise about your health.</li>
+      <li><strong>In an emergency</strong> (for example trouble breathing, swelling of the face, lips or throat, or a fast-spreading rash with fever) contact local emergency services or go to the nearest emergency department. Do not wait for SKINSIGHT.</li>
+      <li>Always ask a qualified professional before changing, starting or stopping any treatment.</li>
+    </ul>
+
+    <h2 id="ai">3. The AI assistant</h2>
+    <ul>
+      <li>The assistant is an AI. It can misunderstand you, leave things out or make mistakes. Check anything important with a professional.</li>
+      <li>It is designed to ask questions, record what you report and share general skin-health information. It is not designed to name conditions or recommend medicines. It may still occasionally say something inappropriate, and you should not rely on it if it does.</li>
+      <li>The consultation summary is based on what you told the assistant. Please read it and correct anything wrong before sharing it. You are responsible for what you share with others.</li>
+      <li>Messages and any photo you attach are processed by third-party AI and hosting services as described in the <a href="privacy.html">Privacy Policy</a>.</li>
+    </ul>
+
+    <h2 id="account">4. Your account</h2>
+    <ul>
+      <li>Give accurate sign-up details and keep your password private. You are responsible for activity on your account.</li>
+      <li>Tell the project team if you think someone else has accessed your account.</li>
+      <li>Use only your own account.</li>
+    </ul>
+
+    <h2 id="use">5. Acceptable use</h2>
+    <p>Please do not:</p>
+    <ul>
+      <li>use SKINSIGHT for emergencies, or to make decisions that need a professional's judgement;</li>
+      <li>upload photos of other people without their permission, or any unlawful or abusive content;</li>
+      <li>try to make the assistant ignore its rules, extract its instructions, or use it for unrelated tasks;</li>
+      <li>probe, overload, scrape or attack the service, or try to reach other users' data;</li>
+      <li>send unwanted or misleading messages to clinics.</li>
+    </ul>
+    <p>We may limit or suspend access if the service is misused.</p>
+
+    <h2 id="clinics">6. Clinic directory and contacting clinics</h2>
+    <ul>
+      <li>The directory is a <strong>demonstration</strong> that currently lists clinics in <strong>Batangas Province, Philippines</strong> only.</li>
+      <li>Details such as hours, phone numbers, emails, doctors and services have <strong>not been independently verified</strong> and may be wrong or out of date. Contact the clinic and check its credentials before you rely on anything.</li>
+      <li>Open or closed labels are based on the hours listed in the directory.</li>
+      <li>SKINSIGHT does not book appointments, send messages for you, or act as a go-between. The email draft only opens in your own email service. What you send to a clinic is your decision, and the clinic's handling of it is its own.</li>
+      <li>Google Maps and other third-party links lead to services we do not control.</li>
+    </ul>
+
+    <h2 id="meds">7. Medication tracker</h2>
+    <p>The tracker is a personal notebook stored in your browser on this device. It sends no reminders or notifications, cannot tell whether you actually took a dose, and gives no medical advice. Data can be lost if you clear your browser data, and it is not backed up. Follow your doctor's and pharmacist's instructions, not the tracker.</p>
+
+    <h2 id="content">8. Your content</h2>
+    <p>You keep ownership of what you write and upload. You allow SKINSIGHT to process it, including by the third-party services described in the <a href="privacy.html">Privacy Policy</a>, only to provide the features you use: replying to you, saving your consultations, generating summaries and showing them back to you.</p>
+
+    <h2 id="availability">9. Availability and changes</h2>
+    <p>SKINSIGHT is an academic project provided <strong>"as is"</strong>. It may be slow, unavailable (the server can take up to a minute to wake up), changed or discontinued at any time, and we do not guarantee that it is error-free or that saved information will always be available. Features may change without notice.</p>
+
+    <h2 id="liability">10. Limits of responsibility</h2>
+    <p>To the extent the law allows, the SKINSIGHT team is not responsible for decisions you make or actions you take based on the app, for the accuracy of clinic details or AI replies, or for losses caused by the service being unavailable. Nothing in these terms limits rights you have under law that cannot be limited.</p>
+
+    <h2 id="privacy">11. Privacy</h2>
+    <p>How your information is handled is explained in the <a href="privacy.html">Privacy Policy</a>, which is part of these terms.</p>
+
+    <h2 id="contact">12. Changes and contact</h2>
+    <p>We may update these terms as the app changes; the date at the top shows the latest version, and continuing to use SKINSIGHT means you accept the update. A contact address and the governing law have not been published yet and will be added here.</p>
+  </div>
+</article>
+
+</main>
+
+<site-footer></site-footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js" integrity="sha384-gnyZit14c5lnGcarmA166QQjjJXpucw25ogZXuwH3HxxY904zHkBqmxVpelsPorb" crossorigin="anonymous"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/site.js" defer></script>
+<script src="js/auth.js" defer></script>
+<script src="js/login-gate.js" defer></script>
+</body>
+</html>

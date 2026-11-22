@@ -1,0 +1,48 @@
+/* ==========================================================================
+   SKINSIGHT — Terms of Use and Privacy Policy pages
+   ========================================================================== */
+.legal { padding-block: var(--space-7) var(--space-8); }
+.legal-wrap { max-width: 800px; }
+.legal h1 { font-size: var(--text-h1); margin-bottom: var(--space-2); }
+.legal .legal-updated { color: var(--ink-soft); font-size: var(--text-sm); margin: 0 0 var(--space-5); }
+.legal h2 { font-size: var(--text-h2); margin: var(--space-7) 0 var(--space-3); scroll-margin-top: calc(var(--navbar-h, 72px) + 16px); }
+.legal h3 { font-size: var(--text-h3); margin: var(--space-5) 0 var(--space-2); }
+.legal p, .legal li { line-height: 1.7; }
+.legal ul, .legal ol { padding-left: 1.25rem; margin: 0 0 var(--space-4); }
+.legal li { margin-bottom: var(--space-2); }
+
+.legal-box {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid #90E0EF;
+  border-radius: var(--radius-md);
+  background: var(--pale-cyan);
+  color: var(--navy);
+}
+.legal-box .i { width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; color: var(--blue-600); }
+.legal-box p { margin: 0; color: inherit; }
+.legal-box.is-open { background: var(--amber-soft); border-color: #EBD08F; color: #5A3B00; }
+.legal-box.is-open .i { color: #8A5A00; }
+.legal-box.is-open ul { margin: var(--space-2) 0 0; }
+
+.legal-toc { margin: 0 0 var(--space-6); padding: var(--space-4) var(--space-5); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.legal-toc h2 { font-size: var(--text-lg); margin: 0 0 var(--space-2); }
+.legal-toc ol { margin: 0; columns: 2; column-gap: var(--space-6); }
+.legal-toc li { margin-bottom: var(--space-1); break-inside: avoid; }
+
+.legal-table-wrap { overflow-x: auto; margin: 0 0 var(--space-5); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.legal-table-wrap:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+/* The wrapper scrolls (and is keyboard-focusable); undo the site-wide mobile rule that makes a bare <table> scroll itself. */
+.legal-table { display: table; overflow: visible; white-space: normal; border-collapse: collapse; width: 100%; min-width: 640px; font-size: var(--text-sm); }
+.legal-table th, .legal-table td { text-align: left; vertical-align: top; padding: var(--space-3); border-bottom: 1px solid var(--border); line-height: 1.55; }
+.legal-table th { background: var(--pale-cyan); color: var(--navy); font-family: var(--font-display); font-weight: 700; }
+.legal-table tr:last-child td { border-bottom: 0; }
+.legal code { font-size: 0.85em; background: var(--surface-warm); padding: 1px 6px; border-radius: 6px; word-break: break-word; }
+
+@media (max-width: 640px) {
+  .legal { padding-block: var(--space-5) var(--space-7); }
+  .legal-toc ol { columns: 1; }
+}
