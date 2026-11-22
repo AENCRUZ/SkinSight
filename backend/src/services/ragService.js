@@ -17,6 +17,49 @@ const STOP_WORDS = new Set([
 let cachedKnowledgeBase = null;
 const embeddingCache = new Map(); // id -> float[]
 
+// Embedding health. After repeated failures we stop calling the embedding API for a cooldown
+// period and answer from keyword scoring only (instead of retrying every document on every turn).
+const FAILURE_LIMIT = 3;
+const COOLDOWN_MS = 5 * 60 * 1000;
+let consecutiveFailures = 0;
+let cooldownUntil = 0;
+let warmPromise = null;
+let lastMode = 'unknown'; // 'hybrid' | 'keyword' | 'unknown' (no search has run yet)
+
+// Cosine similarity between unrelated short texts is usually well above 0 for modern embedding
+// models, so raw cosine is rescaled: <= SEMANTIC_FLOOR counts as 0 and >= SEMANTIC_CEIL as 1.
+// Calibrated 2026-11-22 against gemini-embedding-001: relevant docs scored ~0.69-0.71, unrelated ~0.55-0.63.
+export const SEMANTIC_FLOOR = 0.60;
+export const SEMANTIC_CEIL = 0.80;
+
+function embeddingsAvailable() {
+  return Date.now() >= cooldownUntil;
+}
+
+function recordEmbeddingResult(ok) {
+  if (ok) {
+    consecutiveFailures = 0;
+    return;
+  }
+  consecutiveFailures += 1;
+  if (consecutiveFailures >= FAILURE_LIMIT) {
+    cooldownUntil = Date.now() + COOLDOWN_MS;
+    consecutiveFailures = 0;
+    console.warn(
+      `[RAG Service] Embeddings failed ${FAILURE_LIMIT} times; using keyword-only retrieval for ${COOLDOWN_MS / 60000} min.`
+    );
+  }
+}
+
+function docEmbeddingText(doc) {
+  return `${doc.title}\nKeywords: ${doc.keywords?.join(', ')}\n${doc.content}`;
+}
+
+export function normalizeSemantic(cosine) {
+  if (!cosine || cosine <= SEMANTIC_FLOOR) return 0;
+  return Math.min(1, (cosine - SEMANTIC_FLOOR) / (SEMANTIC_CEIL - SEMANTIC_FLOOR));
+}
+
 /**
  * Load knowledge chunks from JSON file
  */
@@ -66,17 +109,24 @@ export function cosineSimilarity(vecA, vecB) {
 }
 
 /**
- * Generate embedding for text using Google Gemini text-embedding-004
+ * Generate an embedding with the configured Gemini embedding model (see aiConfig.js).
+ * Returns null on any failure; callers fall back to keyword scoring.
  */
-async function generateEmbedding(text) {
+async function generateEmbedding(text, isQuery = false) {
   const model = getEmbeddingModel();
-  if (!model) return null;
+  if (!model || !embeddingsAvailable()) return null;
 
   try {
-    const result = await model.embedContent(text);
-    return result.embedding?.values || null;
+    const result = await model.embedContent({
+      content: { role: 'user', parts: [{ text }] },
+      taskType: isQuery ? 'RETRIEVAL_QUERY' : 'RETRIEVAL_DOCUMENT',
+    });
+    const values = result.embedding?.values || null;
+    recordEmbeddingResult(!!values);
+    return values;
   } catch (err) {
-    console.warn('[RAG Service] Gemini embedding API call skipped/failed:', err.message);
+    console.warn('[RAG Service] Gemini embedding API call failed:', err.message);
+    recordEmbeddingResult(false);
     return null;
   }
 }
@@ -92,7 +142,7 @@ function computeKeywordScore(queryTokens, doc) {
   const contentTokens = new Set(tokenize(doc.content));
 
   let matchedPoints = 0;
-  let maxPossiblePoints = queryTokens.length * 3; // weight: 3 for keywords, 2 for title, 1 for content
+  const maxPossiblePoints = queryTokens.length * 3; // weight: 3 for keywords, 2 for title, 1 for content
 
   for (const token of queryTokens) {
     let tokenScore = 0;
@@ -120,22 +170,36 @@ function computeKeywordScore(queryTokens, doc) {
 }
 
 /**
- * Index/warm knowledge base embeddings in memory
+ * Index/warm knowledge base embeddings in memory with ONE batch call. Safe to call many times:
+ * concurrent callers share the same promise and nothing is re-embedded once cached.
  */
-export async function initializeKnowledgeEmbeddings() {
-  const docs = getKnowledgeBase();
-  const model = getEmbeddingModel();
-  if (!model) return;
-
-  for (const doc of docs) {
-    if (!embeddingCache.has(doc.id)) {
-      const textToEmbed = `${doc.title}\nKeywords: ${doc.keywords?.join(', ')}\n${doc.content}`;
-      const emb = await generateEmbedding(textToEmbed);
-      if (emb) {
-        embeddingCache.set(doc.id, emb);
-      }
+export function initializeKnowledgeEmbeddings() {
+  if (warmPromise) return warmPromise;
+  warmPromise = (async () => {
+    const docs = getKnowledgeBase();
+    const model = getEmbeddingModel();
+    const missing = docs.filter((d) => !embeddingCache.has(d.id));
+    if (!model || missing.length === 0 || !embeddingsAvailable()) return;
+    try {
+      const res = await model.batchEmbedContents({
+        requests: missing.map((doc) => ({
+          content: { role: 'user', parts: [{ text: docEmbeddingText(doc) }] },
+          taskType: 'RETRIEVAL_DOCUMENT',
+        })),
+      });
+      (res.embeddings || []).forEach((e, i) => {
+        if (e?.values) embeddingCache.set(missing[i].id, e.values);
+      });
+      recordEmbeddingResult(embeddingCache.size > 0);
+    } catch (err) {
+      console.warn('[RAG Service] Batch embedding of knowledge base failed:', err.message);
+      recordEmbeddingResult(false);
     }
-  }
+  })().finally(() => {
+    // allow a later retry (e.g. after the cooldown) if the cache is still incomplete
+    if (embeddingCache.size < getKnowledgeBase().length) warmPromise = null;
+  });
+  return warmPromise;
 }
 
 /**
@@ -153,39 +217,27 @@ export async function searchKnowledgeBase(query = '', { limit = 3, minScore = 0.
 
   const queryTokens = tokenize(query);
 
-  // Try generating query vector embedding
+  // Vector retrieval is optional: any failure falls back to keyword-only scoring.
   let queryEmbedding = null;
-  const model = getEmbeddingModel();
-  if (model) {
-    queryEmbedding = await generateEmbedding(query);
+  if (getEmbeddingModel() && embeddingsAvailable()) {
+    await initializeKnowledgeEmbeddings();
+    if (embeddingCache.size > 0) queryEmbedding = await generateEmbedding(query, true);
   }
+  lastMode = queryEmbedding ? 'hybrid' : 'keyword';
 
   const scoredDocs = [];
 
   for (const doc of docs) {
-    // 1. Keyword score
     const kwScore = computeKeywordScore(queryTokens, doc);
 
-    // 2. Semantic vector score
     let semanticScore = 0;
-    if (queryEmbedding) {
-      let docEmbedding = embeddingCache.get(doc.id);
-      if (!docEmbedding) {
-        const textToEmbed = `${doc.title}\nKeywords: ${doc.keywords?.join(', ')}\n${doc.content}`;
-        docEmbedding = await generateEmbedding(textToEmbed);
-        if (docEmbedding) embeddingCache.set(doc.id, docEmbedding);
-      }
-
-      if (docEmbedding) {
-        semanticScore = cosineSimilarity(queryEmbedding, docEmbedding);
-      }
+    const docEmbedding = embeddingCache.get(doc.id);
+    if (queryEmbedding && docEmbedding) {
+      semanticScore = normalizeSemantic(cosineSimilarity(queryEmbedding, docEmbedding));
     }
 
-    // 3. Combined Hybrid Score
-    // If semantic embedding is available, weigh 60% semantic + 40% keyword; else 100% keyword
-    const finalScore = queryEmbedding && semanticScore > 0
-      ? 0.6 * semanticScore + 0.4 * kwScore
-      : kwScore;
+    // 60% semantic + 40% keyword when vectors exist for this doc, otherwise keyword only
+    const finalScore = queryEmbedding && docEmbedding ? 0.6 * semanticScore + 0.4 * kwScore : kwScore;
 
     if (finalScore >= minScore) {
       scoredDocs.push({
@@ -217,8 +269,8 @@ export function formatRagContext(retrievedDocs = []) {
   return (
     `======================================================================\n` +
     `VERIFIED CLINICAL INTAKE KNOWLEDGE BASE (RETRIEVED VIA RAG):\n` +
-    `Use the factual guidance below to inform your intake questions, objective visual observations, danger sign detection, and comfort care recommendations.\n` +
-    `CRITICAL: You are an intake scribe, NOT a doctor. Do NOT use this knowledge to diagnose diseases, prescribe medication, or give definitive medical opinions.\n` +
+    `Use the guidance below ONLY to shape intake questions and to recognise emergency danger signs.\n` +
+    `CRITICAL: You are an intake scribe, NOT a doctor. NEVER name or suggest any skin condition, diagnosis or possible cause from this material, NEVER recommend or mention medications for the user to take, and NEVER give definitive medical opinions.\n` +
     `======================================================================\n` +
     `${chunks}\n` +
     `======================================================================`
@@ -246,6 +298,8 @@ export function getKnowledgeBaseStats() {
   return {
     totalDocuments: docs.length,
     cachedEmbeddingsCount: embeddingCache.size,
+    retrievalMode: lastMode,
+    embeddingsCoolingDown: !embeddingsAvailable(),
     categories: [...new Set(docs.map((d) => d.category))],
     documents: docs.map((d) => ({
       id: d.id,
@@ -254,4 +308,13 @@ export function getKnowledgeBaseStats() {
       keywordCount: d.keywords?.length || 0,
     })),
   };
+}
+
+/** Test helper: reset module state. */
+export function _resetRagStateForTests() {
+  embeddingCache.clear();
+  consecutiveFailures = 0;
+  cooldownUntil = 0;
+  warmPromise = null;
+  lastMode = 'unknown';
 }

@@ -26,11 +26,13 @@ app.use(
       // Allow requests with no origin (mobile apps, curl, file://)
       if (!origin) return callback(null, true);
 
+      // Localhost origins are only trusted outside production (set NODE_ENV=production on Render).
       const isLocal =
-        origin.startsWith('http://localhost:') ||
+        process.env.NODE_ENV !== 'production' &&
+        (origin.startsWith('http://localhost:') ||
         origin.startsWith('https://localhost:') ||
         origin.startsWith('http://127.0.0.1:') ||
-        origin.startsWith('https://127.0.0.1:');
+        origin.startsWith('https://127.0.0.1:'));
 
       if (isLocal || allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -43,14 +45,15 @@ app.use(
   })
 );
 
-// Helpful request logger for development
+// Request logger. Only the path is logged (never the query string, which can contain user text).
 app.use((req, res, next) => {
-  console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.originalUrl}`);
+  console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.path}`);
   next();
 });
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Chat text and history are small; photos arrive as multipart (5 MB cap in middleware/upload.js).
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Rate limiting — protect AI endpoints from abuse
 const chatLimiter = rateLimit({
@@ -77,17 +80,29 @@ app.use('/api/chat', chatLimiter, chatRoutes);
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    error: `Route not found: ${req.method} ${req.originalUrl}`,
+    error: 'Route not found.',
   });
 });
 
-// Global Error Handler
+// Global Error Handler — never leaks internal error text for 5xx responses.
 app.use((err, req, res, next) => {
-  console.error('Unhandled Server Error:', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: err.message || 'Internal server error.',
-  });
+  let status = err.status || err.statusCode || 500;
+  let message;
+  if (err.type === 'entity.parse.failed') {
+    status = 400;
+    message = 'Invalid JSON in request body.';
+  } else if (err.type === 'entity.too.large') {
+    status = 413;
+    message = 'Request is too large.';
+  } else if (status < 500 && err.expose) {
+    message = err.message;
+  } else if (status < 500) {
+    message = 'Invalid request.';
+  } else {
+    console.error('Unhandled Server Error:', err);
+    message = 'Internal server error.';
+  }
+  res.status(status).json({ success: false, error: message });
 });
 
 export default app;

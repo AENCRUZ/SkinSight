@@ -12,7 +12,7 @@ import {
 const router = express.Router();
 
 // Chat message route (supports optional single image with key 'image')
-router.post('/message', requireAuth, uploadSkinPhoto.single('image'), handleChatMessage);
+router.post('/message', requireAuth, uploadSkinPhoto, handleChatMessage);
 
 // Generate consultation summary
 router.post('/summary', requireAuth, handleGenerateSummary);
@@ -21,7 +21,8 @@ router.post('/summary', requireAuth, handleGenerateSummary);
 router.post('/download', requireAuth, handleDownloadReport);
 
 // RAG clinical knowledge base inspection & verification
-router.get('/knowledge/search', handleSearchKnowledge);
-router.get('/knowledge/stats', handleGetKnowledgeStats);
+// (login required in strict mode — these are diagnostics, not public endpoints)
+router.get('/knowledge/search', requireAuth, handleSearchKnowledge);
+router.get('/knowledge/stats', requireAuth, handleGetKnowledgeStats);
 
 export default router;
