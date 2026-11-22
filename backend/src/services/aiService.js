@@ -71,9 +71,13 @@ export async function sendChatMessage({ message, history = [], imageFile = null 
 
   const formattedHistory = sanitizeHistory(history);
 
-  // Start chat session with previous history
+  // Start chat session with previous history.
+  // IMPORTANT: pass a COPY. The Gemini SDK keeps a reference to the array it is given and appends every turn to it
+  // (including our user turn with the retrieved reference text wrapped around it, and the reply). If we passed
+  // formattedHistory itself, the history we return and the browser saves would contain that reference text as if
+  // the user had written it, and every exchange would come back as 4 turns instead of 2.
   const chat = model.startChat({
-    history: formattedHistory,
+    history: formattedHistory.map((turn) => ({ role: turn.role, parts: turn.parts.map((p) => ({ ...p })) })),
     generationConfig: {
       temperature: 0.3,
     },

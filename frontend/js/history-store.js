@@ -57,9 +57,34 @@
     }
   }
 
+  // Older versions saved the retrieved reference text (it starts with a long "=====" banner) as if the user had
+  // written it, followed by a duplicate reply. Drop those turns so titles and chats show only real messages.
+  var REFERENCE_BANNER = /^=+\s*VERIFIED CLINICAL INTAKE KNOWLEDGE BASE/i;
+  function turnTextOf(t) {
+    if (!t || typeof t !== "object") return "";
+    if (Array.isArray(t.parts)) return t.parts.map(function (p) { return typeof p === "string" ? p : (p && p.text) || ""; }).join(" ");
+    if (typeof t.text === "string") return t.text;
+    return typeof t.content === "string" ? t.content : "";
+  }
+  function stripReferenceArtifacts(arr) {
+    if (!Array.isArray(arr)) return [];
+    var out = [];
+    for (var i = 0; i < arr.length; i++) {
+      var t = arr[i];
+      var isModel = function (x) { return x && (x.role === "model" || x.role === "assistant" || x.role === "ai"); };
+      if (t && !isModel(t) && REFERENCE_BANNER.test(turnTextOf(t).trim())) {
+        if (isModel(arr[i + 1])) i++;
+        continue;
+      }
+      out.push(t);
+    }
+    return out;
+  }
+
   // Accept only well-formed turns, whatever came back from the database.
   function cleanMessages(raw) {
     if (!Array.isArray(raw)) return [];
+    raw = stripReferenceArtifacts(raw);
     var out = [];
     raw.slice(0, MAX_TURNS).forEach(function (t) {
       if (!t || typeof t !== "object") return;
@@ -71,6 +96,21 @@
       out.push({ role: t.role === "model" || t.role === "assistant" || t.role === "ai" ? "model" : "user", parts: [{ text: text }] });
     });
     return out;
+  }
+
+  // A title saved by an older version may be just a run of "=" characters (the start of the leaked reference text).
+  // Show the first real user message instead.
+  function displayTitle(title, messages) {
+    var t = String(title || "").trim();
+    if (t && !/^[=\-_\s.…]{6,}$/.test(t)) return t;
+    for (var i = 0; i < messages.length; i++) {
+      if (messages[i].role === "user") {
+        var s = messages[i].parts[0].text.replace(/\s+/g, " ").trim();
+        if (s && s !== "[Image Attached]") return s.length > 46 ? s.slice(0, 45).trimEnd() + "…" : s;
+        if (s === "[Image Attached]") return "Photo consultation";
+      }
+    }
+    return "New consultation";
   }
 
   function cleanSummary(raw) {
@@ -96,10 +136,11 @@
       return {
         ok: true,
         items: (res.data || []).map(function (r) {
+          var msgs = cleanMessages(r.messages);
           return {
             id: r.id,
-            title: r.title || "New consultation",
-            messages: cleanMessages(r.messages),
+            title: displayTitle(r.title, msgs),
+            messages: msgs,
             createdAt: toTime(r.created_at),
             updatedAt: toTime(r.updated_at)
           };
@@ -120,7 +161,7 @@
       return {
         ok: true,
         item: {
-          id: r.id, title: r.title, messages: cleanMessages(r.messages), summary: cleanSummary(r.summary),
+          id: r.id, title: displayTitle(r.title, cleanMessages(r.messages)), messages: cleanMessages(r.messages), summary: cleanSummary(r.summary),
           createdAt: toTime(r.created_at), updatedAt: toTime(r.updated_at)
         }
       };
@@ -166,5 +207,5 @@
     } catch (e) { return fail(e); }
   }
 
-  window.SkinsightHistory = { list: list, get: get, save: save, saveSummary: saveSummary, remove: remove, newId: uuid };
+  window.SkinsightHistory = { stripReferenceArtifacts: stripReferenceArtifacts, list: list, get: get, save: save, saveSummary: saveSummary, remove: remove, newId: uuid };
 })();

@@ -104,7 +104,14 @@
 
   function liveHistory() {
     var h = readJSON(sessionStorage, KEY_LIVE, []);
-    return Array.isArray(h) ? h : [];
+    if (!Array.isArray(h)) return [];
+    // Remove reference-text turns that older versions leaked into the history (see history-store.js).
+    if (History && History.stripReferenceArtifacts) {
+      var cleaned = History.stripReferenceArtifacts(h);
+      if (cleaned.length !== h.length) { writeJSON(sessionStorage, KEY_LIVE, cleaned); }
+      return cleaned;
+    }
+    return h;
   }
   function clearLive() {
     removeKey(sessionStorage, KEY_LIVE);
