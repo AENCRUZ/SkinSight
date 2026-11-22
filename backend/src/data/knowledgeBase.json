@@ -1,0 +1,85 @@
+[
+  {
+    "id": "emergency-triage",
+    "title": "Emergency Dermatological Red Flags & Urgent Care Triage",
+    "category": "emergency_triage",
+    "keywords": [
+      "emergency", "urgent", "swelling", "throat", "lip", "facial", "tongue", "breathing",
+      "airway", "anaphylaxis", "fever", "rapid", "spreading", "purple", "petechiae", "purpura",
+      "blistering", "sloughing", "mouth", "mucosal", "severe pain", "erythroderma"
+    ],
+    "content": "Emergency dermatological conditions require immediate hospital or emergency room evaluation. Key red flags include: 1) Angioedema or anaphylaxis signs (swelling of lips, tongue, face, difficulty breathing or swallowing). 2) Rapidly spreading erythematous rash accompanied by high fever, confusion, or chills. 3) Non-blanching purpuric or petechial lesions (small purple or dark red spots that do not fade when pressed), which may indicate meningococcemia or systemic vasculitis. 4) Extensive skin detachment, epidermal sloughing, or mucosal involvement (blistering of mouth, eyes, or genitals), characteristic of Stevens-Johnson Syndrome (SJS) or Toxic Epidermal Necrolysis (TEN). 5) Severe localized pain out of proportion to physical appearance, rapid tissue discoloration, or crepitus (suggestive of necrotizing fasciitis). Protocol: If any of these signs are detected, immediately instruct the user to seek emergency medical attention or call emergency services without delay."
+  },
+  {
+    "id": "intake-framework",
+    "title": "Dermatological Intake Framework: OLDCARTS & History Gathering",
+    "category": "clinical_intake",
+    "keywords": [
+      "intake", "history", "onset", "duration", "progression", "location", "symptoms",
+      "itch", "pruritus", "burning", "pain", "triggers", "questions", "interview", "clarifying"
+    ],
+    "content": "A high-quality dermatology intake follows the OLDCARTS clinical framework to prepare the dermatologist for an effective exam: 1) Onset: Exactly when was the skin change first noticed? Was it acute or gradual? 2) Location: Precise anatomical location(s) and whether it is localized, bilateral, symmetrical, or generalized. 3) Duration: Is it constant, intermittent, or episodic? 4) Character: Physical sensations including pruritus (itching), burning, throbbing, numbness, or tenderness. 5) Aggravating / Relieving factors: What worsens it (hot showers, friction, sweat, sunlight) or relieves it (cold compress, moisturizers)? 6) Radiation / Spread: Has the lesion enlarged, multiplied, or migrated? 7) Timing: Worse at night (characteristic of scabies or atopic dermatitis) or during specific activities? 8) Severity: Impact on sleep, daily activities, and mental wellbeing. Scribe rule: Ask only 1 to 2 focused questions at a time to prevent cognitive overload."
+  },
+  {
+    "id": "objective-morphology",
+    "title": "Objective Morphological Dermatology Terminology",
+    "category": "terminology",
+    "keywords": [
+      "erythema", "macule", "papule", "plaque", "vesicle", "bulla", "pustule", "scale",
+      "desquamation", "crust", "erosion", "ulcer", "wheal", "hive", "morphology", "lesion"
+    ],
+    "content": "Dermatology requires precise objective morphological descriptions rather than premature diagnostic labels: 1) Macule: Flat, non-palpable skin discoloration < 1 cm (e.g., freckle). Patch: Flat discoloration > 1 cm. 2) Papule: Solid, elevated lesion < 1 cm. Plaque: Broad, elevated plateau > 1 cm (common in psoriasis, eczema). 3) Vesicle: Elevated fluid-filled blister < 1 cm. Bulla: Fluid-filled blister > 1 cm. 4) Pustule: Circumscribed elevated lesion containing purulent exudate (pus). 5) Wheal (Urticaria): Evanescent, raised erythematous edematous plaque that changes location within 24 hours. 6) Secondary lesions: Scale (flaking stratum corneum), Crust (dried exudate or blood), Excoriation (linear scratch marks), Fissure (linear cleft through epidermis). Clinical caution: Many distinct skin conditions share identical primary morphologies; therefore, objective observation must never replace histological or in-person dermoscopic examination."
+  },
+  {
+    "id": "pigmented-lesions-abcde",
+    "title": "Pigmented Lesions & ABCDE Observation Protocol",
+    "category": "moles_and_lesions",
+    "keywords": [
+      "mole", "spot", "freckle", "pigment", "melanoma", "abcde", "asymmetry", "border",
+      "color", "diameter", "evolving", "dark", "nevus", "bleeding", "skin cancer"
+    ],
+    "content": "When evaluating pigmented lesions, moles, or dark spots, intake scribes should document features using the validated ABCDE criteria: 1) Asymmetry: Does one half of the spot fail to match the other half? 2) Border: Are the edges irregular, scalloped, jagged, or poorly defined? 3) Color: Is the coloration uneven, displaying shades of brown, black, tan, red, white, or blue? 4) Diameter: Is the lesion larger than 6 mm (approx. pencil eraser size), although melanomas can be smaller? 5) Evolving: Has the mole changed in size, shape, color, or developed new sensations (itching, bleeding, crusting, or oozing)? Scribe instruction: Objectively record any reported ABCDE characteristics for the dermatologist's review. Never declare a lesion 'benign' or 'malignant'—state that formal dermoscopy or biopsy by a physician is necessary."
+  },
+  {
+    "id": "contact-dermatitis-triggers",
+    "title": "Contact Dermatitis: Common Allergic & Irritant Exposures",
+    "category": "exposures_and_triggers",
+    "keywords": [
+      "allergy", "irritant", "contact dermatitis", "triggers", "detergent", "soap",
+      "fragrance", "perfume", "nickel", "jewelry", "cosmetics", "skincare", "preservatives",
+      "latex", "poison ivy", "plants", "occupational", "chemicals"
+    ],
+    "content": "Contact dermatitis arises either from direct cellular damage (irritant contact dermatitis, ~80% of cases) or T-cell mediated hypersensitivity (allergic contact dermatitis, ~20%). High-prevalence culprits to explore during intake: 1) Metals: Nickel (belt buckles, jewelry, jean snaps, watchbands), cobalt, chromium (leather tanning). 2) Fragrances and Botanicals: Essential oils, perfumes, balsam of Peru, linalool, limonene. 3) Preservatives: Methylisothiazolinone (MI/MCI) in wipes and shampoos, formaldehyde releasers. 4) Topical active ingredients: Neomycin, bacitracin, benzocaine, benzoyl peroxide, retinol. 5) Plant resins: Urushiol (poison ivy, poison oak, mango skin). 6) Laundry & Household: Concentrated detergents, fabric softeners, cleaning solvents. Scribe guidance: Ask if new personal care products, clothing, or outdoor exposures coincided with the onset."
+  },
+  {
+    "id": "safe-comfort-care",
+    "title": "Non-Pharmacological Skin Comfort Measures & Safety Precautions",
+    "category": "comfort_guidance",
+    "keywords": [
+      "comfort", "soothing", "relief", "compress", "moisturizer", "emollient", "itching",
+      "scratching", "bath", "water temperature", "cotton", "clothing", "precautions", "home care"
+    ],
+    "content": "While users await professional dermatology consultation, non-pharmacological comfort measures can alleviate distress without masking or confounding clinical signs: 1) Cool Compresses: Apply a clean, cool, damp cloth to inflamed or itchy areas for 10-15 minutes to reduce erythema and calm histamine receptor activity. 2) Gentle Emollients: Apply bland, fragrance-free, dye-free moisturizing ointments or creams (e.g., plain petroleum jelly, ceramide creams) to preserve the stratum corneum barrier. 3) Bathing Practices: Use lukewarm (never scalding hot) water, limit bathing to 5-10 minutes, and use syndet soap-free gentle cleansers. Pat dry gently without rubbing. 4) Scratching Prevention: Keep fingernails short and clean; consider cotton gloves at night to prevent excoriation and secondary bacterial infection (impetiginization). 5) Critical Contraindications: Strictly avoid popping blisters, peeling flaking skin, or applying abrasive substances (rubbing alcohol, hydrogen peroxide, bleach, or undiluted essential oils)."
+  },
+  {
+    "id": "chronic-patterns-questions",
+    "title": "Chronic Skin Concerns: Flare Patterns & Doctor Questions",
+    "category": "chronic_care",
+    "keywords": [
+      "chronic", "recurring", "flare", "cycles", "eczema", "atopic", "psoriasis", "acne",
+      "rosacea", "stress", "weather", "seasons", "questions for doctor", "consultation prep"
+    ],
+    "content": "For chronic or relapsing dermatological conditions, documenting patterns over time is essential for the clinician: 1) Flare Triggers: Note seasonal variations (cold dry winter weather vs. hot humid summer sweat), emotional stress, hormonal fluctuations, or dietary associations. 2) Family History: Inquire if first-degree relatives have a history of atopy (eczema, asthma, allergic rhinitis), psoriasis, or melanoma. 3) Formulating High-Yield Consultation Questions: Assist the user in preparing focused questions for their dermatologist, such as: 'What diagnostic testing (e.g., skin biopsy, patch allergy test, scraping for KOH prep) would help clarify my diagnosis?' 'What are the first-line versus long-term management strategies?' 'Are there non-steroidal maintenance therapies suitable for my affected areas?'"
+  },
+  {
+    "id": "medication-history-protocol",
+    "title": "Topical and Systemic Dermatological Medication Documentation",
+    "category": "medications",
+    "keywords": [
+      "medication", "topical", "steroid", "corticosteroid", "hydrocortisone", "triamcinolone",
+      "retinoid", "tretinoin", "antifungal", "clotrimazole", "antibiotic", "oral", "dose",
+      "frequency", "side effects", "steroid withdrawal"
+    ],
+    "content": "Accurate medication history is vital because prior treatments often alter the clinical morphology of rashes (e.g., 'tinea incognito' caused by applying topical steroids to a fungal infection). Intake documentation should record: 1) Topical Corticosteroids: Potency class (mild OTC hydrocortisone vs. potent prescription clobetasol/triamcinolone), duration of continuous use, and anatomical application sites (face and intertriginous folds carry high risk of steroid-induced skin atrophy and telangiectasia). 2) Antifungals & Antibiotics: Prior use of OTC clotrimazole, miconazole, or prescription oral antibiotics. 3) Retinoids & Exfoliants: Tretinoin, adapalene, salicylic acid, or glycolic acid which cause peeling and sun sensitivity. 4) Response to Treatment: Did previous treatments improve, worsen, or have no effect on the condition? Never alter or prescribe medication dosages."
+  }
+]

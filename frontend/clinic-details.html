@@ -43,100 +43,172 @@
 
 <section class="feature-section">
   <div class="wrap wrap-narrow">
-    <a class="back-link" href="clinic-finder.html"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-chevron-left"/></svg> Back to Find a Dermatologist</a>
+    <a class="back-link" href="clinic-finder.html">
+      <svg class="i" aria-hidden="true" focusable="false"><use href="#i-chevron-left"/></svg> Back to Find a Dermatologist
+    </a>
 
-    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Preview · Sample clinic.</strong> The address, phone, email, doctors and summary text on this page are examples, not a real clinic or your real consultation summary. Always confirm details with the clinic directly.</p></div>
-
+    <!-- Clinic Header & Core Contacts -->
     <div class="card card-static clinic-hero">
       <div class="clinic-hero-top">
-        <span class="badge badge-open">Open Now</span>
-        <span class="badge badge-preview">Sample data</span>
+        <span class="badge badge-open" id="clinicStatusBadge">Open Now</span>
+        <span class="badge badge-preview" id="clinicTypeBadge">In-person Only</span>
+        <span class="badge badge-location" id="clinicCityBadge">📍 Batangas City</span>
       </div>
-      <h1>Bay Area Dermatology Clinic</h1>
+      <h1 id="clinicName">SkinStation — SM City Batangas</h1>
       <ul class="info-list">
-        <li><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg><span>123 Rizal Avenue, Batangas City, Batangas</span></li>
-        <li><svg class="i" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg><span>(043) 555-0192</span></li>
-        <li><svg class="i" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg><span>info@bayareaderma.example</span></li>
-        <li><svg class="i" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg><span><strong>Opening hours:</strong> Mon–Sat, 9:00 AM – 6:00 PM</span></li>
+        <li>
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg>
+          <div>
+            <strong>Address:</strong>
+            <span id="clinicAddress">2nd Floor, SM City Batangas, Pastor Village, Pallocan West, Batangas City</span>
+          </div>
+        </li>
+        <li>
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-phone"/></svg>
+          <div>
+            <strong>Phone / Mobile:</strong>
+            <a id="clinicPhoneLink" class="info-link" href="tel:+63437238891"><span id="clinicPhone">(043) 723-8891</span></a>
+          </div>
+        </li>
+        <li>
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg>
+          <div>
+            <strong>Email:</strong>
+            <a id="clinicEmailLink" class="info-link" href="https://mail.google.com/mail/?view=cm&fs=1&to=smbatangas@skinstation.ph" target="_blank" rel="noopener noreferrer"><span id="clinicEmail">smbatangas@skinstation.ph</span></a>
+          </div>
+        </li>
+        <li>
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg>
+          <div>
+            <strong>Opening hours:</strong>
+            <span id="clinicHours">Mon–Sun, 10:00 AM – 9:00 PM</span>
+          </div>
+        </li>
       </ul>
+
+      <div class="clinic-hero-actions">
+        <a id="clinicHeroEmailBtn" href="https://mail.google.com/mail/?view=cm&fs=1&to=smbatangas@skinstation.ph" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
+          <svg class="i" aria-hidden="true"><use href="#i-mail"/></svg> Email Clinic
+        </a>
+        <a id="clinicMapsLink" href="https://www.google.com/maps/search/?api=1&query=SkinStation%20SM%20City%20Batangas" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm">
+          <svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg> Open in Google Maps
+        </a>
+      </div>
     </div>
 
+    <!-- Services & Specializations -->
     <div class="card card-static mb-16">
-      <h2 class="card-title">Available dermatologists</h2>
-      <div class="derm-list">
+      <h2 class="card-title">Services &amp; Specializations</h2>
+      <div class="clinic-services-wrap" id="clinicServicesContainer">
+        <span class="service-chip"><svg class="i" style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Acne Treatment &amp; Facials</span>
+        <span class="service-chip"><svg class="i" style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Diode Laser Hair Removal</span>
+        <span class="service-chip"><svg class="i" style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Hyperpigmentation Peels</span>
+        <span class="service-chip"><svg class="i" style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Skin Brightening</span>
+        <span class="service-chip"><svg class="i" style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Anti-Aging Therapy</span>
+      </div>
+    </div>
+
+    <!-- Available Dermatologists & Medical Specialists -->
+    <div class="card card-static mb-16">
+      <h2 class="card-title">Dermatology Specialists &amp; Medical Staff</h2>
+      <div class="derm-list" id="dermListContainer">
         <div class="derm-row">
-          <span class="derm-avatar" aria-hidden="true">ER</span>
-          <div><strong>Dr. Elena Ramos</strong><p>General Dermatology</p></div>
-          <span class="badge badge-info">Accepting patients</span>
-        </div>
-        <div class="derm-row">
-          <span class="derm-avatar" aria-hidden="true">MV</span>
-          <div><strong>Dr. Marco Villanueva</strong><p>Cosmetic &amp; Clinical Dermatology</p></div>
-          <span class="badge badge-info">Accepting patients</span>
+          <span class="derm-avatar" aria-hidden="true">&bull;</span>
+          <div><strong>Loading medical specialists...</strong><p>Please wait</p></div>
         </div>
       </div>
     </div>
 
-    <div class="card card-static send-card">
-      <h2 class="card-title mb-6">Send your consultation summary</h2>
-      <p class="intro">SKINSIGHT doesn't book appointments or contact clinics for you, but it can help you share what you've documented so far, your way.</p>
-
-      <div class="send-options">
-        <div class="send-option">
-          <div class="send-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></div>
-          <h3 class="send-option-title">Email It</h3>
-          <p>Opens your email app with the clinic's address and summary pre-filled.</p>
-          <a class="btn btn-primary btn-sm" href="mailto:info@bayareaderma.example?subject=Consultation%20Summary%20from%20SKINSIGHT&body=SKINSIGHT%20Consultation%20Summary%0APatient%3A%20Juan%20Dela%20Cruz%0A%0AMAIN%20CONCERN%0ARed%2C%20itchy%20patch%20of%20skin%20on%20the%20forearm.%0A%0ASYMPTOMS%20REPORTED%0ARedness%2C%20itching%2C%20mild%20swelling.%0A%0ADURATION%0AApproximately%205%20days.%0A%0AAFFECTED%20AREA%0ALeft%20forearm%2C%20inner%20side.%0A%0ATRIGGERS%20/%20RECENT%20CHANGES%0ANew%20laundry%20detergent%20introduced%20last%20week.%0A%0AIMAGE%20OBSERVATIONS%20%28general%2C%20non-diagnostic%29%0ASlightly%20raised%2C%20reddened%20patch%20with%20an%20irregular%20but%20well-defined%20border.%20No%20visible%20open%20wound.%0A%0AQUESTIONS%20TO%20DISCUSS%20WITH%20YOUR%20DERMATOLOGIST%0A-%20Could%20the%20new%20detergent%20be%20the%20cause%3F%0A-%20Is%20any%20treatment%20needed%2C%20or%20should%20it%20be%20monitored%3F%0A-%20Are%20there%20signs%20that%20would%20require%20urgent%20attention%3F%0A%0A---%0APrepared%20using%20SKINSIGHT%2C%20an%20AI-assisted%20platform.%20This%20is%20general%20information%20only%20and%20is%20not%20a%20medical%20diagnosis.">Email This Clinic</a>
-        </div>
-
-        <div class="send-option">
-          <div class="send-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg></div>
-          <h3 class="send-option-title">Copy It</h3>
-          <p>Copy the summary text to paste into a text message or chat.</p>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="copySkinsightSummary(this)">Copy Summary</button>
-          <div class="copy-confirm" role="status">Copied to clipboard.</div>
-        </div>
-
-        <div class="send-option">
-          <div class="send-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div>
-          <h3 class="send-option-title">Download It</h3>
-          <p>Save the summary as a text file to attach anywhere.</p>
-          <a class="btn btn-ghost btn-sm" download="skinsight-consultation-summary.txt" href="data:text/plain;charset=utf-8,SKINSIGHT%20Consultation%20Summary%0APatient%3A%20Juan%20Dela%20Cruz%0A%0AMAIN%20CONCERN%0ARed%2C%20itchy%20patch%20of%20skin%20on%20the%20forearm.%0A%0ASYMPTOMS%20REPORTED%0ARedness%2C%20itching%2C%20mild%20swelling.%0A%0ADURATION%0AApproximately%205%20days.%0A%0AAFFECTED%20AREA%0ALeft%20forearm%2C%20inner%20side.%0A%0ATRIGGERS%20/%20RECENT%20CHANGES%0ANew%20laundry%20detergent%20introduced%20last%20week.%0A%0AIMAGE%20OBSERVATIONS%20%28general%2C%20non-diagnostic%29%0ASlightly%20raised%2C%20reddened%20patch%20with%20an%20irregular%20but%20well-defined%20border.%20No%20visible%20open%20wound.%0A%0AQUESTIONS%20TO%20DISCUSS%20WITH%20YOUR%20DERMATOLOGIST%0A-%20Could%20the%20new%20detergent%20be%20the%20cause%3F%0A-%20Is%20any%20treatment%20needed%2C%20or%20should%20it%20be%20monitored%3F%0A-%20Are%20there%20signs%20that%20would%20require%20urgent%20attention%3F%0A%0A---%0APrepared%20using%20SKINSIGHT%2C%20an%20AI-assisted%20platform.%20This%20is%20general%20information%20only%20and%20is%20not%20a%20medical%20diagnosis.">Download Summary</a>
-        </div>
+    <!-- Clinic Location on Google Maps -->
+    <div class="card card-static mb-16">
+      <h2 class="card-title">Clinic Location</h2>
+      <div class="clinic-details-map-wrap">
+        <iframe id="clinicDetailsMapIframe" class="clinic-details-iframe" title="Clinic Location on Google Maps" loading="lazy" src="https://maps.google.com/maps?q=SkinStation%20SM%20City%20Batangas&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"></iframe>
       </div>
+      <div class="clinic-map-footer">
+        <span id="clinicMapFooterAddress">2nd Floor, SM City Batangas, Pastor Village, Pallocan West, Batangas City</span>
+        <a id="clinicMapDirectionsBtn" href="https://www.google.com/maps/dir/?api=1&amp;destination=13.7589,121.0743" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-xs">
+          Get Directions &rarr;
+        </a>
+      </div>
+    </div>
 
-      <p class="sample-note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert-circle"/></svg><span><strong>Sample text.</strong> These three actions currently use placeholder summary text (including a sample patient name), not your own consultation summary. Review and edit before sending anything to a real clinic.</span></p>
+    <!-- Direct Reach-out & Summary Sharing Section -->
+    <div class="card card-static inquiry-card" id="contactSection">
+      <h2 class="card-title mb-6">Contact &amp; Share Consultation Summary</h2>
+      <p class="intro">Fill in your preferred schedule and contact details below. SKINSIGHT formats your consultation summary so you can reach out directly via Phone, Email, SMS, or Messenger.</p>
 
-      <p class="helper mt-16">Want to review or edit your summary first? <a href="consultation-summary.html">Open your Consultation Summary &rarr;</a></p>
+      <!-- Interactive Patient Inquiry Form -->
+      <form class="inquiry-form" onsubmit="return false">
+        <div class="inquiry-grid">
+          <div class="inquiry-field">
+            <label for="patientNameInput">Your Full Name:</label>
+            <input type="text" id="patientNameInput" placeholder="e.g. Maria Santos">
+          </div>
+          <div class="inquiry-field">
+            <label for="patientContactInput">Your Contact Number / Email:</label>
+            <input type="text" id="patientContactInput" placeholder="e.g. 0917-123-4567 or maria@example.com">
+          </div>
+          <div class="inquiry-field">
+            <label for="patientDateInput">Preferred Date &amp; Time:</label>
+            <input type="text" id="patientDateInput" placeholder="e.g. Tomorrow afternoon / Saturday 10:00 AM">
+          </div>
+          <div class="inquiry-field">
+            <label for="consultTypeSelect">Consultation Mode:</label>
+            <select id="consultTypeSelect">
+              <option value="In-person Consultation">In-person Clinic Visit</option>
+              <option value="Teleconsultation">Online Teleconsultation</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="inquiry-field mb-16">
+          <label for="patientNotesInput">Additional Notes for the Clinic (Optional):</label>
+          <textarea id="patientNotesInput" rows="2" placeholder="e.g. I have had this rash for 4 days and would like an evaluation."></textarea>
+        </div>
+
+        <span class="inquiry-preview-label">Live Message Preview:</span>
+        <div class="inquiry-preview-box" id="inquiryPreviewBox">Loading summary...</div>
+
+        <div class="send-options">
+          <div class="send-option">
+            <div class="send-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg></div>
+            <h3 class="send-option-title">Email Clinic</h3>
+            <p>Opens Gmail in a new tab with your inquiry and summary pre-filled.</p>
+            <a class="btn btn-primary btn-sm" id="sendEmailBtn" href="#" target="_blank" rel="noopener noreferrer">Send Email Inquiry</a>
+          </div>
+
+          <div class="send-option">
+            <div class="send-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg></div>
+            <h3 class="send-option-title">Copy Message</h3>
+            <p>Copy formatted text to paste into SMS, Viber, or Messenger.</p>
+            <button type="button" class="btn btn-secondary btn-sm" id="copyDetailsBtn">Copy to Clipboard</button>
+            <div class="copy-confirm" role="status">Copied to clipboard!</div>
+          </div>
+
+          <div class="send-option">
+            <div class="send-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></div>
+            <h3 class="send-option-title">Download</h3>
+            <p>Save as a text file (.txt) to keep for your records.</p>
+            <a class="btn btn-ghost btn-sm" id="downloadDetailsBtn" download="skinsight-inquiry.txt" href="#">Download (.TXT)</a>
+          </div>
+        </div>
+      </form>
+
+      <p class="sample-note" id="summarySourceNote">
+        <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
+        <span id="summarySourceText">Using your consultation summary from your AI Skin Assistant session.</span>
+      </p>
+
+      <p class="helper mt-16">Need to update your symptoms or photos? <a href="consultation-summary.html">Review your Consultation Summary &rarr;</a></p>
     </div>
 
     <div class="notice strong">
       <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
-      <span>SKINSIGHT does not schedule appointments or contact this clinic on your behalf. Reach out directly using the phone number, email, or tools above.</span>
+      <span>SKINSIGHT does not charge booking fees or act as an intermediary. You communicate directly with the clinic using the verified contact details above.</span>
     </div>
   </div>
 </section>
-
-<script>
-function copySkinsightSummary(btn) {
-  var text = "SKINSIGHT Consultation Summary\nPatient: Juan Dela Cruz\n\nMAIN CONCERN\nRed, itchy patch of skin on the forearm.\n\nSYMPTOMS REPORTED\nRedness, itching, mild swelling.\n\nDURATION\nApproximately 5 days.\n\nAFFECTED AREA\nLeft forearm, inner side.\n\nTRIGGERS / RECENT CHANGES\nNew laundry detergent introduced last week.\n\nIMAGE OBSERVATIONS (general, non-diagnostic)\nSlightly raised, reddened patch with an irregular but well-defined border. No visible open wound.\n\nQUESTIONS TO DISCUSS WITH YOUR DERMATOLOGIST\n- Could the new detergent be the cause?\n- Is any treatment needed, or should it be monitored?\n- Are there signs that would require urgent attention?\n\n---\nPrepared using SKINSIGHT, an AI-assisted platform. This is general information only and is not a medical diagnosis.";
-  var confirm = btn.parentElement.querySelector('.copy-confirm');
-  function showConfirm() {
-    if (confirm) {
-      confirm.classList.add('show');
-      setTimeout(function () { confirm.classList.remove('show'); }, 2500);
-    }
-  }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(showConfirm).catch(function () {
-      if (confirm) { confirm.textContent = "Copy not supported in this browser."; confirm.classList.add('show'); }
-    });
-  } else if (confirm) {
-    confirm.textContent = "Copy not supported in this browser.";
-    confirm.classList.add('show');
-  }
-}
-</script>
 
 </main>
 
@@ -147,5 +219,332 @@ function copySkinsightSummary(btn) {
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
 <script src="js/login-gate.js" defer></script>
+<script src="js/clinics-data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  function initClinicDetails() {
+    if (!window.SkinsightClinics) {
+      setTimeout(initClinicDetails, 50);
+      return;
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var clinicId = params.get("id") || params.get("clinic");
+    if (!clinicId) {
+      try {
+        clinicId = sessionStorage.getItem("skinsight_selected_clinic_id");
+      } catch (e) {}
+    }
+
+    var clinic = window.SkinsightClinics.getClinicById(clinicId);
+    if (!clinic) {
+      clinic = window.SkinsightClinics.DATA[0];
+    }
+    if (clinic && clinic.id) {
+      try {
+        sessionStorage.setItem("skinsight_selected_clinic_id", clinic.id);
+      } catch (e) {}
+    }
+
+    // Enhance back link to cleanly return to previously pinned map location
+    var backLink = document.querySelector(".back-link");
+    if (backLink) {
+      backLink.addEventListener("click", function (e) {
+        if (window.history.length > 1) {
+          e.preventDefault();
+          window.history.back();
+        }
+      });
+    }
+
+    // 1. Populate Clinic Details Header
+    document.title = clinic.name + " — SKINSIGHT Batangas";
+    var nameEl = document.getElementById("clinicName");
+    if (nameEl) nameEl.textContent = clinic.name;
+
+    var addrEl = document.getElementById("clinicAddress");
+    if (addrEl) addrEl.textContent = clinic.address;
+
+    var phoneEl = document.getElementById("clinicPhone");
+    if (phoneEl) phoneEl.textContent = clinic.phone;
+
+    var rawPhone = clinic.phone ? clinic.phone.replace(/[^0-9+]/g, "") : "";
+    if (rawPhone && rawPhone.indexOf("+") !== 0 && rawPhone.indexOf("0") === 0) {
+      rawPhone = "+63" + rawPhone.slice(1);
+    }
+
+    var phoneLink = document.getElementById("clinicPhoneLink");
+    if (phoneLink) phoneLink.href = "tel:" + rawPhone;
+
+    var emailEl = document.getElementById("clinicEmail");
+    if (emailEl) emailEl.textContent = clinic.email;
+
+    var gmailDirectUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(clinic.email || "");
+
+    var emailLink = document.getElementById("clinicEmailLink");
+    if (emailLink) {
+      emailLink.href = gmailDirectUrl;
+      emailLink.target = "_blank";
+      emailLink.rel = "noopener noreferrer";
+    }
+
+    var heroEmailBtn = document.getElementById("clinicHeroEmailBtn");
+    if (heroEmailBtn) {
+      heroEmailBtn.href = gmailDirectUrl;
+      heroEmailBtn.target = "_blank";
+      heroEmailBtn.rel = "noopener noreferrer";
+    }
+
+    var hoursEl = document.getElementById("clinicHours");
+    if (hoursEl) hoursEl.textContent = clinic.hours;
+
+    var statusEl = document.getElementById("clinicStatusBadge");
+    if (statusEl) {
+      statusEl.className = "badge " + (clinic.isOpen ? "badge-open" : "badge-closed");
+      statusEl.textContent = clinic.isOpen ? "Open Now" : (clinic.reopenText || "Closed");
+    }
+
+    var typeEl = document.getElementById("clinicTypeBadge");
+    if (typeEl) {
+      typeEl.textContent = (clinic.consultationTypes && clinic.consultationTypes.indexOf("teleconsult") !== -1)
+        ? "In-person & Teleconsult"
+        : "In-person Only";
+    }
+
+    var cityBadge = document.getElementById("clinicCityBadge");
+    if (cityBadge) {
+      cityBadge.textContent = "📍 " + (clinic.city || "Batangas");
+    }
+
+    // Google Maps Links & Embed
+    var gmapsQuery = clinic.googleMapsQuery || (clinic.name + " " + clinic.address);
+    var mapsUrl = "https://www.google.com/maps/search/?api=1&query=" +
+      encodeURIComponent(gmapsQuery);
+
+    var mapsLink = document.getElementById("clinicMapsLink");
+    if (mapsLink) mapsLink.href = mapsUrl;
+
+    var userActualLoc = null;
+    try {
+      var rawActual = sessionStorage.getItem("skinsight_user_actual_location") || localStorage.getItem("skinsight_user_actual_location");
+      if (rawActual) userActualLoc = JSON.parse(rawActual);
+    } catch (e) {}
+
+    var mapDirectionsBtn = document.getElementById("clinicMapDirectionsBtn");
+    if (mapDirectionsBtn) {
+      var originParam = (userActualLoc && userActualLoc.lat)
+        ? ("&origin=" + userActualLoc.lat + "," + userActualLoc.lng)
+        : "";
+      mapDirectionsBtn.href = "https://www.google.com/maps/dir/?api=1" + originParam +
+        "&destination=" + clinic.lat + "," + clinic.lng;
+    }
+
+    var mapFooterAddr = document.getElementById("clinicMapFooterAddress");
+    if (mapFooterAddr) mapFooterAddr.textContent = clinic.address;
+
+    var mapIframe = document.getElementById("clinicDetailsMapIframe");
+    if (mapIframe) {
+      mapIframe.src = "https://maps.google.com/maps?q=" + encodeURIComponent(gmapsQuery) + "&t=&z=16&ie=UTF8&iwloc=&output=embed";
+    }
+
+    // 2. Populate Services
+    var servicesContainer = document.getElementById("clinicServicesContainer");
+    if (servicesContainer && clinic.services) {
+      servicesContainer.innerHTML = clinic.services.map(function (s) {
+        return '<span class="service-chip">' +
+          '<svg class="i" style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' +
+          escapeHtml(s) +
+        '</span>';
+      }).join("");
+    }
+
+    // 3. Populate Doctors
+    var dermList = document.getElementById("dermListContainer");
+    if (dermList && clinic.doctors) {
+      dermList.innerHTML = clinic.doctors.map(function (doc) {
+        return '<div class="derm-row">' +
+          '<span class="derm-avatar" aria-hidden="true">' + (doc.initials || doc.name.slice(0, 2).toUpperCase()) + '</span>' +
+          '<div><strong>' + escapeHtml(doc.name) + '</strong><p>' + escapeHtml(doc.role) + '</p></div>' +
+          '<span class="badge badge-info">Accepting patients</span>' +
+        '</div>';
+      }).join("");
+    }
+
+    // 4. Initialize User Profile Prefill
+    var storedUser = null;
+    try {
+      var rawUser = localStorage.getItem("skinsight_user");
+      if (rawUser) storedUser = JSON.parse(rawUser);
+    } catch (e) {}
+
+    var nameInput = document.getElementById("patientNameInput");
+    if (nameInput && storedUser && storedUser.name) {
+      nameInput.value = storedUser.name;
+    }
+
+    var contactInput = document.getElementById("patientContactInput");
+    if (contactInput && storedUser && storedUser.email) {
+      contactInput.value = storedUser.email;
+    }
+
+    // 5. Dynamic Message Generation & Reach-out Handlers
+    function updateInquiryMessage() {
+      var patientName = (nameInput && nameInput.value.trim()) || "Patient";
+      var patientContact = (contactInput && contactInput.value.trim()) || "Not provided";
+      var patientDate = (document.getElementById("patientDateInput") && document.getElementById("patientDateInput").value.trim()) || "Flexible / Next available slot";
+      var consultMode = (document.getElementById("consultTypeSelect") && document.getElementById("consultTypeSelect").value) || "In-person Consultation";
+      var patientNotes = (document.getElementById("patientNotesInput") && document.getElementById("patientNotesInput").value.trim()) || "";
+
+      var summary = getActiveSummaryData();
+      var mainConcern = summary.mainConcern || "Dermatology consultation";
+      var symptoms = summary.symptoms || "Skin evaluation";
+      var duration = summary.duration || "";
+      var affectedArea = summary.affectedArea || "";
+
+      var lines = [
+        "Good day " + clinic.name + " Team,",
+        "",
+        "I would like to inquire about booking a dermatology consultation. Here are my details:",
+        "",
+        "• Patient Name: " + patientName,
+        "• Contact Number / Email: " + patientContact,
+        "• Preferred Schedule: " + patientDate,
+        "• Consultation Mode: " + consultMode,
+        "",
+        "Reason for Visit / Skin Concern:",
+        "• Chief Concern: " + mainConcern
+      ];
+
+      if (symptoms && symptoms !== "None reported") {
+        var symptomLine = "• Symptoms: " + symptoms;
+        if (duration && duration !== "Not specified") {
+          symptomLine += " (" + duration + ")";
+        }
+        lines.push(symptomLine);
+      } else if (duration && duration !== "Not specified") {
+        lines.push("• Duration: " + duration);
+      }
+
+      if (affectedArea && affectedArea !== "Not specified") {
+        lines.push("• Affected Area: " + affectedArea);
+      }
+
+      if (patientNotes) {
+        lines.push("• Additional Notes: " + patientNotes);
+      }
+
+      lines.push(
+        "",
+        "Could you please confirm if this schedule is available, or advise your nearest open slot and consultation fees?",
+        "",
+        "Thank you,",
+        patientName
+      );
+
+      var fullMessage = lines.join("\n");
+
+      var previewBox = document.getElementById("inquiryPreviewBox");
+      if (previewBox) {
+        previewBox.textContent = fullMessage;
+      }
+
+      // Update Email Button — opens Gmail compose in a new tab
+      var emailBtn = document.getElementById("sendEmailBtn");
+      if (emailBtn) {
+        var subject = encodeURIComponent("Consultation & Appointment Inquiry — " + patientName);
+        var body = encodeURIComponent(fullMessage);
+        emailBtn.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(clinic.email) + "&su=" + subject + "&body=" + body;
+      }
+
+      // Update Download Button
+      var downloadBtn = document.getElementById("downloadDetailsBtn");
+      if (downloadBtn) {
+        downloadBtn.href = "data:text/plain;charset=utf-8," + encodeURIComponent(fullMessage);
+      }
+
+      return fullMessage;
+    }
+
+    // Hook inputs to update message in real time
+    ["patientNameInput", "patientContactInput", "patientDateInput", "consultTypeSelect", "patientNotesInput"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", updateInquiryMessage);
+        el.addEventListener("change", updateInquiryMessage);
+      }
+    });
+
+    updateInquiryMessage();
+
+    // Copy Action
+    var copyBtn = document.getElementById("copyDetailsBtn");
+    if (copyBtn) {
+      copyBtn.onclick = function () {
+        var messageToCopy = updateInquiryMessage();
+        var confirmEl = this.parentElement.querySelector(".copy-confirm");
+        function showDone() {
+          if (confirmEl) {
+            confirmEl.classList.add("show");
+            setTimeout(function () { confirmEl.classList.remove("show"); }, 2500);
+          }
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(messageToCopy).then(showDone).catch(function () {
+            if (confirmEl) { confirmEl.textContent = "Copied to clipboard!"; confirmEl.classList.add("show"); }
+          });
+        } else if (confirmEl) {
+          confirmEl.textContent = "Copied to clipboard!";
+          confirmEl.classList.add("show");
+        }
+      };
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initClinicDetails);
+  } else {
+    initClinicDetails();
+  }
+
+  function getActiveSummaryData() {
+    var noteEl = document.getElementById("summarySourceText");
+
+    // 1. Try to load saved consultation summary from session
+    var rawSummary = sessionStorage.getItem("skinsight_consultation_summary");
+    if (rawSummary) {
+      try {
+        var parsed = JSON.parse(rawSummary);
+        if (parsed && typeof parsed === "object") {
+          if (noteEl) noteEl.textContent = "Using your consultation summary from your AI Skin Assistant session.";
+          return parsed;
+        }
+      } catch (e) {}
+    }
+
+    // 2. Fallback to default concern
+    if (noteEl) {
+      noteEl.textContent = "Sample consultation format. Complete an AI Skin Assistant session to auto-fill your specific symptoms.";
+    }
+    return {
+      mainConcern: "Red, itchy patch on the forearm",
+      symptoms: "Redness, itching, mild swelling",
+      duration: "4–5 days",
+      affectedArea: "Left forearm, inner side"
+    };
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+})();
+</script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 import { sendChatMessage, generateConsultationSummary } from '../services/aiService.js';
 import { buildDownloadableReportText } from '../services/reportService.js';
+import { searchKnowledgeBase, getKnowledgeBaseStats } from '../services/ragService.js';
 
 /**
  * Handle incoming chat message with optional image upload
@@ -39,6 +40,7 @@ export async function handleChatMessage(req, res) {
       success: true,
       reply: result.reply,
       history: result.history,
+      sources: result.sources || [],
     });
   } catch (error) {
     console.error('Error in handleChatMessage:', error);
@@ -112,6 +114,57 @@ export async function handleDownloadReport(req, res) {
     return res.status(500).json({
       success: false,
       error: 'Failed to download report file.',
+    });
+  }
+}
+
+/**
+ * Search the clinical knowledge base (RAG debug / verification endpoint)
+ */
+export async function handleSearchKnowledge(req, res) {
+  try {
+    const query = req.query.q || req.body?.query || '';
+    const limit = Number(req.query.limit || req.body?.limit) || 3;
+
+    if (!query.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Query parameter q is required (e.g. /api/chat/knowledge/search?q=itchy+rash)',
+      });
+    }
+
+    const results = await searchKnowledgeBase(query, { limit });
+
+    return res.status(200).json({
+      success: true,
+      query,
+      count: results.length,
+      results,
+    });
+  } catch (error) {
+    console.error('Error in handleSearchKnowledge:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to search knowledge base.',
+    });
+  }
+}
+
+/**
+ * Get knowledge base overview & stats
+ */
+export async function handleGetKnowledgeStats(req, res) {
+  try {
+    const stats = getKnowledgeBaseStats();
+    return res.status(200).json({
+      success: true,
+      stats,
+    });
+  } catch (error) {
+    console.error('Error in handleGetKnowledgeStats:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve knowledge base stats.',
     });
   }
 }

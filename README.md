@@ -20,7 +20,8 @@ clearly labeled "Preview" / "Sample data" in the UI; nothing is saved or sent.
 
 | Feature | Status | Notes |
 |---|---|---|
-| AI Skin Assistant | Working | Gemini-powered intake chat with starter prompts, markdown replies and an auto-growing composer |
+| AI Skin Assistant | Working | Gemini-powered intake chat with RAG clinical knowledge grounding, markdown replies and an auto-growing composer |
+| Clinical RAG Engine | Working | Hybrid retrieval (Google Gemini `text-embedding-004` + keyword scoring) over vetted, non-diagnostic clinical intake references |
 | Skin image assessment | Working | Attach or take a photo in the chat (JPEG/PNG/WebP, up to 5 MB) for non-diagnostic observations |
 | Consultation summary | Working | Structured summary with TXT and PDF download and copy-to-clipboard |
 | Conversation history sidebar | Preview | New consultation, search, date groups, delete and revisit. Real conversations live only in the browser session (`sessionStorage`) and are cleared on sign-out. Sample conversations are labeled. See `REAL_HISTORY_API` at the bottom of `frontend/js/chat-ui.js` for the backend work needed to persist history |
@@ -75,22 +76,26 @@ SkinSight/
 ├── backend/                      # Node.js + Express AI API
 │   ├── src/
 │   │   ├── config/
-│   │   │   └── aiConfig.js       # Google Gemini SDK setup
+│   │   │   └── aiConfig.js       # Google Gemini SDK & Embedding setup
 │   │   ├── controllers/
 │   │   │   └── chatController.js # Chat, image upload, & report handlers
+│   │   ├── data/
+│   │   │   └── knowledgeBase.json # Vetted non-diagnostic clinical reference catalog
 │   │   ├── middleware/
 │   │   │   └── upload.js         # Multer in-memory photo upload middleware
 │   │   ├── prompts/
-│   │   │   └── systemPrompt.js   # Non-diagnostic clinical intake guardrails
+│   │   │   └── systemPrompt.js   # Non-diagnostic clinical intake & RAG guardrails
 │   │   ├── routes/
-│   │   │   └── chatRoutes.js     # API routes (/api/chat/*)
+│   │   │   └── chatRoutes.js     # API routes (/api/chat/*, /api/chat/knowledge/*)
 │   │   ├── services/
 │   │   │   ├── aiService.js      # Multimodal AI calls & intake questioning
+│   │   │   ├── ragService.js     # Hybrid vector embedding + lexical RAG retrieval
 │   │   │   └── reportService.js  # Text report formatting & file builder
 │   │   └── app.js                # Express app setup & CORS configuration
 │   ├── .env                      # API keys & PORT (not committed)
 │   ├── .env.example              # Environment variables template
 │   ├── package.json              # Backend dependencies
+│   ├── test-rag.js               # Standalone RAG verification script
 │   └── server.js                 # Server entry point
 │
 ├── .gitignore

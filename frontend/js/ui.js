@@ -20,6 +20,26 @@
 (function () {
   "use strict";
 
+  // Check and synchronize initial auth class on <html> based on "Keep me signed in"
+  try {
+    var remember = localStorage.getItem("skinsight_remember_me") === "true";
+    if (!remember) {
+      // Clean up orphan tokens in localStorage if "Keep me signed in" was not checked
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (k && (k.indexOf("sb-") === 0 && k.indexOf("-auth-token") !== -1 || k === "skinsight_user")) {
+          localStorage.removeItem(k);
+        }
+      }
+    }
+    var activeUser = (remember ? localStorage.getItem("skinsight_user") : null) || sessionStorage.getItem("skinsight_user");
+    if (activeUser) {
+      document.documentElement.classList.add("auth-user-signed-in");
+    } else {
+      document.documentElement.classList.remove("auth-user-signed-in");
+    }
+  } catch (e) {}
+
   var NAV_ITEMS = [
     { key: "home",      href: "index.html",              label: "Home",                pages: ["", "index.html"] },
     { key: "assistant", href: "ai-assistant-intro.html", label: "AI Skin Assistant",   pages: ["ai-assistant-intro.html", "ai-chat.html", "consultation-summary.html"] },

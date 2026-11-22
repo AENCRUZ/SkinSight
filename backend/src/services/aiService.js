@@ -1,5 +1,6 @@
 import { getGenerativeModel } from '../config/aiConfig.js';
 import { INTAKE_SYSTEM_PROMPT, SUMMARY_SYSTEM_PROMPT } from '../prompts/systemPrompt.js';
+import { retrieveRagContext } from './ragService.js';
 
 /**
  * Convert Multer file buffer into Gemini inlineData part
@@ -75,13 +76,19 @@ export async function sendChatMessage({ message, history = [], imageFile = null 
     currentParts.push(imagePart);
   }
 
-  if (message && message.trim().length > 0) {
-    currentParts.push(message.trim());
-  } else if (currentParts.length > 0) {
-    currentParts.push('Please observe this skin photo objectively according to the intake guidelines.');
-  } else {
-    throw new Error('A message or an image is required.');
+  // Retrieve relevant clinical knowledge via RAG
+  const queryForRag = (message && message.trim()) || 'skin photo intake observation';
+  const ragResult = await retrieveRagContext(queryForRag);
+
+  let userTurnText = message && message.trim().length > 0
+    ? message.trim()
+    : 'Please observe this skin photo objectively according to the intake guidelines.';
+
+  if (ragResult.formattedContext) {
+    userTurnText = `${ragResult.formattedContext}\n\n[USER INPUT]:\n${userTurnText}`;
   }
+
+  currentParts.push(userTurnText);
 
   const result = await chat.sendMessage(currentParts);
   const response = await result.response;
@@ -100,6 +107,12 @@ export async function sendChatMessage({ message, history = [], imageFile = null 
         parts: [{ text: replyText }],
       },
     ],
+    sources: ragResult.docs.map((doc) => ({
+      id: doc.id,
+      title: doc.title,
+      category: doc.category,
+      score: doc.score,
+    })),
   };
 }
 

@@ -7,6 +7,7 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#FBF9F5">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -43,87 +44,175 @@
 
 <div class="page-header">
   <div class="wrap">
-    <span class="eyebrow">Clinics near you</span>
-    <h1>Find a Dermatologist</h1>
-    <p>Find skin clinics and dermatologists near you, then reach out directly and share your consultation summary.</p>
+    <span class="eyebrow">Batangas Province Clinics</span>
+    <h1>Find a Dermatologist in Batangas</h1>
+    <p>Find licensed skin clinics across Batangas Province, pin your location on Google Maps, and reach out directly to share your consultation summary.</p>
   </div>
 </div>
 
 <section class="feature-section">
   <div class="wrap">
-    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Preview · Sample data.</strong> The clinics below are examples that show how this page will work. Search, location and filters aren't active yet.</p></div>
-
-    <form class="card card-static finder-panel" role="search" aria-label="Search clinics (preview)" onsubmit="return false">
-      <fieldset class="finder-fields" disabled>
-        <legend class="visually-hidden">Clinic search and filters (not active in this preview)</legend>
+    <!-- Active Search & Location Panel -->
+    <form class="card card-static finder-panel" role="search" aria-label="Search clinics and choose location" onsubmit="return false">
+      <fieldset class="finder-fields">
+        <legend class="visually-hidden">Clinic search, location, and filters</legend>
         <div class="finder-row">
           <div class="finder-search">
-            <label class="visually-hidden" for="clinic-q">Search location or clinic</label>
+            <label class="visually-hidden" for="clinic-q">Search location, clinic name, or doctor</label>
             <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
-            <input type="search" id="clinic-q" placeholder="Search location or clinic">
+            <input type="search" id="clinic-q" placeholder="Search clinic, doctor, or town in Batangas (e.g. Batangas City, Lipa, Tanauan, Lemery)...">
           </div>
-          <button class="btn btn-secondary" type="button"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg> Use My Location</button>
+          <button class="btn btn-primary" type="button" id="useLocationBtn">
+            <svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg> Use My Location
+          </button>
         </div>
         <div class="finder-filters">
-          <div class="select-wrap"><select id="f-distance" aria-label="Distance"><option>Distance: Any</option></select><svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></div>
-          <div class="select-wrap"><select id="f-availability" aria-label="Availability"><option>Availability: Any</option></select><svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></div>
-          <div class="select-wrap"><select id="f-type" aria-label="Consultation type"><option>Consultation Type: Any</option></select><svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg></div>
+          <div class="select-wrap">
+            <select id="f-distance" aria-label="Distance radius">
+              <option value="area" selected>This town / city only</option>
+              <option value="15">Within 15 km</option>
+              <option value="25">Within 25 km</option>
+              <option value="all">All Batangas Province</option>
+            </select>
+            <svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg>
+          </div>
+          <div class="select-wrap">
+            <select id="f-availability" aria-label="Operating status">
+              <option value="all">Availability: Any</option>
+              <option value="open">Open Now</option>
+            </select>
+            <svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg>
+          </div>
+          <div class="select-wrap">
+            <select id="f-type" aria-label="Consultation type">
+              <option value="all">Consultation Type: Any</option>
+              <option value="in-person">In-person</option>
+              <option value="teleconsult">Teleconsultation</option>
+            </select>
+            <svg class="i select-arrow" aria-hidden="true" focusable="false"><use href="#i-chevron-down"/></svg>
+          </div>
         </div>
       </fieldset>
     </form>
 
     <div class="finder-layout">
+      <!-- Left: Clinic Results List -->
       <div class="finder-results">
         <div class="results-head">
-          <h2>3 sample clinics</h2>
-          <span class="badge badge-preview">Sample data</span>
+          <h2 id="resultsCount">Clinics near you</h2>
+          <span class="badge badge-location" id="pinnedLocationBadge" title="Current pinned location">
+            <svg class="i" style="width:14px;height:14px;" aria-hidden="true"><use href="#i-map-pin"/></svg>
+            <span id="locationNameText">Batangas City</span>
+          </span>
         </div>
 
-        <article class="clinic-card">
-          <div class="clinic-card-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg></div>
-          <div class="clinic-card-body">
-            <h3>Bay Area Dermatology Clinic</h3>
-            <p class="clinic-meta">1.2 km away · Batangas City</p>
-            <div class="clinic-tags"><span class="badge badge-open">Open Now</span><span class="badge badge-info">2 dermatologists available</span></div>
-          </div>
-          <div class="clinic-card-actions">
-            <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
-          </div>
-        </article>
-
-        <article class="clinic-card">
-          <div class="clinic-card-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg></div>
-          <div class="clinic-card-body">
-            <h3>Skinluxe Skin &amp; Wellness Center</h3>
-            <p class="clinic-meta">3.4 km away · Lipa City</p>
-            <div class="clinic-tags"><span class="badge badge-open">Open Now</span><span class="badge badge-info">1 dermatologist available</span></div>
-          </div>
-          <div class="clinic-card-actions">
-            <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
-          </div>
-        </article>
-
-        <article class="clinic-card is-closed">
-          <div class="clinic-card-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg></div>
-          <div class="clinic-card-body">
-            <h3>Coastal Dermatology Associates</h3>
-            <p class="clinic-meta">6.8 km away · Batangas City</p>
-            <div class="clinic-tags"><span class="badge badge-closed">Closed</span><span class="badge badge-info">Reopens tomorrow, 9:00 AM</span></div>
-          </div>
-          <div class="clinic-card-actions">
-            <a href="clinic-details.html" class="btn btn-primary btn-sm">View Details &amp; Contact</a>
-            <a href="no-clinic-available.html" class="btn btn-ghost btn-sm">Self-Care Tips</a>
-          </div>
-        </article>
+        <div id="clinicsList">
+          <!-- Dynamically populated by clinic-finder.js -->
+        </div>
       </div>
 
-      <figure class="card card-static finder-map">
-        <img src="img/map-preview.svg" alt="" width="400" height="320" loading="lazy">
-        <figcaption><strong>Map view: coming soon</strong>Nearby clinics will appear on a map once location search is available.</figcaption>
-      </figure>
+      <!-- Right: Interactive Mini Map of Chosen Location -->
+      <aside class="card card-static finder-map-card" aria-label="Google Maps View of Chosen Location">
+        <div class="finder-map-header">
+          <div class="finder-map-title">
+            <svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg>
+            <strong>Google Maps View</strong>
+          </div>
+          <button type="button" id="expandMapBtn" class="btn btn-ghost btn-xs" title="Open Google Maps location picker">
+            <svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg> Expand Map
+          </button>
+        </div>
+
+        <div class="mini-map-viewport-wrap">
+          <iframe id="miniGoogleIframe" class="mini-google-iframe" title="Google Maps View of Dermatologist Clinics" loading="lazy"></iframe>
+        </div>
+
+        <div class="finder-map-footer">
+          <div class="finder-map-loc-info">
+            <span class="map-dot"></span>
+            <span id="miniMapLocLabel" class="mini-map-loc-text">Pinned: Batangas City</span>
+          </div>
+          <p class="mini-map-hint">Showing dermatologist clinics in this area on Google Maps.</p>
+          <div class="finder-map-actions">
+            <button type="button" id="miniMapUseLocBtn" class="btn btn-secondary btn-sm">
+              <svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg> Use My Location
+            </button>
+            <a id="miniMapGoogleBtn" href="https://www.google.com/maps/search/dermatologist/@13.7565,121.0583,14z" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm">
+              Open in Google Maps <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+            </a>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 </section>
+
+<!-- Google Maps Location Picker Modal -->
+<div id="mapModal" class="map-modal" role="dialog" aria-modal="true" aria-labelledby="mapModalTitle" style="display: none !important;" hidden>
+  <div class="map-modal-backdrop" id="mapModalBackdrop"></div>
+  <div class="map-modal-dialog">
+    <div class="map-modal-header">
+      <div>
+        <div class="map-modal-eyebrow">Google Maps &middot; Batangas Province</div>
+        <h2 id="mapModalTitle">Choose Your Location in Batangas</h2>
+        <p>Explore dermatologist clinics across Batangas Province or select a town below to find nearby clinics.</p>
+      </div>
+      <button type="button" class="map-modal-close" id="closeMapModalBtn" aria-label="Close map modal">
+        <svg class="i" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+    </div>
+
+    <div class="map-modal-toolbar">
+      <div class="map-modal-search">
+        <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+        <input type="text" id="modalMapSearchInput" placeholder="Search town or area in Batangas (e.g. Lipa, Tanauan, Bauan, Lemery)...">
+        <button type="button" id="modalMapSearchBtn" class="btn btn-primary btn-sm">Search</button>
+      </div>
+      <button type="button" id="modalUseLocationBtn" class="btn btn-secondary btn-sm">
+        <svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg> Use GPS Location
+      </button>
+    </div>
+
+    <!-- Quick Area Select Chips (Batangas Towns) -->
+    <div class="map-modal-chips-bar">
+      <span class="chips-label">Quick select town:</span>
+      <div class="modal-city-chips" role="group" aria-label="Batangas towns and cities">
+        <button type="button" class="city-chip is-active" data-city="Batangas City">📍 Batangas City</button>
+        <button type="button" class="city-chip" data-city="Lipa City">📍 Lipa City</button>
+        <button type="button" class="city-chip" data-city="Tanauan City">📍 Tanauan City</button>
+        <button type="button" class="city-chip" data-city="Santo Tomas">📍 Sto. Tomas</button>
+        <button type="button" class="city-chip" data-city="Bauan">📍 Bauan</button>
+        <button type="button" class="city-chip" data-city="Lemery">📍 Lemery</button>
+        <button type="button" class="city-chip" data-city="Nasugbu">📍 Nasugbu</button>
+        <button type="button" class="city-chip" data-city="Balayan">📍 Balayan</button>
+      </div>
+    </div>
+
+    <div class="map-modal-viewport-wrap">
+      <iframe id="modalGoogleIframe" class="modal-google-iframe" title="Google Maps Embed View" loading="lazy"></iframe>
+      <div class="map-modal-overlay-badge" id="modalLocationBadge">
+        <svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg>
+        <span id="modalLocationBadgeText">Batangas City, Batangas</span>
+      </div>
+    </div>
+
+    <div class="map-modal-footer">
+      <div class="modal-footer-info">
+        <strong>Pinned Location:</strong>
+        <span id="modalFooterLocationText">Batangas City, Batangas</span>
+        <span class="modal-clinic-count" id="modalClinicCountText"> &middot; 2 clinics in this area</span>
+      </div>
+      <div class="modal-footer-actions">
+        <a id="modalExternalGoogleMapsLink" href="https://www.google.com/maps/search/dermatologist/@13.7565,121.0583,14z" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm">
+          Open in Google Maps <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+        </a>
+        <button type="button" id="confirmLocationBtn" class="btn btn-primary">
+          <svg class="i" aria-hidden="true"><use href="#i-check"/></svg> Confirm Location
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </main>
 
@@ -134,5 +223,7 @@
 <script src="js/site.js" defer></script>
 <script src="js/auth.js" defer></script>
 <script src="js/login-gate.js" defer></script>
+<script src="js/clinics-data.js"></script>
+<script src="js/clinic-finder.js" defer></script>
 </body>
 </html>

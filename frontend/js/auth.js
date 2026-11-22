@@ -187,10 +187,21 @@
   async function handleLogin(form) {
     var emailInput = document.getElementById("login-email");
     var passwordInput = document.getElementById("login-password");
+    var rememberInput = document.getElementById("login-remember");
     var submitBtn = form.querySelector('button[type="submit"]');
 
     var email = emailInput ? emailInput.value.trim() : "";
     var password = passwordInput ? passwordInput.value : "";
+    var rememberMe = rememberInput ? rememberInput.checked : false;
+
+    // Save remember preference BEFORE signing in so Supabase storage adapter directs to localStorage or sessionStorage
+    try {
+      if (rememberMe) {
+        localStorage.setItem("skinsight_remember_me", "true");
+      } else {
+        localStorage.removeItem("skinsight_remember_me");
+      }
+    } catch (e) {}
 
     var originalText = submitBtn.innerText;
     setButtonLoading(submitBtn, true, "Logging In...", originalText);
@@ -393,6 +404,16 @@
         btn.disabled = true;
         btn.querySelector(".google-btn-text").textContent = "Redirecting...";
 
+        var rememberInput = document.getElementById("login-remember");
+        var rememberMe = rememberInput ? rememberInput.checked : false;
+        try {
+          if (rememberMe) {
+            localStorage.setItem("skinsight_remember_me", "true");
+          } else {
+            localStorage.removeItem("skinsight_remember_me");
+          }
+        } catch (e) {}
+
         rememberNextForOAuth();
         try {
           var response = await window.supabaseClient.auth.signInWithOAuth({
@@ -526,12 +547,20 @@
 
   function saveCachedUser(userData) {
     try {
+      var remember = localStorage.getItem("skinsight_remember_me") === "true";
+      var storage = remember ? localStorage : sessionStorage;
       if (userData) {
-        localStorage.setItem("skinsight_user", JSON.stringify(userData));
+        storage.setItem("skinsight_user", JSON.stringify(userData));
+        if (!remember) {
+          localStorage.removeItem("skinsight_user");
+        }
         document.documentElement.classList.add("auth-user-signed-in");
       } else {
         localStorage.removeItem("skinsight_user");
         localStorage.removeItem("skinsight_logged_in");
+        localStorage.removeItem("skinsight_remember_me");
+        sessionStorage.removeItem("skinsight_user");
+        sessionStorage.removeItem("skinsight_logged_in");
         document.documentElement.classList.remove("auth-user-signed-in");
       }
     } catch (e) { }
@@ -539,13 +568,16 @@
 
   function getCachedUser() {
     try {
-      var raw = localStorage.getItem("skinsight_user");
+      var remember = localStorage.getItem("skinsight_remember_me") === "true";
+      var storage = remember ? localStorage : sessionStorage;
+      var raw = storage.getItem("skinsight_user") || sessionStorage.getItem("skinsight_user");
       if (raw) return JSON.parse(raw);
 
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
+      var source = remember ? localStorage : sessionStorage;
+      for (var i = 0; i < source.length; i++) {
+        var k = source.key(i);
         if (k && k.indexOf("sb-") === 0 && k.indexOf("-auth-token") !== -1) {
-          var sbRaw = localStorage.getItem(k);
+          var sbRaw = source.getItem(k);
           if (sbRaw) {
             var sbData = JSON.parse(sbRaw);
             var u = sbData.user || (sbData.currentSession && sbData.currentSession.user);
@@ -661,6 +693,15 @@
         await window.supabaseClient.auth.signOut();
       } catch (err) { }
     }
+
+    try {
+      localStorage.removeItem("skinsight_remember_me");
+      localStorage.removeItem("skinsight_user");
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf("sb-") === 0) localStorage.removeItem(k);
+      }
+    } catch (e) {}
 
     // Replace current history entry to prevent forward-navigation back into authenticated actions
     window.location.replace("index.html");

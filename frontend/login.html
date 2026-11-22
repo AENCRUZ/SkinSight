@@ -19,8 +19,10 @@
   <script>
     (function () {
       try {
-        var k = localStorage.getItem("skinsight_user");
-        if (!k) {
+        var remember = localStorage.getItem("skinsight_remember_me") === "true";
+        var storage = remember ? localStorage : sessionStorage;
+        var k = storage.getItem("skinsight_user") || sessionStorage.getItem("skinsight_user");
+        if (!k && remember) {
           for (var i = 0; i < localStorage.length; i++) {
             var key = localStorage.key(i);
             if (key && key.indexOf("sb-") === 0 && key.indexOf("-auth-token") !== -1) {
@@ -87,7 +89,13 @@
             </button>
           </div>
           <p class="caps-hint" id="login-password-caps" data-caps-hint="login-password" hidden>Caps Lock is on.</p>
-          <div class="field-meta"><a href="forgot-password.html" class="auth-link-sm">Forgot password?</a></div>
+          <div class="field-meta login-options-row">
+            <label class="remember-me-label" for="login-remember">
+              <input type="checkbox" id="login-remember" name="remember" class="remember-checkbox">
+              <span>Keep me signed in</span>
+            </label>
+            <a href="forgot-password.html" class="auth-link-sm">Forgot password?</a>
+          </div>
         </div>
 
         <button type="submit" class="btn btn-primary btn-block">Log In</button>
