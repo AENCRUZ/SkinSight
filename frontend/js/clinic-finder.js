@@ -263,7 +263,10 @@
     var countText = document.getElementById("modalClinicCountText");
     if (countText) {
       var visibleCount = countClinicsNearLocation(state.location.lat, state.location.lng);
-      countText.textContent = " · " + visibleCount + " clinic" + (visibleCount === 1 ? "" : "s") + " on Google Maps in this area";
+      var countScope = state.filterDistance === "area"
+        ? "in this town"
+        : (state.filterDistance === "all" ? "across Batangas" : "within " + state.filterDistance + " km");
+      countText.textContent = " · " + visibleCount + " clinic" + (visibleCount === 1 ? "" : "s") + " on Google Maps " + countScope;
     }
 
     var externalLink = document.getElementById("modalExternalGoogleMapsLink");
@@ -290,6 +293,8 @@
         clinicCity.indexOf(selectedCity) !== -1;
       if (state.filterDistance === "area") {
         if (isSameCity) count++;
+      } else if (state.filterDistance === "all") {
+        count++;
       } else {
         var maxD = parseFloat(state.filterDistance) || 15;
         var dist = window.SkinsightClinics.calculateDistanceKm(lat, lng, c.lat, c.lng);
@@ -359,9 +364,10 @@
   /* --------------------------------------------------------------------------
      Location Manipulation & Geocoding
      -------------------------------------------------------------------------- */
-  function setLocation(lat, lng, name, isUserAction) {
+  function setLocation(lat, lng, name, isUserAction, isGps) {
     state.location.lat = lat;
     state.location.lng = lng;
+    state.location.isUserGps = isGps === true;
 
     if (name) {
       state.location.name = name;
@@ -589,16 +595,28 @@
   }
 
   /* --------------------------------------------------------------------------
-     Render Clinic Results (Area-Based Filtering)
+     Render Clinic Results (Area-Based & Radius Filtering)
      -------------------------------------------------------------------------- */
   function renderClinicsList() {
-    // If user's actual physical location is known, ALWAYS compute distances starting from where the user actually is!
-    var distanceOrigin = state.userActualLocation || state.location;
+    // Search origin is ALWAYS the user's selected location (e.g. Tanauan City, Lipa City, Batangas City, or GPS location)
+    var searchOrigin = state.location;
+    var isUserGps = !!state.location.isUserGps;
     var hasActualUserGps = !!state.userActualLocation;
 
-    var sortedClinics = window.SkinsightClinics.getClinicsSorted(distanceOrigin.lat, distanceOrigin.lng);
+    // Sort clinics by proximity to the chosen search location
+    var sortedClinics = window.SkinsightClinics.getClinicsSorted(searchOrigin.lat, searchOrigin.lng);
     var selectedCityName = (state.location.name || "").toLowerCase();
     var cleanTargetCity = selectedCityName.split(",")[0].trim();
+    var areaDisplayName = state.location.name.split(",")[0].trim();
+
+    var filterScopeLabel = "";
+    if (state.filterDistance === "area") {
+      filterScopeLabel = "in " + areaDisplayName;
+    } else if (state.filterDistance === "all") {
+      filterScopeLabel = "across Batangas Province";
+    } else {
+      filterScopeLabel = "within " + state.filterDistance + " km of " + areaDisplayName;
+    }
 
     var filtered = sortedClinics.filter(function (clinic) {
       // 1. Text Search Query Filter
@@ -612,7 +630,7 @@
         if (!matchName && !matchCity && !matchAddress && !matchDoctor && !matchService) return false;
       }
 
-      // 2. Area / Distance Filter
+      // 2. Area / Distance Filter (relative to chosen search location)
       if (state.filterDistance === "area") {
         var clinicCity = (clinic.city || "").toLowerCase();
         var isSameCity = clinicCity === cleanTargetCity ||
@@ -639,11 +657,9 @@
       return true;
     });
 
-    var areaDisplayName = state.location.name.split(",")[0].trim();
-
     var resultsCountEl = document.getElementById("resultsCount");
     if (resultsCountEl) {
-      resultsCountEl.textContent = filtered.length + " clinic" + (filtered.length === 1 ? "" : "s") + " on Google Maps in " + areaDisplayName;
+      resultsCountEl.textContent = filtered.length + " clinic" + (filtered.length === 1 ? "" : "s") + " on Google Maps " + filterScopeLabel;
     }
 
     var locationNameText = document.getElementById("locationNameText");
@@ -659,7 +675,7 @@
       var nearestHint = "";
       if (nearest && nearest.distance != null) {
         nearestHint = '<p class="empty-nearest-hint">Nearest verified clinic on Google Maps is <strong>' + escapeHtml(nearest.name) +
-          '</strong> in ' + escapeHtml(nearest.city) + ' (' + nearest.distance + ' km away).</p>';
+          '</strong> in ' + escapeHtml(nearest.city) + ' (~' + nearest.distance + ' km from ' + escapeHtml(areaDisplayName) + ').</p>';
       }
 
       var gmapsSearchUrlEmpty = window.SkinsightClinics.getGoogleMapsSearchUrl(
@@ -671,8 +687,8 @@
       container.innerHTML =
         '<div class="card card-static empty-clinics-card" role="status">' +
           '<div class="empty-icon"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg></div>' +
-          '<h3>No clinics listed on Google Maps directly in ' + escapeHtml(areaDisplayName) + '</h3>' +
-          '<p>We couldn\'t find any verified dermatology clinics directly within ' + escapeHtml(areaDisplayName) + '. You can expand your search distance or view all clinics across Batangas Province below.</p>' +
+          '<h3>No clinics listed on Google Maps ' + escapeHtml(filterScopeLabel) + '</h3>' +
+          '<p>We couldn\'t find any verified dermatology clinics ' + escapeHtml(filterScopeLabel) + '. You can expand your search distance or view all clinics across Batangas Province below.</p>' +
           nearestHint +
           '<div class="empty-actions">' +
             '<a href="' + gmapsSearchUrlEmpty + '" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">' +
@@ -707,16 +723,16 @@
       "dermatologist skin clinic in " + state.location.name + ", Batangas"
     );
 
-    var originNote = hasActualUserGps
+    var originNote = isUserGps
       ? "Distances are calculated starting from your actual device location (driving road distance)."
-      : "Distances are estimated from the chosen area center. Click <em>Use My Location</em> to measure directly from where you are.";
+      : "Distances and search radius are measured from " + escapeHtml(cleanTargetCity) + (hasActualUserGps ? " (also showing distance from your GPS location)." : ".");
 
     var syncBannerHtml =
       '<div class="gmaps-sync-banner" role="status">' +
         '<div class="gmaps-sync-left">' +
           '<span class="gmaps-sync-pulse"></span>' +
           '<div class="gmaps-sync-text">' +
-            '<strong>Google Maps Matched &middot; ' + filtered.length + ' verified clinic' + (filtered.length === 1 ? '' : 's') + ' in ' + escapeHtml(areaDisplayName) + '</strong>' +
+            '<strong>Google Maps Matched &middot; ' + filtered.length + ' verified clinic' + (filtered.length === 1 ? '' : 's') + ' ' + escapeHtml(filterScopeLabel) + '</strong>' +
             '<p>' + originNote + '</p>' +
           '</div>' +
         '</div>' +
@@ -731,10 +747,21 @@
 
       var distanceDisplay = "";
       if (clinic.distance != null) {
-        if (hasActualUserGps) {
-          distanceDisplay = "🚗 ~" + clinic.distance + " km from you";
+        if (isUserGps) {
+          distanceDisplay = "🚗 ~" + clinic.distance + " km from your location";
         } else {
           distanceDisplay = "~" + clinic.distance + " km from " + escapeHtml(cleanTargetCity);
+          if (hasActualUserGps) {
+            var actualUserDist = window.SkinsightClinics.calculateDistanceKm(
+              state.userActualLocation.lat,
+              state.userActualLocation.lng,
+              clinic.lat,
+              clinic.lng
+            );
+            if (actualUserDist != null) {
+              distanceDisplay += " (🚗 ~" + actualUserDist + " km from your GPS)";
+            }
+          }
         }
       }
       var metaText = distanceDisplay + " &middot; " + escapeHtml(clinic.city);
