@@ -22,3 +22,10 @@ module, prompts) is unchanged; these are hardening changes on top of it. Run the
 
 ## Render settings to apply after review (by the project owner; values never go in the repo)
 `REQUIRE_AUTH=true`, `NODE_ENV=production`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GEMINI_EMBEDDING_MODEL=gemini-embedding-001`.
+
+## Follow-up fix: reference text leaked into saved chat history
+**Symptom:** a consultation's title in the history panel was a row of `=` characters (`====…`).
+**Cause (pre-existing, also on `main`):** `sendChatMessage` passed its `formattedHistory` array to `model.startChat({ history })`. The Gemini SDK (0.24.x) keeps a reference to that array and appends every turn to it, including our user turn with the retrieved knowledge-base text wrapped around the message, plus the reply. The history we returned (and the browser saved) therefore had **4 turns per exchange instead of 2**, with the reference text stored as a user message. It started with the 70-character `=====` banner of `formatRagContext`, which became the title. Side effects: history grew twice as fast, the reference text was re-sent to the model every turn, it counted as "words the user wrote" in the safety filter and in summaries, and a stored wrapped turn (up to ~3.9 KB plus the message) could exceed the 4,000-character per-turn limit and make the next request return 400.
+**Fix:** `aiService.js` now passes a **copy** of the history to `startChat`. `validateChat.js` (`normalizeHistory`, `dropReferenceArtifacts`) also removes such turns (and the duplicate reply that follows) from histories saved by older versions, **before** the length limits are applied. The frontend does the same when it loads saved or open histories (`history-store.js`, `chat-ui.js`, `chat.js`) and repairs a stored `====` title.
+**Tests:** `test/history-integrity.test.js` (8 tests, network stubbed, no key needed).
+**Please check:** the polluted-history cleaning keys on the banner text from `formatRagContext`; if you change that banner, update `REFERENCE_BANNER` in `validateChat.js` and `history-store.js`.

@@ -52,6 +52,14 @@
       } catch (e) {
         conversationHistory = [];
       }
+      // Drop reference-text turns that older versions leaked into the history, so they are not shown or re-sent.
+      if (window.SkinsightHistory && window.SkinsightHistory.stripReferenceArtifacts && Array.isArray(conversationHistory)) {
+        var cleaned = window.SkinsightHistory.stripReferenceArtifacts(conversationHistory);
+        if (cleaned.length !== conversationHistory.length) {
+          conversationHistory = cleaned;
+          sessionStorage.setItem('skinsight_chat_history', JSON.stringify(conversationHistory));
+        }
+      }
     }
 
     if (conversationHistory.length > 0) {
