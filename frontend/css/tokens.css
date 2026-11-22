@@ -15,15 +15,15 @@
   --cyan: #00B4D8;          /* bright cyan: decorative, or text on NAVY (7:1) */
   --cyan-ink: #0092B5;      /* brand cyan for text on LIGHT surfaces (3.5:1: large/bold wordmark only) */
   --light-cyan: #90E0EF;
-  --pale-cyan: #E3F5FA;
+  --pale-cyan: #CAF0F8;     /* brand palest cyan */
 
   /* ----- Secondary accents (use sparingly) ----- */
-  --teal: #0E8F9B;
-  --teal-soft: #DDF2F2;
-  --coral: #E8674D;
-  --coral-600: #C44A32;   /* 4.8:1 with white text: use for filled buttons */
-  --coral-700: #B03A24;
-  --coral-soft: #FDEAE4;
+  --teal: #0077B6;          /* legacy name: now the brand blue (teal is not a brand colour) */
+  --teal-soft: #CAF0F8;
+  --coral: #00B4D8;         /* legacy name: now brand cyan (coral is not a brand colour) */
+  --coral-600: #03045E;   /* legacy name: accent buttons are now brand navy (white text 17:1) */
+  --coral-700: #0A1172;
+  --coral-soft: #CAF0F8;
   --amber: #B7791F;
   --amber-soft: #FDF3DC;
 
@@ -54,8 +54,8 @@
   --focus-ring: 0 0 0 3px rgba(0, 119, 182, 0.35);
 
   /* ----- Type ----- */
-  --font-display: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
-  --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  --font-display: 'Montserrat', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  --font-body: 'Open Sans', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
 
   --text-xs: 0.78rem;
   --text-sm: 0.88rem;

@@ -237,7 +237,9 @@ footer h2, footer h3, footer h4 { color: var(--white); }
   color: var(--light-cyan);
 }
 .footer-links { display: flex; flex-direction: column; gap: 10px; list-style: none; padding: 0; margin: 0; }
-.footer-links a { font-size: var(--text-sm); font-weight: 500; }
+.footer-links a { font-size: var(--text-sm); font-weight: 500; display: inline-block; padding-block: 3px; }
+.footer-legal { display: inline-flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.footer-legal a { display: inline-block; padding-block: 3px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
 .footer-note {
   display: flex;
   gap: var(--space-3);

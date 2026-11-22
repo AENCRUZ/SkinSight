@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/auth.css">
@@ -19,7 +19,7 @@
   <script>
     (function () {
       try {
-        var k = localStorage.getItem("skinsight_user");
+        var k = localStorage.getItem("skinsight_user") || sessionStorage.getItem("skinsight_user");
         if (!k) {
           for (var i = 0; i < localStorage.length; i++) {
             var key = localStorage.key(i);
@@ -110,7 +110,7 @@
 
         <div class="field-check">
           <input type="checkbox" id="signup-terms" name="terms" required>
-          <label for="signup-terms">I understand SKINSIGHT does not diagnose conditions or prescribe medication, and I agree to the Terms of Use and Privacy Policy.</label>
+          <label for="signup-terms">I understand SKINSIGHT does not diagnose conditions or prescribe medication, and I agree to the <a href="terms.html" target="_blank" rel="noopener noreferrer">Terms of Use</a> and <a href="privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a> (both open in a new tab).</label>
         </div>
 
         <button type="submit" class="btn btn-primary btn-block">Create Account</button>

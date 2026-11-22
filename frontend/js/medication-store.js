@@ -88,11 +88,18 @@
   // The signed-in user's id, or null (= guest). Fails closed: only THIS project's session key is ever read. If it
   // cannot be determined, or the token is missing, unreadable or malformed, the result is null. No other "sb-*"
   // key is inspected, so a session belonging to another project on the same origin can never select a profile.
+  //
+  // WHERE the token lives (see supabase-config.js, skinsightAuthStorage): sessionStorage for a normal login, and
+  // localStorage only when "Keep me signed in" was ticked. Both are checked, in the same order login-gate.js uses,
+  // otherwise every default login would be treated as a guest and share the guest medication list.
   function authUserId() {
     try {
       var own = projectTokenKey();
       if (!own) return null;
-      return userIdFromToken(localStorage.getItem(own));
+      var raw = null;
+      try { raw = sessionStorage.getItem(own); } catch (e) { /* unavailable: fall through */ }
+      if (!raw && localStorage.getItem("skinsight_remember_me") === "true") raw = localStorage.getItem(own);
+      return userIdFromToken(raw);
     } catch (e) { return null; } // unreadable storage or malformed token: treat as signed out
   }
   function profile() {

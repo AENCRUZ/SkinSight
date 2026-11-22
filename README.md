@@ -1,162 +1,180 @@
 # SKINSIGHT
 
-**AI-Assisted Skin Health Platform**
+**AI-assisted skin health preparation tool** (academic project)
 
-🌐 **Live Demo:** [https://aencruz.github.io/SkinSight/](https://aencruz.github.io/SkinSight/)
+🌐 **Live demo:** [https://aencruz.github.io/SkinSight/](https://aencruz.github.io/SkinSight/)
 
-SKINSIGHT helps users document skin concerns, prepare for dermatology consultations, find nearby dermatologists, and track prescribed skin medications. It is **not** a diagnostic tool. It organizes information so users can make the most of their doctor visits.
+SKINSIGHT helps people **document a skin concern, prepare a summary for a dermatologist, find listed clinics, and keep a personal medication list**. It is **not** a diagnostic tool: it does not name conditions, prescribe or recommend medication, or replace a doctor. In an emergency, contact emergency services.
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat&logo=supabase&logoColor=white)
 
 ---
 
-## Features
-
-**Working** means it runs end to end. **Preview** means the interface is built with sample data and is
-clearly labeled "Preview" / "Sample data" in the UI; nothing is saved or sent.
+## Features and current status
 
 | Feature | Status | Notes |
 |---|---|---|
-| AI Skin Assistant | Working | Gemini-powered intake chat with RAG clinical knowledge grounding, markdown replies and an auto-growing composer |
-| Clinical RAG Engine | Working | Hybrid retrieval (Google Gemini `text-embedding-004` + keyword scoring) over vetted, non-diagnostic clinical intake references |
-| Skin image assessment | Working | Attach or take a photo in the chat (JPEG/PNG/WebP, up to 5 MB) for non-diagnostic observations |
-| Consultation summary | Working | Structured summary with TXT and PDF download and copy-to-clipboard |
-| Conversation history sidebar | Preview | New consultation, search, date groups, delete and revisit. Real conversations live only in the browser session (`sessionStorage`) and are cleared on sign-out. Sample conversations are labeled. See `REAL_HISTORY_API` at the bottom of `frontend/js/chat-ui.js` for the backend work needed to persist history |
-| Authentication | Working | Email/password, Google OAuth and password reset via Supabase |
-| Find a Dermatologist | Preview | Sample clinics; search and filters are disabled |
-| Email / appointment request | Preview | Simulated. Nothing is sent to any clinic |
-| Medication tracker | Working (browser-local) | Add medications (dialog or full page), daily schedule, mark doses complete / undo, remove / undo, as-needed list, history with filters and progress. Saved **only in this browser on this device**, separately for the guest and each signed-in account: not synced, not backed up, not private on a shared device. It sends **no notifications or reminders**, cannot verify that a dose was taken, and gives no medical advice. Includes controls to delete the data. See "Medication tracker storage" below |
+| **AI Skin Assistant** | Working | Gemini-powered intake chat. It records what you report, asks follow-up questions and may give brief *general* skin-health information. It is instructed never to name possible conditions or recommend medicines, and a second automatic check on its replies enforces this. Optional photo (JPEG/PNG/WebP, up to 5 MB). |
+| **Knowledge retrieval (RAG)** | Working | Hybrid retrieval over a small curated intake knowledge base (`backend/src/data/knowledgeBase.json`): Gemini embeddings (`gemini-embedding-001`) plus keyword scoring. Falls back to keyword-only if embeddings fail. |
+| **Consultation summary** | Working | Structured summary of *what the user reported* ("Not reported" for anything not said). TXT and PDF download, copy. Built from validated fields only. |
+| **Saved consultations (history)** | Working | Each consultation is saved to the user's account (text only, never photos) and can be reopened after signing out and back in, or on another device. Delete from the history panel. Requires the database table in `supabase/migrations/`. |
+| **Authentication** | Working | Email/password, Google sign-in and password reset through Supabase. AI pages require a login (enforced in the browser *and*, when `REQUIRE_AUTH=true`, on the server). |
+| **Find a Dermatologist** | Working, **demo coverage** | Search or pin any place; clinics are listed for **Batangas Province, Philippines only** (27 entries). Elsewhere the page says so. **Clinic details (hours, phones, emails, doctors) are not independently verified**; open/closed is computed from the *listed* hours. See `docs/clinic-data-review.md`. |
+| **Clinic inquiry email** | Working | Opens a Gmail draft in the user's own account with a message built from their real summary and the fields they type. SKINSIGHT sends nothing. Disabled until there is a real concern to share. |
+| **Medication tracker** | Working (browser-local) | Stored **only in this browser, on this device**, separately for the guest and each account. No reminders or notifications, no sync or backup. Can be deleted from the medication pages. |
+| **Terms of Use / Privacy Policy** | Draft | `frontend/terms.html`, `frontend/privacy.html`. Written from what the app actually does; open items (provider retention periods, database region, account deletion, contact address, legal review, age policy) are listed on the pages. Not legal advice. |
+| Account deletion | Not implemented | No self-service option yet. |
+| Clinics outside Batangas | Not implemented | See `docs/dermatologist-directory-expansion.md`. |
 
 ---
 
-## Project Structure
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Static HTML, CSS and vanilla JavaScript (no build step). Fonts: Montserrat and Open Sans. jsPDF for PDF download. Hosted on GitHub Pages. |
+| Backend | Node.js (18+) and Express 4: `cors`, `express-rate-limit`, `multer` (in-memory uploads), `dotenv`. Hosted on Render. |
+| AI | Google Gemini via `@google/generative-ai` (chat/summary model set by `GEMINI_MODEL`, embeddings by `GEMINI_EMBEDDING_MODEL`). |
+| Authentication | Supabase Auth (email/password and Google). |
+| Database | Supabase Postgres: **one table**, `public.consultations`, with row-level security. |
+| Maps and places | Google Maps embeds/links; OpenStreetMap Nominatim for place search. No API keys are needed for these. |
+
+---
+
+## Project structure
 
 ```
 SkinSight/
 ├── frontend/                     # Static site (deployed to GitHub Pages)
 │   ├── css/
-│   │   ├── tokens.css            # Design tokens: color, type, spacing, radii, shadows, motion
+│   │   ├── tokens.css            # Design tokens: brand colors, type, spacing, radii, shadows
 │   │   ├── style.css             # Base, shared shell (navbar, footer), buttons, forms, components
-│   │   ├── auth.css              # Navbar account menu, sign-out and login-gate modals
-│   │   ├── home.css              # Home page
-│   │   ├── chat.css              # AI chat app, history sidebar, assistant intro, summary page
-│   │   ├── features.css          # Clinics and About pages (+ Preview components, shared form helpers)
-│   │   ├── medication-tracker.css # Medication tracker, add form, history, dialogs
-│   │   └── auth-pages.css        # Login, sign-up, forgot / reset password
+│   │   ├── auth.css, auth-pages.css   # Account menu, login gate, login/signup pages
+│   │   ├── home.css, chat.css, features.css, medication-tracker.css
+│   │   └── legal.css             # Terms and Privacy pages
 │   ├── js/
-│   │   ├── ui.js                 # <site-header>/<site-footer>, mobile nav drawer, icon sprite
-│   │   ├── site.js               # Scroll-reveal and navbar scroll effect
-│   │   ├── supabase-config.js    # Supabase client (public anon key)
-│   │   ├── auth.js               # Auth flows and navbar account menu
-│   │   ├── auth-ui.js            # Password strength / match / Caps Lock hints (presentation only)
-│   │   ├── login-gate.js         # Login gate and simulated appointment modal (Preview)
-│   │   ├── api.js                # Client for the backend AI endpoints
-│   │   ├── chat.js               # Chat controller: messages, photo upload, session history
-│   │   ├── chat-ui.js            # Chat polish and the conversation history sidebar
-│   │   ├── summary.js            # Summary rendering, TXT/PDF download, copy
-│   │   ├── medication-store.js   # Browser-local medication data (per profile), schedules, history
-│   │   └── meds-ui.js            # Medication pages: dialog/form, doses, undo, history, data deletion
-│   ├── img/                      # SVG illustrations and favicon
-│   ├── index.html                # Home
-│   ├── ai-assistant-intro.html   # AI assistant introduction
-│   ├── ai-chat.html              # Chat + conversation history
-│   ├── consultation-summary.html # Summary viewer and downloads
-│   ├── clinic-finder.html        # Clinic search (Preview)
-│   ├── clinic-details.html       # Clinic details and summary sharing (Preview)
-│   ├── no-clinic-available.html  # Self-care fallback (Preview)
-│   ├── medication-tracker.html   # Medication tracker (browser-local)
-│   ├── add-medication.html       # Add medication, full-page form (browser-local)
-│   ├── medication-history.html   # Medication history (browser-local)
-│   ├── login.html / signup.html / forgot-password.html / reset-password.html
-│   └── about.html
+│   │   ├── ui.js                 # <site-header>/<site-footer>, mobile nav, icon sprite
+│   │   ├── supabase-config.js    # Supabase client (public anon key, session storage rules)
+│   │   ├── auth.js, auth-ui.js   # Auth flows, account menu, password hints
+│   │   ├── login-gate.js         # Login gate for AI pages, clinic summary gate
+│   │   ├── api.js                # Backend client: timeouts, one retry, typed errors
+│   │   ├── chat.js, chat-ui.js   # Chat controller, history sidebar
+│   │   ├── history-store.js      # Saved consultations (Supabase table access)
+│   │   ├── summary.js            # Summary page, TXT/PDF/copy
+│   │   ├── clinics-data.js       # The 27 clinic entries, coverage regions, open-status helper
+│   │   ├── clinic-finder.js      # Finder: search, filters, distance, coverage handling
+│   │   └── medication-store.js, meds-ui.js   # Browser-local medication tracker
+│   ├── *.html                    # index, about, ai-assistant-intro, ai-chat, consultation-summary,
+│   │                             # clinic-finder, clinic-details, no-clinic-available, medication-*,
+│   │                             # add-medication, login, signup, forgot/reset-password, terms, privacy
+│   └── img/                      # SVG illustrations and favicon
 │
 ├── backend/                      # Node.js + Express AI API
+│   ├── server.js                 # Entry point
 │   ├── src/
-│   │   ├── config/
-│   │   │   └── aiConfig.js       # Google Gemini SDK & Embedding setup
-│   │   ├── controllers/
-│   │   │   └── chatController.js # Chat, image upload, & report handlers
-│   │   ├── data/
-│   │   │   └── knowledgeBase.json # Vetted non-diagnostic clinical reference catalog
-│   │   ├── middleware/
-│   │   │   └── upload.js         # Multer in-memory photo upload middleware
-│   │   ├── prompts/
-│   │   │   └── systemPrompt.js   # Non-diagnostic clinical intake & RAG guardrails
-│   │   ├── routes/
-│   │   │   └── chatRoutes.js     # API routes (/api/chat/*, /api/chat/knowledge/*)
-│   │   ├── services/
-│   │   │   ├── aiService.js      # Multimodal AI calls & intake questioning
-│   │   │   ├── ragService.js     # Hybrid vector embedding + lexical RAG retrieval
-│   │   │   └── reportService.js  # Text report formatting & file builder
-│   │   └── app.js                # Express app setup & CORS configuration
-│   ├── .env                      # API keys & PORT (not committed)
-│   ├── .env.example              # Environment variables template
-│   ├── package.json              # Backend dependencies
-│   ├── test-rag.js               # Standalone RAG verification script
-│   └── server.js                 # Server entry point
+│   │   ├── app.js                # CORS, limits, rate limiting, error handling
+│   │   ├── config/aiConfig.js    # Gemini client and model names
+│   │   ├── routes/chatRoutes.js
+│   │   ├── controllers/chatController.js
+│   │   ├── middleware/           # auth.js, upload.js (magic-byte check), validateChat.js
+│   │   ├── services/             # aiService, ragService, safetyFilter, summaryValidator, reportService
+│   │   ├── prompts/systemPrompt.js
+│   │   └── data/knowledgeBase.json
+│   ├── test/                     # 37 automated tests (no network)
+│   ├── test-rag.js               # RAG check script (calls Gemini if a key is set)
+│   ├── CHANGES-FOR-REVIEW.md     # Change log for the backend owner
+│   └── .env.example
 │
-├── .gitignore
-└── README.md
+├── supabase/migrations/001_consultations.sql   # The one database table + security rules
+├── docs/                         # clinic-data-review.md, dermatologist-directory-expansion.md
+└── .github/workflows/deploy-pages.yml          # Publishes frontend/ to GitHub Pages on push to main
 ```
 
 ---
 
-## Getting Started
+## Getting started (local)
 
 ### Prerequisites
+- A modern browser
+- Node.js 18+ (Node 22+ recommended; `npm test` uses a glob that older Windows shells do not expand)
+- A [Google Gemini API key](https://aistudio.google.com/app/apikey)
+- The Supabase project's URL and **public anon key** (already set in `frontend/js/supabase-config.js`)
 
-- Modern Web Browser (Chrome, Firefox, Edge, Safari)
-- Node.js (v18 or higher) and npm
-
----
-
-### 1. Set Up and Run the Backend
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Configure your API key:
-   - Copy `.env.example` to `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Get a free Google Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-   - Set `GEMINI_API_KEY=your_key_here` in `backend/.env`.
-4. Start the backend server:
-   ```bash
-   npm run dev
-   ```
-   The backend API will run at `http://localhost:5000`.
-
----
-
-### 2. Run the Frontend
-
-In a separate terminal, serve the `frontend/` directory using any local web server:
-
+### 1. Backend
 ```bash
-# Using Python
-python -m http.server 8000 --directory frontend
+cd backend
+npm install
+cp .env.example .env     # then edit .env (never commit it)
+npm run dev              # http://localhost:5000
+```
+Set at least `GEMINI_API_KEY`. Leave `REQUIRE_AUTH` unset or `false` for local use (requests without a login are treated as a guest).
 
-# Or using Node.js npx serve
-npx serve frontend
+### 2. Frontend
+Serve `frontend/` with any static server:
+```bash
+python -m http.server 8000 --directory frontend     # or: npx serve frontend
+```
+Open <http://localhost:8000>. Pages on `localhost` talk to `http://localhost:5000`; deployed pages talk to the Render URL set in `frontend/js/api.js`.
+
+> Google sign-in needs `http://localhost` or `https://`; opening files with `file://` does not work.
+
+### 3. Tests
+```bash
+cd backend && npm test            # 37 tests, no network or API key needed
+npm run test:rag                  # optional; calls Gemini if GEMINI_API_KEY is set
 ```
 
-Open [http://localhost:8000](http://localhost:8000) in your browser.
+---
 
-> **Note:** Google OAuth requires your app to be served over `http://localhost` or `https://`. Opening the HTML file directly via `file://` will **not** work for OAuth redirects.
+## Configuration
+
+### Backend environment variables (`backend/.env`, or Render → Environment)
+Names only. **Never put values in the repository.**
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | Yes | Google Gemini key (secret). |
+| `GEMINI_MODEL` | No | Chat/summary model. Default `gemini-3.1-flash-lite`. |
+| `GEMINI_EMBEDDING_MODEL` | No | Default `gemini-embedding-001` (the old `text-embedding-004` has been retired). |
+| `CLIENT_ORIGIN` | Production | Comma-separated exact origins allowed by CORS, e.g. `https://aencruz.github.io`. |
+| `SUPABASE_URL` | For login checks | Supabase project URL (must be the **same project as the frontend**). |
+| `SUPABASE_ANON_KEY` | For login checks | The public anon key (same as the frontend). `SUPABASE_SERVICE_ROLE_KEY` is only an optional fallback and is a secret. |
+| `REQUIRE_AUTH` | **Production: `true`** | When `true`, every AI request needs a valid login (401 otherwise; 503 if Supabase is not configured). When unset, requests continue as a guest (development only). |
+| `NODE_ENV` | Production: `production` | Stops localhost origins being trusted by CORS. |
+| `PORT` | No | Default 5000 (Render sets it). |
+
+### Supabase setup
+1. **Auth → URL Configuration:** set the Site URL and add redirect URLs for every place the site is served (the deployed origin and path, and `http://localhost:8000/**`). Password reset and Google sign-in redirect back to pages in the same folder as the page the user was on.
+2. **Auth → Providers:** enable Email and Google (Google needs its OAuth client configured).
+3. **Database:** run `supabase/migrations/001_consultations.sql` once in the SQL Editor of the **same project the frontend uses**. It only adds the `consultations` table (50 per account, row-level security: users can only access their own rows, no access for signed-out visitors). It is safe to run again.
+
+### Render (backend)
+Create a Node web service from the `backend/` folder (build `npm install`, start `npm start`), set the environment variables above, and put the service URL in `PRODUCTION_API_URL` in `frontend/js/api.js`. Instances can sleep when idle (as on Render's free plan) and then take up to a minute to wake; the chat page explains this to the user.
+
+### GitHub Pages (frontend)
+Pushing to `main` runs `.github/workflows/deploy-pages.yml`, which publishes the `frontend/` folder.
 
 ---
 
-## Frontend Notes
+## API (backend)
+
+| Method and path | Purpose |
+|---|---|
+| `GET /api/health` | Liveness check (public). |
+| `POST /api/chat/message` | One chat turn. Multipart: `message`, `history` (JSON), optional `image`. Limits: message ≤ 2,000 chars, history ≤ 40 turns, image ≤ 5 MB. |
+| `POST /api/chat/summary` | Structured summary from the conversation (JSON `{ history }`). Returns 502 if a reliable summary cannot be produced; it never returns invented content. |
+| `POST /api/chat/download` | Plain-text report built from validated summary fields. |
+| `GET /api/chat/knowledge/search?q=`, `GET /api/chat/knowledge/stats` | Knowledge-base diagnostics (login required in strict mode). |
+
+All `/api/chat/*` routes are rate-limited (20 requests per minute per IP). Errors return `{ success: false, error }` with no internal details.
+
+---
+
+## Frontend notes
 
 ### Page shell
 Every page uses the same three pieces, so the navbar and footer live in one place (`js/ui.js`):
@@ -166,97 +184,55 @@ Every page uses the same three pieces, so the navbar and footer live in one plac
 <main id="main"> ... </main>
 <site-footer></site-footer>
 ```
-
-Load `js/ui.js` synchronously in `<head>` so the shell renders during parsing. To add a page, copy an existing one,
-link `css/tokens.css` and `css/style.css` (plus `css/auth.css` for the account menu), and set `data-nav`.
+Load `js/ui.js` synchronously in `<head>`. To add a page, copy an existing one, link `css/tokens.css` and `css/style.css` (plus `css/auth.css` for the account menu) and set `data-nav`.
 
 ### DOM hooks other scripts depend on
 Rename these and something breaks:
-- **Navbar:** `.navbar`, `.nav-links`, `.nav-login-item`, `.nav-auth-actions`, `#nav-toggle` (a button that also exposes `.checked`, because `auth.js` assigns it).
-- **Auth forms:** `[data-auth-form]`, `[data-auth-note]`, `[data-auth-success]`, `[data-reset-expired]`, `[data-toggle-password]`, `[data-google-login]`, and the `login-*` / `signup-*` / `reset-email` / `update-*` ids. Submit buttons and the Google label must contain plain text only; `auth.js` overwrites it while loading.
-- **Chat:** `.chat-body`, `.chat-inputbar textarea`, `.chat-inputbar button.send`, `#attach-toggle`, `.attach-panel input[type=file]`, `.chat-cta a`, `#selected-image-preview` (created by `chat.js`).
-- **Summary:** the `#summary*` ids, `#printableSummary`, `#downloadTxtBtn`, `#downloadPdfBtn`, `#copySummaryBtn`, `.copy-confirm`.
+- **Navbar:** `.navbar`, `.nav-links`, `.nav-login-item`, `.nav-auth-actions`, `#nav-toggle`, `#btn-supabase-logout`.
+- **Auth forms:** `[data-auth-form]`, `[data-auth-note]`, `[data-auth-success]`, `[data-reset-expired]`, `[data-toggle-password]`, `[data-google-login]`, and the `login-*` / `signup-*` / `reset-email` / `update-*` ids. Submit buttons and the Google label must contain plain text only.
+- **Chat:** `.chat-body`, `.chat-inputbar textarea`, `.chat-inputbar button.send`, `#attach-toggle`, `.attach-panel input[type=file]`, `.chat-cta a`; history panel `#chatApp`, `#chatShell`, `#chatSidebar`, `#historyList`, `#historyFoot`, `#newConsultBtn`, `#historySearch`.
+- **Summary:** the `#summary*` ids, `#printableSummary`, `#downloadTxtBtn`, `#downloadPdfBtn`, `#copySummaryBtn`, `#summaryError`, `#summaryRetryBtn`, `.copy-confirm`.
+- **Clinics:** `#clinic-q`, `#useLocationBtn`, `#f-distance`, `#f-availability`, `#f-type`, `#clinicsList`, `#resultsCount`, `#mapModal`; the inquiry fields on `clinic-details.html`.
 
-### Medication tracker storage
-The medication tracker is **frontend-only**. Its data never leaves the browser: there is no API, database or
-Supabase table behind it.
+### Brand
+Colors `#03045E` `#0077B6` `#00B4D8` `#90E0EF` `#CAF0F8` (tokens in `css/tokens.css`); headings in **Montserrat**, body text in **Open Sans**.
 
-- **Where:** `localStorage`, in per-profile keys `skinsight_meds_v1:<profile>` and `skinsight_medlog_v1:<profile>`.
-  `<profile>` is `guest` when nobody is signed in, or `u_<Supabase user id>` for an account. A profile only reads its own
-  keys, so signing out or switching accounts never shows another profile's medications. Guest data is **not** migrated
-  into an account.
-- **Which account is active:** read from the Supabase session token that supabase-js stores in `localStorage`
-  (`sb-*-auth-token`), parsed the same way `js/auth.js` parses it. The token is the source of truth, so a stale
-  `skinsight_user` cache without a session never unlocks an account's data. Nothing in `auth.js` was changed.
-- **Limits (also disclosed in the UI):** this is isolation, not security. The data is plain text under predictable keys;
-  anyone who can use the browser profile can read it, and it stays on the device after sign-out until deleted. It is
-  not synced across devices or browsers, not backed up, and is lost when browser data is cleared or in private
-  browsing. On GitHub Pages the origin (`<user>.github.io`) is shared by every project site under the same account.
-- **Deleting:** the notice on each medication page has "Delete medication data on this device" (this profile, or every
-  profile plus data from earlier prototype versions).
-- **Storage unavailable or full:** the store keeps working in memory for the life of the page and the UI says plainly
-  that nothing is being saved.
-- **What it does not do:** send notifications or reminders, verify that a dose was taken (doses the user did not mark
-  are shown as "Not logged", not "missed"), or give medical advice.
-- **Going further** (accounts that sync across devices) needs a backend: tables for medications and dose logs with
-  row-level security on the user id, endpoints, and a migration path for existing browser-local data.
+### Where data lives in the browser
+- **Sign-in:** `sessionStorage` for a normal login; `localStorage` only when "Keep me signed in" is ticked (`js/supabase-config.js`). Code that reads the signed-in user (`login-gate.js`, `medication-store.js`) checks the same places.
+- **Open consultation and summary, pinned place, filters, device position:** `sessionStorage` (cleared on sign-out or tab close). Precise device position is never put in `localStorage`.
+- **Saved consultations:** the `consultations` table (not the browser).
+- **Medication tracker:** `localStorage`, keys `skinsight_meds_v1:<profile>` and `skinsight_medlog_v1:<profile>` where `<profile>` is `guest` or `u_<user id>`. This separates profiles on one browser; it is **not** security (plain text, readable by anyone using that browser profile). Deleting is offered on each medication page.
 
 ### Third-party scripts
-`supabase-js` and `jsPDF` are loaded from CDNs at **pinned versions with Subresource Integrity** hashes, so a CDN
-change cannot alter what runs. To upgrade, change the version in the `<script>` tag on every page and replace the hash:
-
+`supabase-js` and `jsPDF` are loaded from CDNs at **pinned versions with Subresource Integrity** hashes. To upgrade, change the version in the `<script>` tag on every page and replace the hash:
 ```bash
 curl -sL https://cdn.jsdelivr.net/npm/@supabase/supabase-js@<version>/dist/umd/supabase.min.js | openssl dgst -sha384 -binary | openssl base64 -A
 ```
 
-### Accessibility and performance
-Audited with axe-core across every page and its interactive states (menus, modals, drawers, error states) against
-WCAG 2.0/2.1/2.2 A and AA plus best practices, with zero violations at the time of writing. Keyboard operation, visible
-focus, reduced-motion support and 44 px touch targets are part of the component styles. On a throttled mobile profile
-(4x CPU, 4G) pages reach first contentful paint in about 0.7 s and largest contentful paint under 1.5 s with no layout shift.
+### Accessibility
+Checked with axe-core (WCAG 2.0/2.1/2.2 A and AA plus best practices) on every page at 375, 768 and 1280 px in November 2026: no violations, no horizontal overflow. Keyboard operation, visible focus and reduced-motion support are part of the component styles. Re-run the check after UI changes.
 
 ---
 
-## Authentication Flow
-
-### Email/Password
-1. User signs up with email, password, and display name on `signup.html`.
-2. User logs in on `login.html` with email and password.
-3. If the user forgets their password, they can request a reset link on `forgot-password.html`.
-
-### Google OAuth
-1. User clicks **"Continue with Google"** on the login or signup page.
-2. The app calls `supabaseClient.auth.signInWithOAuth({ provider: "google" })`.
-3. The browser redirects to Google's consent screen.
-4. After approval, Google redirects back to Supabase's callback URL.
-5. Supabase redirects the user back to the app with session tokens in the URL hash.
-6. The app detects the tokens, stores the session, and redirects to the home page.
-
-### Session Management
-- On every page load, the navbar checks for an active session.
-- If logged in, the navbar shows the user's name/avatar and a **Log Out** button.
-- If not logged in, the navbar shows **Log In** and **Sign Up** links.
+## Privacy and safety in short
+- Messages (and photos, if attached) go to the SKINSIGHT server and then to Google's Gemini service. Photos are held in memory only and are not saved; saved consultations contain text only.
+- The clinic inquiry opens the user's own email; SKINSIGHT sends nothing.
+- Medication data never leaves the browser.
+- The full, honest list (including what is *not yet known*) is in [`frontend/privacy.html`](frontend/privacy.html). Terms are in [`frontend/terms.html`](frontend/terms.html).
+- Before going live: set `REQUIRE_AUTH=true`, `NODE_ENV=production`, the Supabase variables, and run the migration.
 
 ---
 
-## Important Notes
+## Known limitations and next steps
+- Clinic directory: 27 Batangas entries, unverified; see `docs/clinic-data-review.md` and `docs/dermatologist-directory-expansion.md`.
+- No account-deletion flow, no reminders/notifications, no cross-device medication sync.
+- Place search uses the public Nominatim service, which is not meant for heavy traffic.
+- The privacy policy and terms need an owner review (contact address, governing law, age policy, provider retention terms).
 
-> ⚠️ **SKINSIGHT is not a substitute for professional medical advice, diagnosis, or treatment.** It is a preparation and organization tool only.
-
----
-
-## Tech Stack
-
-| Layer          | Technology                                        |
-|----------------|---------------------------------------------------|
-| Frontend       | HTML5, CSS3, Vanilla JavaScript                   |
-| Authentication | [Supabase Auth](https://supabase.com/auth)        |
-| Backend/DB     | [Supabase](https://supabase.com) (PostgreSQL)     |
-| Hosting        | Any static hosting (GitHub Pages, Netlify, Vercel) |
+## Contributors
+Built by the SKINSIGHT team. Contributions in the Git history include work by **AENCRUZ**, **Lemuel** (backend, AI and retrieval, clinic finder) and **jimuelperez** (early medication tracker and login-gate work).
 
 ---
 
 ## License
-
 This project is for educational purposes.
-

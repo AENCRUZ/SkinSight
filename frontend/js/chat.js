@@ -61,6 +61,7 @@
     }
 
     attachEventListeners();
+    wakeBackend();
   }
 
   function attachEventListeners() {
@@ -81,7 +82,15 @@
     fileInputs.forEach((input) => {
       input.addEventListener('change', function (e) {
         if (e.target.files && e.target.files[0]) {
-          selectedImageFile = e.target.files[0];
+          const file = e.target.files[0];
+          const problem = validateImage(file);
+          if (problem) {
+            showImageError(problem);
+            e.target.value = '';
+            return;
+          }
+          clearImageError();
+          selectedImageFile = file;
           showImagePreview(selectedImageFile.name);
           if (attachToggle) attachToggle.checked = false; // close panel
         }
@@ -95,6 +104,66 @@
         sessionStorage.removeItem('skinsight_consultation_summary');
       });
     }
+  }
+
+  // ---- photo checks (the server re-checks everything; this just gives instant feedback)
+  const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+
+  function validateImage(file) {
+    if (IMAGE_TYPES.indexOf((file.type || '').toLowerCase()) === -1) {
+      return /heic|heif/i.test(file.type + file.name)
+        ? 'HEIC photos aren’t supported. On iPhone, choose a JPEG (Settings › Camera › Formats › Most Compatible) or upload a screenshot of the photo.'
+        : 'That file type isn’t supported. Please choose a JPEG, PNG or WebP photo.';
+    }
+    if (file.size > IMAGE_MAX_BYTES) {
+      return 'That photo is ' + (file.size / 1048576).toFixed(1) + ' MB. Please choose one under 5 MB.';
+    }
+    return '';
+  }
+
+  let imageErrorEl = null;
+  function showImageError(message) {
+    if (!imageErrorEl) {
+      imageErrorEl = document.createElement('p');
+      imageErrorEl.id = 'image-error';
+      imageErrorEl.className = 'chat-note is-error';
+      imageErrorEl.setAttribute('role', 'alert');
+      const inputBar = document.querySelector('.chat-inputbar');
+      if (inputBar && inputBar.parentNode) inputBar.parentNode.insertBefore(imageErrorEl, inputBar);
+    }
+    imageErrorEl.textContent = message;
+    imageErrorEl.hidden = false;
+  }
+  function clearImageError() {
+    if (imageErrorEl) imageErrorEl.hidden = true;
+  }
+
+  // ---- connection note: the hosted backend sleeps when idle and can need up to a minute to wake up
+  let connNote = null;
+  function setConnNote(message, isError) {
+    if (!connNote) {
+      connNote = document.createElement('p');
+      connNote.id = 'chatConnNote';
+      connNote.className = 'chat-note';
+      connNote.setAttribute('role', 'status');
+      const inputBar = document.querySelector('.chat-inputbar');
+      if (inputBar && inputBar.parentNode) inputBar.parentNode.insertBefore(connNote, inputBar);
+    }
+    if (!message) { connNote.hidden = true; return; }
+    connNote.textContent = message;
+    connNote.classList.toggle('is-error', !!isError);
+    connNote.hidden = false;
+  }
+
+  function wakeBackend() {
+    if (!window.SkinsightAPI || !window.SkinsightAPI.wakeUp) return;
+    window.SkinsightAPI.wakeUp(function () {
+      setConnNote('Connecting to the assistant… the first time can take up to a minute while the server wakes up. You can already type your message.', false);
+    }).then(function (ok) {
+      if (ok) setConnNote('');
+      else setConnNote('The assistant isn’t responding yet. You can still send your message and we’ll try again.', true);
+    });
   }
 
   let previewUrl = '';
@@ -135,6 +204,7 @@
   }
 
   function appendUserMessage(text, imageFile) {
+    const added = [];
     if (imageFile) {
       const photoWrap = document.createElement('div');
       photoWrap.className = 'msg-photo-wrap';
@@ -156,6 +226,7 @@
         holder.appendChild(img);
       } catch (e) { /* keep the icon placeholder */ }
       chatBody.appendChild(photoWrap);
+      added.push(photoWrap);
     }
 
     if (text && text.trim()) {
@@ -163,9 +234,11 @@
       bubble.className = 'msg msg-user';
       bubble.textContent = text;
       chatBody.appendChild(bubble);
+      added.push(bubble);
     }
 
     scrollToBottom();
+    return added;
   }
 
   function appendAIMessage(rawMarkdown) {
@@ -175,6 +248,8 @@
     chatBody.appendChild(bubble);
     scrollToBottom();
   }
+
+  let slowTimer = null;
 
   function showTypingIndicator() {
     const typing = document.createElement('div');
@@ -186,9 +261,20 @@
       '<span class="visually-hidden">SKINSIGHT is reviewing and preparing questions…</span>';
     chatBody.appendChild(typing);
     scrollToBottom();
+    clearTimeout(slowTimer);
+    slowTimer = setTimeout(function () {
+      const el = document.getElementById('typingIndicator');
+      if (!el) return;
+      const hint = document.createElement('span');
+      hint.className = 'typing-slow';
+      hint.textContent = 'Still working… the assistant may be waking up, which can take up to a minute.';
+      el.appendChild(hint);
+      scrollToBottom();
+    }, 8000);
   }
 
   function hideTypingIndicator() {
+    clearTimeout(slowTimer);
     const typing = document.getElementById('typingIndicator');
     if (typing) typing.remove();
   }
@@ -209,7 +295,7 @@
     }
 
     // Render user message on screen
-    appendUserMessage(messageText, imageToUpload);
+    const sentNodes = appendUserMessage(messageText, imageToUpload);
 
     // Clear input bar and attached image preview
     chatInput.value = '';
@@ -240,16 +326,35 @@
     } catch (err) {
       hideTypingIndicator();
       console.error('Chat error:', err);
-      const isAuthErr = err.message && (err.message.includes('token') || err.message.includes('Authentication'));
-      if (isAuthErr) {
+      const code = err && err.code;
+      // Failures where nothing reached the assistant: undo the bubble and put the message back so it can be re-sent.
+      const retryable = code === 'network' || code === 'timeout' || code === 'unavailable' || code === 'rate-limit';
+      if (retryable) {
+        sentNodes.forEach(function (n) { n.remove(); });
+        chatInput.value = messageText;
+        if (imageToUpload) {
+          selectedImageFile = imageToUpload;
+          showImagePreview(imageToUpload.name);
+        }
+      }
+
+      if (code === 'auth') {
         appendAIMessage(
-          `🔒 **Session Expired or Login Required:** ${err.message}\n\n` +
-          'Please **log in** (or sign in again) at [login.html](login.html) to chat with the AI Assistant.'
+          '🔒 **Your session has expired or you are not logged in.** ' +
+          'Please **log in** again at [login.html](login.html) to keep chatting. Your earlier messages are saved to your account.'
         );
+      } else if (code === 'too-large') {
+        appendAIMessage('⚠️ **That photo is too large.** Please choose a JPEG, PNG or WebP photo under 5 MB and send again.');
+      } else if (code === 'rate-limit') {
+        appendAIMessage('⚠️ **Too many messages in a short time.** Please wait a few seconds, then press Send again. Your message is still in the box.');
+      } else if (code === 'bad-request' && /too long/i.test(err.message || '')) {
+        appendAIMessage('⚠️ **This consultation has become very long.** Please generate your summary and start a **New consultation** from the history panel to continue.');
+      } else if (code === 'bad-request') {
+        appendAIMessage('⚠️ **' + (err.message || 'That message couldn’t be sent.') + '**');
       } else {
         appendAIMessage(
-          `⚠️ **Error connecting to AI service:** ${err.message || 'Server error'}.\n\n` +
-          "Please check your connection and try again. If the problem continues, the assistant may be temporarily unavailable."
+          '⚠️ **We couldn’t reach the assistant.** ' + (err.message || '') + '\n\n' +
+          'Your message is back in the box, so just press **Send** to try again.'
         );
       }
     } finally {
@@ -282,7 +387,11 @@
     let para = [];
     let list = null;
 
-    const inline = (str) => str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // **bold**, and links ONLY to plain local pages like [log in](login.html). Anything else stays literal text
+    // (the text has already been HTML-escaped, so no markup can get through).
+    const inline = (str) => str
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\[([^\]\n]{1,60})\]\(([a-z0-9-]+\.html)\)/gi, '<a href="$2">$1</a>');
     const flushPara = () => {
       if (para.length) {
         out.push('<p>' + para.join('<br>') + '</p>');

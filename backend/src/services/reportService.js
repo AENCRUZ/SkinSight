@@ -1,53 +1,48 @@
 /**
  * Service to manage formatting and downloading of summary reports.
+ * The report is always built from the validated summary FIELDS — free text written by the model
+ * (e.g. a "fullText" property) is never trusted or copied into the file.
  */
 
-export function buildDownloadableReportText(summary, patientName = 'Patient') {
-  let content = '';
+const str = (v, fallback) => (typeof v === 'string' && v.trim() ? v.trim() : fallback);
 
-  if (typeof summary === 'string') {
-    content = summary.trim();
-  } else if (typeof summary === 'object' && summary !== null) {
-    if (summary.fullText) {
-      content = summary.fullText.trim();
-    } else {
-      content = [
-        `MAIN CONCERN:`,
-        `${summary.mainConcern || 'N/A'}`,
-        ``,
-        `REPORTED SYMPTOMS:`,
-        `${summary.symptoms || 'N/A'}`,
-        ``,
-        `DURATION:`,
-        `${summary.duration || 'N/A'}`,
-        ``,
-        `AFFECTED AREA:`,
-        `${summary.affectedArea || 'N/A'}`,
-        ``,
-        `TRIGGERS / RECENT CHANGES:`,
-        `${summary.triggers || 'None reported'}`,
-        ``,
-        `IMAGE OBSERVATIONS (NON-DIAGNOSTIC):`,
-        `${summary.observations || 'N/A'}`,
-        ``,
-        `QUESTIONS FOR YOUR DERMATOLOGIST:`,
-        ...(Array.isArray(summary.questions) ? summary.questions.map((q) => `- ${q}`) : ['- None listed']),
-      ].join('\n');
-    }
-  }
+export function buildDownloadableReportText(summary, patientName = 'Patient') {
+  const s = summary && typeof summary === 'object' ? summary : {};
+  const questions = Array.isArray(s.questions) ? s.questions.filter((q) => typeof q === 'string' && q.trim()) : [];
+
+  const content = [
+    `MAIN CONCERN:`,
+    str(s.mainConcern, 'Not reported'),
+    ``,
+    `REPORTED SYMPTOMS:`,
+    str(s.symptoms, 'Not reported'),
+    ``,
+    `DURATION:`,
+    str(s.duration, 'Not reported'),
+    ``,
+    `AFFECTED AREA:`,
+    str(s.affectedArea, 'Not reported'),
+    ``,
+    `TRIGGERS / RECENT CHANGES:`,
+    str(s.triggers, 'Not reported'),
+    ``,
+    `PATIENT-DESCRIBED APPEARANCE / PHOTO NOTE:`,
+    str(s.observations, 'Not reported'),
+    ``,
+    `QUESTIONS FOR YOUR DERMATOLOGIST:`,
+    ...(questions.length ? questions.map((q) => `- ${q}`) : ['- None listed']),
+  ].join('\n');
 
   return `============================================================\n` +
-         `SKINSIGHT AI CONSULTATION REPORT\n` +
+         `SKINSIGHT CONSULTATION INTAKE REPORT\n` +
          `Patient: ${patientName}\n` +
          `Generated: ${new Date().toLocaleString()}\n` +
          `============================================================\n\n` +
          `${content}\n\n` +
          `------------------------------------------------------------\n` +
          `IMPORTANT NOTICE:\n` +
-         `This summary was prepared using SKINSIGHT for consultation\n` +
-         `preparation only. It is NOT a clinical diagnosis or treatment\n` +
-         `recommendation. Please share this document with a certified\n` +
-         `dermatologist during your clinical evaluation.\n` +
+         `This summary records what the user reported to SKINSIGHT. It is\n` +
+         `NOT a clinical diagnosis, prescription or treatment recommendation.\n` +
+         `Please share it with a certified dermatologist.\n` +
          `============================================================\n`;
 }
-

@@ -163,6 +163,7 @@
         "</div>" +
         '<div class="footer-bottom">' +
           "<span>&copy; " + new Date().getFullYear() + " SKINSIGHT</span>" +
+          '<span class="footer-legal"><a href="terms.html">Terms of Use</a><a href="privacy.html">Privacy Policy</a></span>' +
           "<span>SKINSIGHT is not a substitute for professional medical advice, diagnosis, or treatment.</span>" +
         "</div>" +
       "</div>" +

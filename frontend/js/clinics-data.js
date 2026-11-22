@@ -757,8 +757,101 @@
     });
   }
 
+  /**
+   * VERIFICATION NOTICE
+   * The directory entries (hours, phone, email, doctors, services, consultation types, ratings) have NOT been
+   * independently verified. The fields isOpen, reopenText, rating, reviewCount and verifiedOnGoogleMaps are
+   * stored as-is but are deliberately NOT shown or trusted by the UI. See docs/clinic-data-review.md.
+   */
+  var VERIFICATION_NOTICE =
+    "Clinic details (hours, phone, email, doctors, services) come from SKINSIGHT's directory and have not been " +
+    "independently verified. Please confirm with the clinic before you visit.";
+
+  /**
+   * COVERAGE — the places the directory currently has listed clinics for. The finder UI is NOT limited to these
+   * places: users can pin any location, and the UI says plainly when a location is outside coverage.
+   * To expand later, add clinic entries AND a region here (bounds are a rough bounding box, south/north/west/east).
+   */
+  var COVERAGE = [
+    {
+      id: "batangas",
+      name: "Batangas Province",
+      country: "Philippines",
+      bounds: { south: 13.45, north: 14.30, west: 120.45, east: 121.50 }
+    }
+  ];
+
+  function getCoverageAt(lat, lng) {
+    if (typeof lat !== "number" || typeof lng !== "number") return null;
+    for (var i = 0; i < COVERAGE.length; i++) {
+      var b = COVERAGE[i].bounds;
+      if (lat >= b.south && lat <= b.north && lng >= b.west && lng <= b.east) return COVERAGE[i];
+    }
+    return null;
+  }
+
+  var DAY_INDEX = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+
+  function to24h(h, m, ap) {
+    var hour = parseInt(h, 10) % 12;
+    if (/^pm$/i.test(ap)) hour += 12;
+    return hour * 60 + parseInt(m, 10);
+  }
+
+  /**
+   * Parse the listed hours string, e.g. "Mon–Sat, 9:00 AM – 5:00 PM".
+   * Returns { fromDay, toDay, open, close } (minutes after midnight) or null when the format is not understood.
+   */
+  function parseHours(text) {
+    var m = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?:\s*[–-]\s*(Mon|Tue|Wed|Thu|Fri|Sat|Sun))?\s*,\s*(\d{1,2}):(\d{2})\s*(AM|PM)\s*[–-]\s*(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(String(text || "").trim());
+    if (!m) return null;
+    var cap = function (d) { return d ? d.charAt(0).toUpperCase() + d.slice(1).toLowerCase() : null; };
+    return {
+      fromDay: DAY_INDEX[cap(m[1])],
+      toDay: DAY_INDEX[cap(m[2] || m[1])],
+      open: to24h(m[3], m[4], m[5]),
+      close: to24h(m[6], m[7], m[8])
+    };
+  }
+
+  // Current day (1=Mon..7=Sun) and minutes after midnight in the Philippines (all listed clinics are in Batangas),
+  // regardless of the visitor's own time zone.
+  function manilaNow(now) {
+    try {
+      var parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Manila", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+      }).formatToParts(now || new Date());
+      var get = function (t) { return (parts.filter(function (p) { return p.type === t; })[0] || {}).value; };
+      return { day: DAY_INDEX[get("weekday")], minutes: parseInt(get("hour"), 10) * 60 + parseInt(get("minute"), 10) };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * Open / closed according to the LISTED hours only (never the stored isOpen flag).
+   * state: "open" | "closed" | "unknown"
+   */
+  function getOpenStatus(clinic, now) {
+    var hours = clinic && parseHours(clinic.hours);
+    var t = manilaNow(now);
+    if (!hours || !t || !t.day) return { state: "unknown", label: "Hours unconfirmed" };
+    var inDays = hours.fromDay <= hours.toDay
+      ? t.day >= hours.fromDay && t.day <= hours.toDay
+      : t.day >= hours.fromDay || t.day <= hours.toDay;
+    var inTime = t.minutes >= hours.open && t.minutes < hours.close;
+    return inDays && inTime
+      ? { state: "open", label: "Open now (listed hours)" }
+      : { state: "closed", label: "Closed now (listed hours)" };
+  }
+
   global.SkinsightClinics = {
     DATA: CLINICS_DATA,
+    VERIFICATION_NOTICE: VERIFICATION_NOTICE,
+    COVERAGE: COVERAGE,
+    getCoverageAt: getCoverageAt,
+    parseHours: parseHours,
+    getOpenStatus: getOpenStatus,
     getAllClinics: function () { return CLINICS_DATA.slice(); },
     getClinicById: getClinicById,
     getClinicsByCity: getClinicsByCity,

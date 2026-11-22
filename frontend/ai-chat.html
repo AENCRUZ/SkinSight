@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/auth.css">
@@ -18,7 +18,7 @@
 <script>
   (function () {
     try {
-      var k = localStorage.getItem("skinsight_user");
+      var k = localStorage.getItem("skinsight_user") || sessionStorage.getItem("skinsight_user");
       if (!k) {
         for (var i = 0; i < localStorage.length; i++) {
           var key = localStorage.key(i);
@@ -45,7 +45,7 @@
   <h1 class="visually-hidden">AI Skin Assistant</h1>
   <div class="chat-app" id="chatApp" data-sidebar="open">
 
-    <!-- Conversation history (frontend-only; see js/chat-ui.js) -->
+    <!-- Saved consultations (see js/history-store.js and js/chat-ui.js) -->
     <aside class="chat-sidebar" id="chatSidebar" aria-label="Consultation history">
       <div class="cs-inner">
         <div class="cs-head">
@@ -69,7 +69,7 @@
         <div class="cs-list" id="historyList"></div>
         <p class="visually-hidden" id="historyStatus" role="status" aria-live="polite"></p>
 
-        <p class="cs-foot"><strong>Preview feature.</strong> Sample conversations are demo data. Consultations from this session stay in this browser tab only and aren't saved to your account yet.</p>
+        <p class="cs-foot" id="historyFoot"><strong>Saved to your account.</strong> Your consultations are saved to your SKINSIGHT account and listed only when you are signed in. Only the text of your messages is saved. Photos are never stored.</p>
       </div>
     </aside>
     <div class="chat-sidebar-backdrop" id="chatSidebarBackdrop" aria-hidden="true"></div>
@@ -86,9 +86,6 @@
         </div>
         <span class="status-pill">Consultation Support</span>
       </div>
-
-      <!-- Read-only view of a sample conversation (filled by chat-ui.js) -->
-      <div class="chat-preview" id="chatPreview"></div>
 
       <div class="chat-body chatpage-scroll" id="chatBody" tabindex="0" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation with SKINSIGHT">
         <div class="msg msg-ai">Hi! What skin concern would you like to talk about today? You can describe what you're noticing or feeling, or attach a photo below.</div>
@@ -153,6 +150,7 @@
 <script src="js/auth.js" defer></script>
 <script src="js/api.js"></script>
 <script src="js/chat.js" defer></script>
+<script src="js/history-store.js" defer></script>
 <script src="js/chat-ui.js" defer></script>
 <script src="js/login-gate.js" defer></script>
 </body>
