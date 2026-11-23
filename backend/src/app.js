@@ -2,9 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import chatRoutes from './routes/chatRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import { initPush } from './services/pushService.js';
 import rateLimit from 'express-rate-limit';
 
 dotenv.config();
+initPush();
 
 const app = express();
 
@@ -75,6 +78,9 @@ app.get('/api/health', (req, res) => {
 
 // Chat & AI Routes (rate-limited)
 app.use('/api/chat', chatLimiter, chatRoutes);
+
+// Medication push reminders (Web Push / VAPID)
+app.use('/api/notifications', notificationRoutes);
 
 // Global 404 Handler
 app.use((req, res) => {

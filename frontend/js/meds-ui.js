@@ -2,7 +2,8 @@
  * SKINSIGHT — Medication pages UI (tracker, add-medication, history)
  *
  * FRONTEND ONLY. All data comes from js/medication-store.js, which keeps it in this browser's localStorage,
- * namespaced per profile (guest / signed-in account). Nothing is sent anywhere. See that file for the privacy
+ * namespaced per profile (guest / signed-in account). Nothing is sent anywhere, except by js/push-reminders.js when
+ * the user opts in to dose reminders. See that file for the privacy
  * model and its limits. This file never touches authentication: it only READS the session through the store and
  * (optionally) listens to supabase-js auth events to notice a sign-in / sign-out.
  *
@@ -57,10 +58,10 @@
     if (!mount) return;
     mount.innerHTML =
       '<section class="med-notice" aria-labelledby="medNoticeTitle">' +
-        '<div class="med-notice-head">' + icon("info") + '<h2 id="medNoticeTitle">Stored on this device only <span class="med-profile-chip">' + esc(profileChip()) + '</span></h2></div>' +
-        '<p>Everything here is saved in <strong>this browser on this device</strong>, for ' + esc(profileLabel()) + '. It is <strong>not sent to SKINSIGHT’s servers</strong>, <strong>not synced</strong> to your other devices or browsers, and <strong>not backed up</strong>. Clearing your browser data, using private browsing or switching browsers will erase it.</p>' +
+        '<div class="med-notice-head">' + icon("info") + '<h2 id="medNoticeTitle">Stored on this device <span class="med-profile-chip">' + esc(profileChip()) + '</span></h2></div>' +
+        '<p>Everything here is saved in <strong>this browser on this device</strong>, for ' + esc(profileLabel()) + '. It is <strong>not sent to SKINSIGHT’s servers</strong> unless you turn on dose reminders (see below), <strong>not synced</strong> to your other devices or browsers, and <strong>not backed up</strong>. Clearing your browser data, using private browsing or switching browsers will erase it.</p>' +
         '<p><strong>Shared or public device?</strong> Anyone who can use this browser profile may be able to read this information. Data saved as a guest isn’t shown when you sign in (and the reverse), but it stays on the device after you sign out until you delete it. Delete your data when you’re finished.</p>' +
-        '<p>SKINSIGHT only records what you tell it. It <strong>does not send notifications or reminders</strong>, <strong>cannot verify that you took a medication</strong>, and <strong>does not give medical advice</strong>. Follow the instructions of your healthcare professional.</p>' +
+        '<p>SKINSIGHT only records what you tell it. Reminders are <strong>optional and off by default</strong>. It <strong>cannot verify that you took a medication</strong> and <strong>does not give medical advice</strong>. Follow the instructions of your healthcare professional.</p>' +
         '<div class="med-notice-actions"><button type="button" class="btn btn-ghost btn-sm" data-med-delete>' + icon("trash") + ' Delete medication data on this device</button></div>' +
       '</section>';
   }
@@ -255,11 +256,11 @@
       '<p class="med-hint" id="' + p + 'Combo">“As needed” turns off the schedule and dose time. “Weekly” can’t be combined with “Every other day”.</p>' +
       '<div class="field med-field-spaced" id="' + p + 'TimeField"><label for="' + p + 'Time">Dose time</label>' +
         '<input type="time" id="' + p + 'Time" name="time" value="09:00" aria-describedby="' + p + 'TimeHint ' + p + 'TimeErr" aria-invalid="false">' +
-        '<p class="med-hint" id="' + p + 'TimeHint">The time shown next to the dose. <strong>SKINSIGHT does not send notifications or reminders.</strong></p>' +
+        '<p class="med-hint" id="' + p + 'TimeHint">The time shown next to the dose, and when a reminder is sent if you turn reminders on.</p>' +
         '<p class="field-error" id="' + p + 'TimeErr" hidden></p></div>' +
       '<div class="field"><label for="' + p + 'Notes">Notes <span class="med-optional">(optional)</span></label>' +
         '<textarea id="' + p + 'Notes" name="notes" maxlength="' + S.LIMITS.notes + '" aria-describedby="' + p + 'NotesHint ' + p + 'NotesErr" placeholder="Apply a thin layer to the affected area"></textarea>' +
-        '<p class="med-hint" id="' + p + 'NotesHint">Saved on this device only.</p><p class="field-error" id="' + p + 'NotesErr" hidden></p></div>' +
+        '<p class="med-hint" id="' + p + 'NotesHint">Saved on this device (and sent with reminders, if you turn them on).</p><p class="field-error" id="' + p + 'NotesErr" hidden></p></div>' +
       '<div class="med-form-summary">' + icon("calendar") + '<p id="' + p + 'Summary" aria-live="polite"></p></div>' +
       '<div class="med-form-error" id="' + p + 'FormErr" hidden></div>' +
       '<div class="form-actions"><button type="submit" class="btn btn-primary">Save medication</button><button type="button" class="btn btn-ghost" data-form-cancel>Cancel</button></div>' +
@@ -298,7 +299,7 @@
     function summaryText() {
       if (f.frequency.value === "as_needed") return "As needed: not scheduled, not counted in your daily progress, and never marked “not logged”. Log a dose whenever you take one.";
       if (!TIME_RE.test(f.time.value || "")) return "Choose a dose time to see the schedule.";
-      return "Scheduled: " + S.describe({ frequency: f.frequency.value, schedule: f.schedule.value, time: f.time.value }) + ", starting today. SKINSIGHT won’t send a reminder.";
+      return "Scheduled: " + S.describe({ frequency: f.frequency.value, schedule: f.schedule.value, time: f.time.value }) + ", starting today.";
     }
 
     ["schedule", "frequency", "time"].forEach(function (k) { f[k].addEventListener("change", syncDependencies); });
@@ -357,7 +358,7 @@
     dlg.setAttribute("aria-labelledby", "medDialogTitle");
     dlg.innerHTML = '<div class="med-dialog-inner"><div class="med-dialog-head"><h2 id="medDialogTitle">Add medication</h2>' +
       '<button type="button" class="med-dialog-close" data-dialog-close aria-label="Close">' + icon("x") + '</button></div>' +
-      '<p class="med-dialog-sub">Enter details for a medication prescribed or recommended by a healthcare professional. It will be saved on this device only.</p>' +
+      '<p class="med-dialog-sub">Enter details for a medication prescribed or recommended by a healthcare professional. It will be saved on this device (and sent with reminders, if you turn them on).</p>' +
       '<div id="medDialogMount"></div></div>';
     var formApi = mountForm($("#medDialogMount", dlg), {
       prefix: "dlg",
