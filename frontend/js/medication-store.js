@@ -1,7 +1,8 @@
 /*
  * SKINSIGHT — Medication store
  *
- * FRONTEND ONLY. Everything is kept in this browser's localStorage. Nothing is sent to any server, nothing is
+ * FRONTEND ONLY. Everything is kept in this browser's localStorage. This store sends nothing to any server (the opt-in
+ * js/push-reminders.js sends the active profile's list to the backend only when the user turns reminders on), nothing is
  * synced between devices or browsers, and nothing is backed up.
  *
  * PRIVACY MODEL (read this before changing storage):

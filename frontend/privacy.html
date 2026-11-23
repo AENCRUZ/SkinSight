@@ -119,7 +119,12 @@
           <tr>
             <td><strong>Medication tracker</strong> entries (names, schedules, notes, doses marked as taken).</td>
             <td>When you add or change them.</td>
-            <td><strong>Only in your browser</strong> on this device. They are never sent to SKINSIGHT servers or any other service.</td>
+            <td><strong>Only in your browser</strong> on this device, unless you turn on dose reminders (next row).</td>
+          </tr>
+          <tr>
+            <td><strong>Dose reminders</strong>: a push subscription for this browser (an address issued by your browser's push service), your time zone, and the active profile's medication names, notes, schedules and which recent doses are marked completed.</td>
+            <td>Only if you press "Turn on reminders", and again each time you change your medications while reminders are on.</td>
+            <td>Sent to the SKINSIGHT server and stored in a <strong>Supabase</strong> database table that only the server can access, so it can send a notification at each dose time. The notification text is delivered through your browser maker's push service (for Chrome, Google). Pressing "Turn off reminders" deletes the stored copy.</td>
           </tr>
           <tr>
             <td><strong>Location</strong>: the place you type or pick, or your device position if you press "Use my location".</td>
@@ -153,13 +158,14 @@
       <table class="legal-table">
         <thead><tr><th scope="col">Service</th><th scope="col">Used for</th><th scope="col">What it can see</th></tr></thead>
         <tbody>
-          <tr><td>Supabase</td><td>Sign-in and saved consultations</td><td>Account details, saved consultation text, sign-in tokens, your IP address.</td></tr>
+          <tr><td>Supabase</td><td>Sign-in, saved consultations and dose reminders</td><td>Account details, saved consultation text, dose reminder data (if turned on), sign-in tokens, your IP address.</td></tr>
           <tr><td>Render</td><td>Hosts the SKINSIGHT server that talks to the AI</td><td>Your messages and photos in transit, your IP address, and whatever its own logs record.</td></tr>
           <tr><td>Google (Gemini)</td><td>Writes assistant replies and summaries</td><td>Your messages and photos as described in section 3.</td></tr>
           <tr><td>Google (sign-in, Fonts, Maps, Gmail link)</td><td>Optional Google login, page fonts, embedded map and map links, and opening a Gmail draft</td><td>Your IP address and the request made (for example the map search text). Google may set its own cookies.</td></tr>
           <tr><td>OpenStreetMap Nominatim</td><td>Turning place names into coordinates and coordinates into place names</td><td>The place text or the coordinates, and your IP address.</td></tr>
           <tr><td>jsDelivr and cdnjs (content delivery networks)</td><td>Deliver the sign-in library and the PDF library</td><td>Your IP address and browser details when the page loads.</td></tr>
           <tr><td>GitHub Pages</td><td>Hosts the SKINSIGHT website pages</td><td>Your IP address and the pages you request.</td></tr>
+          <tr><td>Your browser's push service (Google for Chrome, Mozilla for Firefox, Microsoft for Edge, Apple for Safari)</td><td>Delivering dose reminders, only if you turn them on</td><td>The encrypted notification in transit and when it is sent. The content is encrypted end to end between the SKINSIGHT server and your browser.</td></tr>
         </tbody>
       </table>
     </div>
@@ -186,6 +192,7 @@
       <li><strong>Saved consultations</strong> stay in your account until you delete them. There is no automatic deletion yet.</li>
       <li><strong>Browser session data</strong> ends when you close the tab or sign out.</li>
       <li><strong>Medication data</strong> stays on your device until you delete it or clear your browser data.</li>
+      <li><strong>Dose reminder data</strong> stays on the SKINSIGHT server until you turn reminders off, or until your browser's push service reports the subscription as expired.</li>
       <li><strong>Data held by Google (Gemini), Render, Supabase backups, and the other services</strong> follows their own rules. We have not confirmed their retention periods, so we do not state one.</li>
     </ul>
 
@@ -193,6 +200,7 @@
     <ul>
       <li><strong>Delete a saved consultation:</strong> use the bin button next to it in the AI assistant's history panel. This removes it from the database.</li>
       <li><strong>Delete medication data:</strong> use "Delete medication data on this device" on the medication pages.</li>
+      <li><strong>Stop dose reminders:</strong> press "Turn off reminders" on the medication tracker. This deletes the copy on the server.</li>
       <li><strong>Choose what you share:</strong> a photo and your location are optional. The browser asks before sharing your position, and you can refuse.</li>
       <li><strong>Sign out</strong> to clear this session from the browser.</li>
       <li><strong>Delete your whole account:</strong> there is no self-service option yet (see "Things we have not settled yet").</li>

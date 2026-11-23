@@ -32,3 +32,6 @@ out/
 # ----- Misc -----
 *.log
 
+# ----- Local push reminder data (dev fallback store; contains medication data) -----
+backend/data/
+
