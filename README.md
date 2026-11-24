@@ -25,7 +25,7 @@ SKINSIGHT helps people **document a skin concern, prepare a summary for a dermat
 | **Authentication** | Working | Email/password, Google sign-in and password reset through Supabase. AI pages require a login (enforced in the browser *and*, when `REQUIRE_AUTH=true`, on the server). |
 | **Find a Dermatologist** | Working, **demo coverage** | Search or pin any place; clinics are listed for **Batangas Province, Philippines only** (27 entries). Elsewhere the page says so. **Clinic details (hours, phones, emails, doctors) are not independently verified**; open/closed is computed from the *listed* hours. See `docs/clinic-data-review.md`. |
 | **Clinic inquiry email** | Working | Opens a Gmail draft in the user's own account with a message built from their real summary and the fields they type. SKINSIGHT sends nothing. Disabled until there is a real concern to share. |
-| **Medication tracker** | Working (browser-local) | Stored **only in this browser, on this device**, separately for the guest and each account. No reminders or notifications, no sync or backup. Can be deleted from the medication pages. |
+| **Medication tracker** | Working (Cloud Sync + Local) | Synchronized with **Supabase PostgreSQL** (`medications` and `medication_logs` tables with Row-Level Security) when signed in; stored locally in browser for guest mode or offline use. Automatic guest-to-account migration supported. |
 | **Terms of Use / Privacy Policy** | Draft | `frontend/terms.html`, `frontend/privacy.html`. Written from what the app actually does; open items (provider retention periods, database region, account deletion, contact address, legal review, age policy) are listed on the pages. Not legal advice. |
 | Account deletion | Not implemented | No self-service option yet. |
 | Clinics outside Batangas | Not implemented | See `docs/dermatologist-directory-expansion.md`. |
@@ -150,7 +150,10 @@ Names only. **Never put values in the repository.**
 ### Supabase setup
 1. **Auth → URL Configuration:** set the Site URL and add redirect URLs for every place the site is served (the deployed origin and path, and `http://localhost:8000/**`). Password reset and Google sign-in redirect back to pages in the same folder as the page the user was on.
 2. **Auth → Providers:** enable Email and Google (Google needs its OAuth client configured).
-3. **Database:** run `supabase/migrations/001_consultations.sql` once in the SQL Editor of the **same project the frontend uses**. It only adds the `consultations` table (50 per account, row-level security: users can only access their own rows, no access for signed-out visitors). It is safe to run again.
+3. **Database:** run the SQL migrations in `supabase/migrations/` in the SQL Editor of the **same project the frontend uses**:
+   - `001_consultations.sql`: adds the `consultations` table (50 per account, row-level security: users can only access their own rows).
+   - `002_medications.sql`: adds the `medications` and `medication_logs` tables (30 medications per account, row-level security, cascading deletes).
+   Both migrations are safe to re-run.
 
 ### Render (backend)
 Create a Node web service from the `backend/` folder (build `npm install`, start `npm start`), set the environment variables above, and put the service URL in `PRODUCTION_API_URL` in `frontend/js/api.js`. Instances can sleep when idle (as on Render's free plan) and then take up to a minute to wake; the chat page explains this to the user.

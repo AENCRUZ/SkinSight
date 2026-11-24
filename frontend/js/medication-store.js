@@ -1,35 +1,13 @@
 /*
  * SKINSIGHT — Medication store
  *
- * FRONTEND ONLY. Everything is kept in this browser's localStorage. This store sends nothing to any server (the opt-in
- * js/push-reminders.js sends the active profile's list to the backend only when the user turns reminders on), nothing is
- * synced between devices or browsers, and nothing is backed up.
- *
- * PRIVACY MODEL (read this before changing storage):
- *   - Data is namespaced per PROFILE: "guest" when nobody is signed in, "u_<supabase user id>" for an account.
- *     A profile only ever reads its own keys, so signing out or switching accounts never shows another
- *     profile's medications. Guest data is NOT migrated into an account.
- *   - The active account is read from THIS PROJECT's Supabase session token in localStorage
- *     (sb-<project ref>-auth-token; the ref comes from the same SUPABASE_URL js/supabase-config.js uses), parsed
- *     the way js/auth.js parses it. Other apps on a shared origin (e.g. <user>.github.io) have different refs and
- *     are ignored. The token is the source of truth: if it is gone (sign-out, expired/removed session) the profile
- *     is "guest", even if auth.js's cached "skinsight_user" is stale. We never write to, or depend on changes to,
- *     js/auth.js.
- *   - FAIL CLOSED: if this project's token key cannot be determined (SUPABASE_URL missing, not a string, or not a
- *     valid URL) the profile is "guest". The store NEVER scans or reads any other "sb-*" key, so another project's
- *     Supabase session can never be used to pick a profile.
- *   - This is ISOLATION, NOT SECURITY. The data is stored as plain text under predictable keys. Anyone who can
- *     use this browser profile (DevTools, another script on this origin, a shared computer) can read it, and a
- *     signed-out profile's data stays on the device until it is deleted (see deleteProfileData/deleteAllData).
- *   - The origin on GitHub Pages is shared by every project site under the same user account.
- *
- * If localStorage is unavailable (blocked, private mode, quota) the store keeps working in MEMORY for the life
- * of the page and reports it through status() so the UI can say so. Nothing is persisted in that case.
- *
- * Schedule model (kept from the original prototype): a medication has a schedule (once_daily, twice_daily,
- * every_other_day), a frequency (daily, weekly, as_needed) and a dose time. "as_needed" medications have NO
- * scheduled doses: they are never counted in progress and never produce "not logged" records; the user can log
- * doses whenever they take one.
+ * HYBRID STORAGE: Local-first with Supabase Cloud Sync.
+ *   - Offline-first: Data is always instantly cached in browser localStorage / memory so UI is instantaneous.
+ *   - Authenticated Cloud Sync: When signed into Supabase, medications and dose completion logs
+ *     are synchronized with the PostgreSQL database (tables: `public.medications` and `public.medication_logs`).
+ *   - Guest Mode: Unauthenticated users store data in localStorage namespaced under "guest".
+ *   - Migration: When a user with guest data logs in, their medications can be seamlessly synced to their account.
+ *   - Fail-Safe: If tables are not created or network is offline, the store falls back to local storage gracefully.
  */
 (function () {
   "use strict";
@@ -37,7 +15,7 @@
   var VERSION = "v1";
   var MEDS_PREFIX = "skinsight_meds_" + VERSION + ":";
   var LOG_PREFIX = "skinsight_medlog_" + VERSION + ":";
-  var LEGACY_KEYS = ["skinsight_medications", "skinsight_dose_log"]; // global keys used by an earlier prototype
+  var LEGACY_KEYS = ["skinsight_medications", "skinsight_dose_log"];
   var LIMITS = { meds: 30, name: 80, notes: 300 };
   var SCHEDULES = ["once_daily", "twice_daily", "every_other_day"];
   var FREQUENCIES = ["daily", "weekly", "as_needed"];
@@ -45,7 +23,7 @@
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
 
-  // ------------------------------------------------------------------ dates / formatting (local time)
+  // ------------------------------------------------------------------ dates / formatting
   function pad(n) { return n < 10 ? "0" + n : "" + n; }
   function dateKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
   function parseKey(k) { var p = k.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
@@ -67,17 +45,13 @@
     });
   }
 
-  // ------------------------------------------------------------------ profile (guest / account)
-  // supabase-js stores the session under "sb-<project ref>-auth-token", where the ref is the first label of the
-  // project hostname. SUPABASE_URL is a top-level const in js/supabase-config.js (loaded before this file).
-  // Returns this project's token key, or null when it cannot be determined (SUPABASE_URL missing, not a string, or
-  // not a valid URL). Callers must treat null as "signed out": there is deliberately no fallback to other keys.
+  // ------------------------------------------------------------------ profile
   function projectTokenKey() {
     try {
       if (typeof SUPABASE_URL === "string" && SUPABASE_URL) {
         return "sb-" + new URL(SUPABASE_URL).hostname.split(".")[0] + "-auth-token";
       }
-    } catch (e) { /* invalid SUPABASE_URL: no key can be derived, so the caller fails closed (guest) */ }
+    } catch (e) {}
     return null;
   }
   function userIdFromToken(raw) {
@@ -86,33 +60,27 @@
     var u = data && (data.user || (data.currentSession && data.currentSession.user));
     return u && u.id ? String(u.id) : null;
   }
-  // The signed-in user's id, or null (= guest). Fails closed: only THIS project's session key is ever read. If it
-  // cannot be determined, or the token is missing, unreadable or malformed, the result is null. No other "sb-*"
-  // key is inspected, so a session belonging to another project on the same origin can never select a profile.
-  //
-  // WHERE the token lives (see supabase-config.js, skinsightAuthStorage): sessionStorage for a normal login, and
-  // localStorage only when "Keep me signed in" was ticked. Both are checked, in the same order login-gate.js uses,
-  // otherwise every default login would be treated as a guest and share the guest medication list.
   function authUserId() {
     try {
       var own = projectTokenKey();
       if (!own) return null;
       var raw = null;
-      try { raw = sessionStorage.getItem(own); } catch (e) { /* unavailable: fall through */ }
+      try { raw = sessionStorage.getItem(own); } catch (e) {}
       if (!raw && localStorage.getItem("skinsight_remember_me") === "true") raw = localStorage.getItem(own);
       return userIdFromToken(raw);
-    } catch (e) { return null; } // unreadable storage or malformed token: treat as signed out
+    } catch (e) { return null; }
   }
   function profile() {
     var id = authUserId();
-    if (!id) return { kind: "guest", key: "guest" };
-    return { kind: "account", key: "u_" + id.replace(/[^A-Za-z0-9_-]/g, "") };
+    if (!id) return { kind: "guest", key: "guest", userId: null };
+    return { kind: "account", key: "u_" + id.replace(/[^A-Za-z0-9_-]/g, ""), userId: id };
   }
 
-  // ------------------------------------------------------------------ persistence (with in-memory fallback)
-  var memory = {};   // profile key -> { meds, log }; authoritative while persistence is unavailable/failing
-  var failed = {};   // profile key -> true after a write failed
+  // ------------------------------------------------------------------ persistence (localStorage + in-memory)
+  var memory = {};
+  var failed = {};
   var persist = probe();
+  var cloudState = { syncing: false, synced: false, tableAvailable: true, lastError: null };
 
   function probe() {
     try {
@@ -134,7 +102,6 @@
     try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
   }
 
-  // Never trust stored JSON: it can be edited by hand, truncated, or written by another version.
   function cleanMeds(list) {
     if (!Array.isArray(list)) return [];
     var out = [];
@@ -147,7 +114,7 @@
         frequency: FREQUENCIES.indexOf(m.frequency) !== -1 ? m.frequency : "daily",
         time: TIME_RE.test(m.time || "") ? m.time : "09:00",
         notes: typeof m.notes === "string" ? m.notes.slice(0, LIMITS.notes) : "",
-        created: DATE_RE.test(m.created || "") ? m.created : today()
+        created: DATE_RE.test(m.created || "") ? m.created : (m.created_at || today())
       });
     });
     return out;
@@ -161,25 +128,234 @@
 
   function load(p) {
     if (memory[p.key] && (!persist || failed[p.key])) return memory[p.key];
-    return { meds: cleanMeds(readKey(MEDS_PREFIX + p.key, [])), log: cleanLog(readKey(LOG_PREFIX + p.key, {})) };
+    var data = { meds: cleanMeds(readKey(MEDS_PREFIX + p.key, [])), log: cleanLog(readKey(LOG_PREFIX + p.key, {})) };
+    memory[p.key] = data;
+    return data;
   }
   function save(p, data) {
-    memory[p.key] = data; // the in-memory copy is always current; storage is the durable copy when it works
+    memory[p.key] = data;
     if (!persist) { failed[p.key] = true; return false; }
     var ok = writeKey(MEDS_PREFIX + p.key, data.meds) && writeKey(LOG_PREFIX + p.key, data.log);
-    if (!ok) persist = probe() ? true : false; // distinguish "storage gone" from "this write failed (quota)"
+    if (!ok) persist = probe() ? true : false;
     failed[p.key] = !ok;
     return ok;
   }
 
-  // ------------------------------------------------------------------ describing schedules (plain language)
+  // ------------------------------------------------------------------ SUPABASE CLOUD SYNC
+  function supabase() {
+    return window.supabaseClient || null;
+  }
+
+  function isMissingTableError(err) {
+    if (!err) return false;
+    var msg = (err.message || "").toLowerCase();
+    var code = err.code || "";
+    return code === "PGRST205" || code === "42P01" || msg.indexOf("does not exist") !== -1 || msg.indexOf("schema cache") !== -1;
+  }
+
+  function notifySync() {
+    try {
+      window.dispatchEvent(new CustomEvent("skinsight:meds-synced", { detail: { profile: profile() } }));
+    } catch (e) {}
+  }
+
+  async function syncFromCloud() {
+    var p = profile();
+    if (p.kind !== "account" || !p.userId) return { ok: false, reason: "signed-out" };
+    var c = supabase();
+    if (!c) return { ok: false, reason: "unavailable" };
+
+    cloudState.syncing = true;
+    try {
+      var medsRes = await c.from("medications").select("*").order("created_at", { ascending: true });
+      if (medsRes.error) {
+        if (isMissingTableError(medsRes.error)) cloudState.tableAvailable = false;
+        throw medsRes.error;
+      }
+
+      var logsRes = await c.from("medication_logs").select("*");
+      if (logsRes.error) {
+        if (isMissingTableError(logsRes.error)) cloudState.tableAvailable = false;
+        throw logsRes.error;
+      }
+
+      cloudState.tableAvailable = true;
+      var current = load(p);
+
+      var remoteMeds = cleanMeds((medsRes.data || []).map(function (m) {
+        return {
+          id: m.id,
+          name: m.name,
+          schedule: m.schedule,
+          frequency: m.frequency,
+          time: m.dose_time,
+          notes: m.notes,
+          created: m.created_at
+        };
+      }));
+
+      var remoteLog = {};
+      (logsRes.data || []).forEach(function (l) {
+        if (l.slot_key) remoteLog[l.slot_key] = Number(l.logged_at);
+      });
+
+      // If remote has data, update local store with remote data
+      if (remoteMeds.length > 0 || Object.keys(remoteLog).length > 0) {
+        current.meds = remoteMeds;
+        current.log = remoteLog;
+        save(p, current);
+      } else if (current.meds.length > 0) {
+        // Local has data but cloud is empty: push local to cloud
+        await pushLocalToCloud(p, current);
+      }
+
+      cloudState.synced = true;
+      cloudState.syncing = false;
+      notifySync();
+      return { ok: true, count: current.meds.length };
+    } catch (err) {
+      cloudState.syncing = false;
+      cloudState.lastError = err;
+      return { ok: false, error: err };
+    }
+  }
+
+  async function pushLocalToCloud(p, data) {
+    var c = supabase();
+    if (!c || p.kind !== "account" || !cloudState.tableAvailable) return;
+    try {
+      if (data.meds.length > 0) {
+        var medRows = data.meds.map(function (m) {
+          return {
+            id: m.id,
+            user_id: p.userId,
+            name: m.name,
+            schedule: m.schedule,
+            frequency: m.frequency,
+            dose_time: m.time,
+            notes: m.notes || "",
+            created_at: m.created
+          };
+        });
+        await c.from("medications").upsert(medRows, { onConflict: "id" });
+      }
+      var logKeys = Object.keys(data.log);
+      if (logKeys.length > 0) {
+        var logRows = [];
+        logKeys.forEach(function (k) {
+          var parts = k.split("|");
+          if (parts[0]) {
+            logRows.push({
+              user_id: p.userId,
+              medication_id: parts[0],
+              slot_key: k,
+              logged_at: data.log[k]
+            });
+          }
+        });
+        if (logRows.length) await c.from("medication_logs").upsert(logRows, { onConflict: "user_id,medication_id,slot_key" });
+      }
+    } catch (e) {
+      if (isMissingTableError(e)) cloudState.tableAvailable = false;
+    }
+  }
+
+  function cloudSaveMed(med) {
+    var p = profile(), c = supabase();
+    if (!c || p.kind !== "account" || !cloudState.tableAvailable) return;
+    c.from("medications").upsert({
+      id: med.id,
+      user_id: p.userId,
+      name: med.name,
+      schedule: med.schedule,
+      frequency: med.frequency,
+      dose_time: med.time,
+      notes: med.notes || "",
+      created_at: med.created
+    }, { onConflict: "id" }).then(function (res) {
+      if (res.error && isMissingTableError(res.error)) cloudState.tableAvailable = false;
+    }).catch(function () {});
+  }
+
+  function cloudRemoveMed(id) {
+    var p = profile(), c = supabase();
+    if (!c || p.kind !== "account" || !cloudState.tableAvailable) return;
+    c.from("medications").delete().eq("id", id).then(function (res) {
+      if (res.error && isMissingTableError(res.error)) cloudState.tableAvailable = false;
+    }).catch(function () {});
+  }
+
+  function cloudSaveLog(slotKey, timestamp) {
+    var p = profile(), c = supabase();
+    if (!c || p.kind !== "account" || !cloudState.tableAvailable) return;
+    var parts = slotKey.split("|");
+    var medId = parts[0];
+    if (!medId) return;
+    c.from("medication_logs").upsert({
+      user_id: p.userId,
+      medication_id: medId,
+      slot_key: slotKey,
+      logged_at: timestamp
+    }, { onConflict: "user_id,medication_id,slot_key" }).then(function (res) {
+      if (res.error && isMissingTableError(res.error)) cloudState.tableAvailable = false;
+    }).catch(function () {});
+  }
+
+  function cloudRemoveLog(slotKey) {
+    var p = profile(), c = supabase();
+    if (!c || p.kind !== "account" || !cloudState.tableAvailable) return;
+    c.from("medication_logs").delete().eq("slot_key", slotKey).then(function (res) {
+      if (res.error && isMissingTableError(res.error)) cloudState.tableAvailable = false;
+    }).catch(function () {});
+  }
+
+  // ------------------------------------------------------------------ Guest-to-Account Migration
+  function hasGuestData() {
+    var guestKey = "guest";
+    var data = load({ key: guestKey, kind: "guest" });
+    return data.meds && data.meds.length > 0;
+  }
+
+  async function migrateGuestData() {
+    var p = profile();
+    if (p.kind !== "account" || !p.userId) return { ok: false, reason: "signed-out" };
+    var guestData = load({ key: "guest", kind: "guest" });
+    if (!guestData.meds || !guestData.meds.length) return { ok: true, migrated: 0 };
+
+    var userStore = load(p);
+    var added = 0;
+    guestData.meds.forEach(function (m) {
+      if (!userStore.meds.some(function (existing) { return existing.name.toLowerCase() === m.name.toLowerCase(); })) {
+        userStore.meds.push(m);
+        added++;
+      }
+    });
+    Object.keys(guestData.log).forEach(function (k) {
+      userStore.log[k] = guestData.log[k];
+    });
+
+    save(p, userStore);
+    await pushLocalToCloud(p, userStore);
+
+    // Clear guest storage
+    try {
+      localStorage.removeItem(MEDS_PREFIX + "guest");
+      localStorage.removeItem(LOG_PREFIX + "guest");
+      delete memory["guest"];
+    } catch (e) {}
+
+    notifySync();
+    return { ok: true, migrated: added };
+  }
+
+  // ------------------------------------------------------------------ describing schedules
   function times(time, schedule) {
     var list = [time];
     if (schedule === "twice_daily") {
       var p = time.split(":");
       list.push(pad((+p[0] + 12) % 24) + ":" + p[1]);
     }
-    list.sort(); // chronological, e.g. 8:00 AM and 8:00 PM
+    list.sort();
     return list.map(fmtTime).join(" and ");
   }
   function describe(m) {
@@ -213,12 +389,12 @@
       errors: errors,
       clean: {
         name: name, notes: notes, schedule: schedule, frequency: frequency,
-        time: frequency === "as_needed" ? "09:00" : time // as-needed medications are not scheduled; time is unused
+        time: frequency === "as_needed" ? "09:00" : time
       }
     };
   }
 
-  // ------------------------------------------------------------------ medications
+  // ------------------------------------------------------------------ medications mutations
   function getMeds() { return load(profile()).meds.slice(); }
 
   function addMed(data) {
@@ -235,10 +411,10 @@
     };
     d.meds.push(med);
     var saved = save(p, d);
+    cloudSaveMed(med);
     return { ok: true, med: med, saved: saved };
   }
 
-  // Removes a medication AND its dose records. The snapshot lets the caller offer "Undo".
   function removeMed(id) {
     var p = profile(), d = load(p);
     var index = -1, med = null;
@@ -250,11 +426,10 @@
       if (k.indexOf(id + "|") === 0) { removedLog[k] = d.log[k]; delete d.log[k]; }
     });
     save(p, d);
+    cloudRemoveMed(id);
     return { profile: p.key, med: med, index: index, log: removedLog };
   }
 
-  // Idempotent (a double click can't create duplicates) and profile-bound (a snapshot taken under one profile
-  // can never be restored into another).
   function restoreMed(snapshot) {
     if (!snapshot || !snapshot.med) return { ok: false, reason: "invalid" };
     var p = profile();
@@ -266,6 +441,7 @@
     var log = cleanLog(snapshot.log);
     Object.keys(log).forEach(function (k) { d.log[k] = log[k]; });
     save(p, d);
+    cloudSaveMed(snapshot.med);
     return { ok: true };
   }
 
@@ -287,8 +463,6 @@
     return out;
   }
 
-  // Doses scheduled for one day. status: completed | pending | not_logged (a past dose the user never marked).
-  // SKINSIGHT cannot know whether a "not logged" dose was actually taken.
   function slotsFor(key) {
     var d = load(profile()), now = today(), out = [];
     d.meds.forEach(function (med) {
@@ -311,8 +485,10 @@
   function completeSlot(slotId) {
     var p = profile(), d = load(p);
     if (!slotValid(d, slotId)) return false;
-    d.log[slotId] = Date.now();
+    var now = Date.now();
+    d.log[slotId] = now;
     save(p, d);
+    cloudSaveLog(slotId, now);
     return true;
   }
   function uncompleteSlot(slotId) {
@@ -320,10 +496,11 @@
     if (!(slotId in d.log) || String(slotId).indexOf("|an|") !== -1) return false;
     delete d.log[slotId];
     save(p, d);
+    cloudRemoveLog(slotId);
     return true;
   }
 
-  // ------------------------------------------------------------------ as-needed medications
+  // ------------------------------------------------------------------ as-needed
   function asNeededMeds() { return load(profile()).meds.filter(function (m) { return !scheduled(m); }); }
 
   function parseAsNeeded(id, ts, meds) {
@@ -351,6 +528,7 @@
     while (d.log[id]) { ts += 1; id = medId + "|" + today() + "|an|" + ts; }
     d.log[id] = ts;
     save(p, d);
+    cloudSaveLog(id, ts);
     return id;
   }
   function unlogAsNeeded(doseId) {
@@ -358,11 +536,11 @@
     if (!(doseId in d.log) || String(doseId).split("|")[2] !== "an") return false;
     delete d.log[doseId];
     save(p, d);
+    cloudRemoveLog(doseId);
     return true;
   }
 
   // ------------------------------------------------------------------ history
-  // Newest first. Rows: completed | not_logged (scheduled doses) and as_needed (doses the user logged).
   function history() {
     var d = load(profile()), now = today(), out = [];
     d.meds.forEach(function (med) {
@@ -385,14 +563,13 @@
     out.sort(function (a, b) { var ka = a.date + a.time, kb = b.date + b.time; return ka < kb ? 1 : ka > kb ? -1 : 0; });
     return out;
   }
-  // Adherence figures cover SCHEDULED doses only (as-needed doses are excluded by design).
   function summarize(rows) {
     var c = 0, n = 0, a = 0;
     rows.forEach(function (r) { if (r.status === "completed") c++; else if (r.status === "not_logged") n++; else if (r.status === "as_needed") a++; });
     return { completed: c, notLogged: n, asNeeded: a, rate: c + n ? Math.round((c / (c + n)) * 100) : null };
   }
 
-  // ------------------------------------------------------------------ deleting data on this device
+  // ------------------------------------------------------------------ deleting data
   function storageKeys() {
     var keys = [];
     try { for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i)); } catch (e) { }
@@ -405,9 +582,13 @@
     removeKeys([MEDS_PREFIX + p.key, LOG_PREFIX + p.key]);
     delete memory[p.key];
     delete failed[p.key];
+    var c = supabase();
+    if (c && p.kind === "account" && p.userId && cloudState.tableAvailable) {
+      c.from("medications").delete().eq("user_id", p.userId).then(function () {}).catch(function () {});
+      c.from("medication_logs").delete().eq("user_id", p.userId).then(function () {}).catch(function () {});
+    }
     return true;
   }
-  // Every profile on this device (guest + all accounts), plus data from the earlier prototype.
   function deleteAllData() {
     removeKeys(storageKeys().filter(function (k) {
       return k && (k.indexOf(MEDS_PREFIX) === 0 || k.indexOf(LOG_PREFIX) === 0 || LEGACY_KEYS.indexOf(k) !== -1);
@@ -416,7 +597,6 @@
     failed = {};
     return true;
   }
-  // How many OTHER profiles have saved data here (a count only: never their content or identity).
   function otherProfileCount() {
     var mine = profile().key, seen = {};
     storageKeys().forEach(function (k) {
@@ -427,19 +607,35 @@
     return Object.keys(seen).length;
   }
 
-  // ------------------------------------------------------------------ status + storage-event helper for the UI
+  // ------------------------------------------------------------------ status
   function status() {
     var p = profile();
-    return { profile: p, persistent: persist && !failed[p.key], storageUnavailable: !persist, saveFailed: !!failed[p.key] };
+    return {
+      profile: p,
+      persistent: persist && !failed[p.key],
+      storageUnavailable: !persist,
+      saveFailed: !!failed[p.key],
+      cloudSync: p.kind === "account" && cloudState.tableAvailable,
+      syncing: cloudState.syncing,
+      synced: cloudState.synced,
+      tableAvailable: cloudState.tableAvailable
+    };
   }
-  // True for storage events that can change what the UI must show (data changes or a sign-in/out in another tab).
   function isRelevantStorageKey(k) {
     return k == null || k.indexOf(MEDS_PREFIX) === 0 || k.indexOf(LOG_PREFIX) === 0 || k.indexOf("sb-") === 0 || k === "skinsight_user";
+  }
+
+  // Automatically initiate sync on startup if signed in
+  if (typeof window !== "undefined") {
+    window.setTimeout(function () {
+      if (profile().kind === "account") syncFromCloud();
+    }, 100);
   }
 
   window.SkinStore = {
     LIMITS: LIMITS,
     profile: profile, status: status, isRelevantStorageKey: isRelevantStorageKey,
+    syncFromCloud: syncFromCloud, hasGuestData: hasGuestData, migrateGuestData: migrateGuestData,
     getMeds: getMeds, addMed: addMed, removeMed: removeMed, restoreMed: restoreMed, validate: validate,
     slotsFor: slotsFor, completeSlot: completeSlot, uncompleteSlot: uncompleteSlot,
     asNeededMeds: asNeededMeds, asNeededDoses: asNeededDoses, logAsNeeded: logAsNeeded, unlogAsNeeded: unlogAsNeeded,

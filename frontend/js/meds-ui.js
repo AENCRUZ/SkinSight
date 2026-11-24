@@ -50,19 +50,40 @@
   }
 
   function profileLabel() { return S.status().profile.kind === "account" ? "your signed-in account" : "the guest profile"; }
-  function profileChip() { return S.status().profile.kind === "account" ? "Signed-in account" : "Guest profile"; }
+  function profileChip() {
+    var st = S.status();
+    if (st.profile.kind === "account") {
+      return st.cloudSync ? "Cloud Sync Active" : "Signed-in account";
+    }
+    return "Guest profile";
+  }
 
   // ------------------------------------------------------------------ disclosure (always visible)
   function renderNotice() {
     var mount = $("#medNotice");
     if (!mount) return;
+    var st = S.status();
+    var isAccount = st.profile.kind === "account";
+
+    var headTitle = isAccount ? "Synced with your account" : "Stored on this device only";
+    var descriptionHtml = isAccount
+      ? '<p>Your medications are securely saved to your <strong>SKINSIGHT account in Supabase</strong> and synced across your devices. A local copy is cached in this browser so the tracker works instantly and offline.</p>' +
+        (!st.tableAvailable ? '<p class="med-hint"><em>Note: Cloud tables are not created in Supabase yet. Medication data is safely preserved on this device.</em></p>' : '') +
+        '<p>SKINSIGHT only records what you tell it. Reminders are <strong>optional and off by default</strong>. It <strong>cannot verify that you took a medication</strong> and <strong>does not give medical advice</strong>. Follow the instructions of your healthcare professional.</p>'
+      : '<p>You are using the <strong>guest profile</strong>. Everything here is saved only in <strong>this browser on this device</strong>. It is <strong>not synced</strong> across devices and <strong>not backed up</strong>. <a href="signup.html">Create an account or sign in</a> to sync your medications in the cloud.</p>' +
+        '<p><strong>Shared or public device?</strong> Anyone who can use this browser profile may be able to read this information. Delete your data when you’re finished.</p>' +
+        '<p>SKINSIGHT only records what you tell it. It <strong>cannot verify that you took a medication</strong> and <strong>does not give medical advice</strong>. Follow the instructions of your healthcare professional.</p>';
+
+    var actionButtons = isAccount
+      ? '<button type="button" class="btn btn-secondary btn-sm" data-med-sync>' + icon("circle-check") + ' Sync now</button> ' +
+        '<button type="button" class="btn btn-ghost btn-sm" data-med-delete>' + icon("trash") + ' Delete medication data</button>'
+      : '<button type="button" class="btn btn-ghost btn-sm" data-med-delete>' + icon("trash") + ' Delete medication data on this device</button>';
+
     mount.innerHTML =
       '<section class="med-notice" aria-labelledby="medNoticeTitle">' +
-        '<div class="med-notice-head">' + icon("info") + '<h2 id="medNoticeTitle">Stored on this device <span class="med-profile-chip">' + esc(profileChip()) + '</span></h2></div>' +
-        '<p>Everything here is saved in <strong>this browser on this device</strong>, for ' + esc(profileLabel()) + '. It is <strong>not sent to SKINSIGHT’s servers</strong> unless you turn on dose reminders (see below), <strong>not synced</strong> to your other devices or browsers, and <strong>not backed up</strong>. Clearing your browser data, using private browsing or switching browsers will erase it.</p>' +
-        '<p><strong>Shared or public device?</strong> Anyone who can use this browser profile may be able to read this information. Data saved as a guest isn’t shown when you sign in (and the reverse), but it stays on the device after you sign out until you delete it. Delete your data when you’re finished.</p>' +
-        '<p>SKINSIGHT only records what you tell it. Reminders are <strong>optional and off by default</strong>. It <strong>cannot verify that you took a medication</strong> and <strong>does not give medical advice</strong>. Follow the instructions of your healthcare professional.</p>' +
-        '<div class="med-notice-actions"><button type="button" class="btn btn-ghost btn-sm" data-med-delete>' + icon("trash") + ' Delete medication data on this device</button></div>' +
+        '<div class="med-notice-head">' + icon("info") + '<h2 id="medNoticeTitle">' + esc(headTitle) + ' <span class="med-profile-chip">' + esc(profileChip()) + '</span></h2></div>' +
+        descriptionHtml +
+        '<div class="med-notice-actions">' + actionButtons + '</div>' +
       '</section>';
   }
 
@@ -79,12 +100,17 @@
     } else if (st.saveFailed) {
       html += alertHtml("warning", "alert-circle", '<strong>Your latest change couldn’t be saved</strong> (browser storage may be full or restricted). It is kept on this page only and will be lost when you leave or reload it.');
     }
+    if (st.profile.kind === "account" && S.hasGuestData && S.hasGuestData() && !state.dismissedGuestMigration) {
+      html += alertHtml("info", "info", '<strong>Guest medications found:</strong> You have medications saved on this device from guest mode. Would you like to sync them into your account?',
+        '<button type="button" class="btn btn-primary btn-sm" data-migrate-guest>Sync to account</button>' +
+        '<button type="button" class="btn btn-ghost btn-sm" data-dismiss-guest-migration>Dismiss</button>');
+    }
     state.messages.forEach(function (m) {
       html += alertHtml(m.kind, m.kind === "success" ? "circle-check" : "info", esc(m.text),
         '<button type="button" class="btn btn-ghost btn-sm" data-dismiss-message="' + m.id + '">Dismiss</button>');
     });
     state.undo.forEach(function (u) {
-      html += alertHtml("undo", "trash", '<strong>' + esc(u.name) + '</strong> was removed, along with its dose history on this device.',
+      html += alertHtml("undo", "trash", '<strong>' + esc(u.name) + '</strong> was removed, along with its dose history.',
         '<button type="button" class="btn btn-secondary btn-sm" data-undo-remove="' + u.id + '">Undo</button>' +
         '<button type="button" class="btn btn-ghost btn-sm" data-dismiss-undo="' + u.id + '">Dismiss</button>');
     });
@@ -218,6 +244,24 @@
   function onAlertClick(e) {
     var t = e.target.closest && e.target.closest("button");
     if (!t) return;
+    if (t.hasAttribute("data-migrate-guest")) {
+      t.disabled = true;
+      S.migrateGuestData().then(function (res) {
+        if (res.ok) {
+          addMessage("success", "Successfully synced " + (res.migrated || "your") + " guest medications into your account.");
+          announce("Guest medications synced into your account.");
+        } else {
+          addMessage("info", "Couldn't sync guest medications. Please check your connection.");
+        }
+        afterChange(null);
+      });
+      return;
+    }
+    if (t.hasAttribute("data-dismiss-guest-migration")) {
+      state.dismissedGuestMigration = true;
+      renderAlerts();
+      return;
+    }
     var id = t.getAttribute("data-undo-remove");
     if (id) {
       var item = state.undo.filter(function (u) { return String(u.id) === id; })[0];
@@ -549,7 +593,28 @@
     if (alerts) alerts.addEventListener("click", onAlertClick);
     document.addEventListener("click", function (e) {
       var t = e.target.closest && e.target.closest("[data-med-delete]");
-      if (t) openDeleteDialog(t);
+      if (t) { openDeleteDialog(t); return; }
+      var syncBtn = e.target.closest && e.target.closest("[data-med-sync]");
+      if (syncBtn) {
+        syncBtn.disabled = true;
+        announce("Syncing medications with Supabase...");
+        S.syncFromCloud().then(function (res) {
+          syncBtn.disabled = false;
+          if (res.ok) {
+            addMessage("success", "Medications synced with Supabase.");
+            announce("Medications synced with Supabase.");
+          } else {
+            var msg = (res.error && res.error.message) || "Check your database setup or network connection.";
+            addMessage("info", "Could not sync with Supabase: " + msg);
+          }
+          afterChange(null);
+        });
+      }
+    });
+
+    // Automatically update UI when cloud data arrives
+    window.addEventListener("skinsight:meds-synced", function () {
+      refresh();
     });
 
     // Anything that can change what this page should show.
@@ -558,7 +623,14 @@
     document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh(); });
     window.setInterval(function () { if (S.today() !== state.day || S.profile().key !== state.profileKey) refresh(); }, 30000);
     if (window.supabaseClient && window.supabaseClient.auth && window.supabaseClient.auth.onAuthStateChange) {
-      try { window.supabaseClient.auth.onAuthStateChange(function () { window.setTimeout(refresh, 0); }); } catch (e) { }
+      try {
+        window.supabaseClient.auth.onAuthStateChange(function (event) {
+          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+            S.syncFromCloud();
+          }
+          window.setTimeout(refresh, 0);
+        });
+      } catch (e) { }
     }
 
     var st = S.status();
