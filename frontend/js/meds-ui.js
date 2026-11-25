@@ -38,8 +38,36 @@
     day: S.today(),
     messages: [],   // dismissible info / success banners
     undo: [],       // persistent "removed X: Undo" banners (snapshots live in memory only)
-    nextId: 1
+    nextId: 1,
+    awaitingCloud: false // signed in, nothing cached yet, first cloud sync not finished: don't claim "no medications"
   };
+
+  // ------------------------------------------------------------------ first cloud sync (read-only view of the store's status)
+  // The store starts its own sync shortly after load and announces success with "skinsight:meds-synced". It sends no
+  // event on failure, so we watch status() and give up after CLOUD_WAIT_MS. The store itself is not changed.
+  var CLOUD_WAIT_MS = 10000, cloudWaitTimer = null;
+  function stopCloudWait() {
+    if (cloudWaitTimer) { window.clearInterval(cloudWaitTimer); cloudWaitTimer = null; }
+    if (!state.awaitingCloud) return;
+    state.awaitingCloud = false;
+    if (isTracker) renderTracker();
+  }
+  function startCloudWait() {
+    if (cloudWaitTimer) { window.clearInterval(cloudWaitTimer); cloudWaitTimer = null; }
+    var st = S.status();
+    state.awaitingCloud = st.profile.kind === "account" && !st.synced && st.tableAvailable &&
+      !!window.supabaseClient && S.getMeds().length === 0;
+    if (!state.awaitingCloud) return;
+    var started = Date.now(), sawSyncing = false;
+    cloudWaitTimer = window.setInterval(function () {
+      var s = S.status();
+      if (s.syncing) sawSyncing = true;
+      if (s.synced || !s.tableAvailable || (sawSyncing && !s.syncing) || s.profile.kind !== "account" ||
+          Date.now() - started > CLOUD_WAIT_MS) {
+        stopCloudWait();
+      }
+    }, 400);
+  }
 
   // ------------------------------------------------------------------ announcements (one controlled live region)
   var live = $("#medLive");
@@ -165,10 +193,16 @@
     var list = $("#medList"), empty = $("#medScheduleEmpty");
     list.innerHTML = slots.map(slotHtml).join("");
     list.hidden = !total;
-    if (!meds.length) {
+    if (!meds.length && state.awaitingCloud) {
+      empty.hidden = false;
+      empty.innerHTML = '<p class="med-loading" role="status">Loading your medications from your account…</p>';
+    } else if (!meds.length) {
+      var st = S.status();
+      var whereSaved = st.profile.kind !== "account" ? "everything stays on this device"
+        : st.cloudSync ? "it’s saved to your account" : "it’s saved on this device";
       empty.hidden = false;
       empty.innerHTML = '<div class="card card-static med-empty"><span class="med-empty-icon">' + icon("pill") + '</span><h3>No medications yet</h3>' +
-        '<p>Add a medication your healthcare professional prescribed or recommended. You’ll see its doses here each day, and everything stays on this device.</p>' +
+        '<p>Add a medication your healthcare professional prescribed or recommended. You’ll see its doses here each day, and ' + whereSaved + '.</p>' +
         '<button type="button" class="btn btn-primary" data-open-add>' + icon("plus") + ' Add medication</button></div>';
     } else if (!total) {
       empty.hidden = false;
@@ -555,6 +589,7 @@
     state.undo = [];
     state.messages = [];
     hist.shown = HISTORY_PAGE;
+    startCloudWait();
     renderEverything();
     announce("The signed-in profile changed. Now showing medication data for " + profileLabel() + ".");
     return true;
@@ -568,6 +603,7 @@
   }
 
   function init() {
+    startCloudWait();
     renderEverything();
 
     if (isTracker) {
@@ -614,6 +650,7 @@
 
     // Automatically update UI when cloud data arrives
     window.addEventListener("skinsight:meds-synced", function () {
+      stopCloudWait();
       refresh();
     });
 

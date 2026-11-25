@@ -1051,3 +1051,15 @@ th { color: var(--navy); font-family: var(--font-display); font-size: 0.8rem; te
     color: #000 !important;
   }
 }
+
+/* ---------- iOS: no auto-zoom on focus ----------
+   iOS Safari zooms the page when a text field under 16px gets focus. On phones, every text-entry control
+   uses 16px. !important is deliberate: page styles (finder search, map picker, chat composer) set smaller
+   sizes with more specific selectors. Desktop sizes are unchanged. */
+@media (max-width: 600px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

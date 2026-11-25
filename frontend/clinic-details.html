@@ -54,7 +54,7 @@
       <div class="clinic-hero-top">
         <span class="badge badge-info" id="clinicStatusBadge">Hours unconfirmed</span>
         <span class="badge badge-info" id="clinicTypeBadge">In-person</span>
-        <span class="badge badge-location" id="clinicCityBadge">📍 Batangas City</span>
+        <span class="badge badge-location" id="clinicCityBadge"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg><span id="clinicCityText">Batangas City</span></span>
       </div>
       <h1 id="clinicName">SkinStation — SM City Batangas</h1>
       <ul class="info-list">
@@ -320,7 +320,8 @@
 
     var cityBadge = document.getElementById("clinicCityBadge");
     if (cityBadge) {
-      cityBadge.textContent = "📍 " + (clinic.city || "Location not listed");
+      var cityText = document.getElementById("clinicCityText");
+      if (cityText) cityText.textContent = clinic.city || "Location not listed";
     }
 
     // Google Maps Links & Embed

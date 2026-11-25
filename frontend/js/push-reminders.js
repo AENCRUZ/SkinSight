@@ -158,7 +158,7 @@
         '<button type="button" class="btn btn-ghost btn-sm" data-reminder-toggle>Turn off reminders</button>';
     } else {
       status = '<span class="badge badge-muted">Off</span>';
-      html = "Get a notification at each dose time, even when Chrome isn't open on this page.";
+      html = "Get a notification at each dose time, even when SKINSIGHT isn't open.";
       actions = '<button type="button" class="btn btn-primary btn-sm" data-reminder-toggle>Turn on reminders</button>';
     }
 

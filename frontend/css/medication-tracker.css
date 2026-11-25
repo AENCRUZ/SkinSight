@@ -269,3 +269,6 @@ html.med-dialog-open { overflow: hidden; }
   .med-dialog-inner { padding: var(--space-5) var(--space-4) var(--space-6); }
   .form-actions .btn { flex-basis: 100%; }
 }
+
+/* Shown while a signed-in user's first cloud sync is still running (replaced by a skeleton in Phase 5). */
+.med-loading { margin: 0; padding: var(--space-5) 0; color: var(--ink-soft); font-size: var(--text-sm); }

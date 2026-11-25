@@ -82,6 +82,7 @@
 .results-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); flex-wrap: wrap; }
 .results-head h2 { margin: 0; font-size: 1.15rem; color: var(--navy); }
 .badge-location { background: var(--teal-soft); color: #006399; border: 1px solid #90E0EF; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; font-weight: 600; border-radius: var(--radius-pill); font-size: 0.82rem; }
+.badge-location .i { width: 14px; height: 14px; flex-shrink: 0; }
 
 .clinic-card {
   display: grid;
@@ -466,15 +467,22 @@ body.modal-open { overflow: hidden; }
   z-index: 2;
   width: 100%;
   max-width: 980px;
+  /* Size to the *visible* viewport. iOS Safari measures vh with its toolbars hidden, which made the
+     dialog taller than the screen and clipped the footer. 86vh stays as the fallback for old browsers. */
   height: 86vh;
+  height: min(86vh, calc(100dvh - 32px));
   max-height: 90vh;
+  max-height: calc(100dvh - 32px);
   background: var(--surface);
   border-radius: var(--radius-xl);
   box-shadow: 0 24px 60px rgba(3, 4, 94, 0.35);
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* Safety net: if the content is ever taller than the dialog, it scrolls and the sticky footer stays visible. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   animation: modalScaleUp 0.24s var(--ease);
 }
 @keyframes modalScaleUp {
@@ -601,7 +609,12 @@ body.modal-open { overflow: hidden; }
   transition: all 0.15s ease;
   white-space: nowrap;
   font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
+.city-chip .i { width: 14px; height: 14px; flex-shrink: 0; color: var(--blue); }
+.city-chip.is-active .i { color: currentColor; }
 .city-chip:hover {
   border-color: var(--blue);
   color: var(--blue);
@@ -651,7 +664,8 @@ body.modal-open { overflow: hidden; }
 
 .map-modal-footer {
   flex-shrink: 0;
-  position: relative;
+  position: sticky;
+  bottom: 0;
   z-index: 20;
   display: flex;
   align-items: center;
@@ -674,6 +688,66 @@ body.modal-open { overflow: hidden; }
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+/* Location picker on phones: full-screen sheet, compact header/toolbar, one scrolling row of town chips,
+   and a footer that is always on screen (clear of the home indicator). Behaviour and IDs are unchanged. */
+@media (max-width: 600px) {
+  .map-modal { padding: 0; align-items: stretch; }
+  .map-modal-dialog {
+    max-width: none;
+    min-width: 0; /* flex item: don't grow to the widest child's min-content */
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    animation: none;
+  }
+  .map-modal-header { padding: 14px 16px 10px; gap: 12px; }
+  .map-modal-header h2 { font-size: 1.2rem; }
+  .map-modal-header p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.85rem;
+  }
+  .map-modal-close { margin: -6px -6px 0 0; min-width: 44px; min-height: 44px; }
+
+  .map-modal-toolbar { padding: 10px 16px; gap: 8px; flex-wrap: nowrap; }
+  .map-modal-search { min-width: 0; gap: 6px; }
+  .map-modal-search input { min-width: 0; width: 100%; }
+  .map-modal-toolbar .btn { flex-shrink: 0; padding-inline: 12px; }
+  #modalUseLocationBtn .gps-word { display: none; }
+
+  .map-modal-chips-bar { padding: 8px 0 10px; gap: 6px; flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
+  .map-modal-chips-bar .chips-label { padding: 0 16px; }
+  .modal-city-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 2px 16px;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-city-chips::-webkit-scrollbar { display: none; }
+  .city-chip { flex-shrink: 0; min-height: 40px; padding: 6px 14px; }
+
+  /* The map fills whatever space is left, but never collapses below a usable size. */
+  .map-modal-viewport-wrap { flex: 1 0 clamp(170px, 34dvh, 380px); min-height: 170px; }
+  .map-modal-viewport-wrap .modal-google-iframe { position: absolute; inset: 0; }
+
+  .map-modal-footer {
+    flex-direction: column;
+    flex-wrap: nowrap; /* a wrapping column sizes its line to the widest child, which overflowed the screen */
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .modal-footer-info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem; }
+  .modal-footer-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .modal-footer-actions .btn { width: 100%; min-width: 0; min-height: 44px; padding-inline: 10px; font-size: 0.88rem; }
 }
 
 /* Google Maps Live Sync Banner */

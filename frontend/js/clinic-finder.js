@@ -526,7 +526,7 @@
     var modalBtn = document.getElementById("modalUseLocationBtn");
     if (modalBtn) {
       modalBtn.disabled = false;
-      modalBtn.innerHTML = '<svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg> Use GPS Location';
+      modalBtn.innerHTML = '<svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg> Use GPS<span class="gps-word"> Location</span>';
     }
   }
 
@@ -581,9 +581,9 @@
 
         setLocation(lat, lng, null, true);
         if (window.SkinsightClinics.getCoverageAt(lat, lng)) {
-          showToast("📍 Located! Distance counts now start from your actual location.");
+          showToast("Located! Distance counts now start from your actual location.");
         } else {
-          showToast("📍 Located. We don't list clinics in your area yet; see the coverage note below.");
+          showToast("Located. We don't list clinics in your area yet; see the coverage note below.");
         }
         if (autoOpenModal) {
           openMapModal();
@@ -816,7 +816,7 @@
       var distanceDisplay = "";
       if (clinic.distance != null) {
         if (isUserGps) {
-          distanceDisplay = "🚗 ~" + clinic.distance + " km from your location";
+          distanceDisplay = "~" + clinic.distance + " km from your location";
         } else {
           distanceDisplay = "~" + clinic.distance + " km from " + escapeHtml(cleanTargetCity);
           if (hasActualUserGps) {
@@ -827,7 +827,7 @@
               clinic.lng
             );
             if (actualUserDist != null) {
-              distanceDisplay += " (🚗 ~" + actualUserDist + " km from your GPS)";
+              distanceDisplay += " (~" + actualUserDist + " km from your GPS)";
             }
           }
         }
@@ -1018,7 +1018,7 @@
               if (res) {
                 clearTextFilter(inputEl);
                 setLocation(res.lat, res.lng, res.name, true);
-                showToast("📍 Moved to " + res.name);
+                showToast("Moved to " + res.name);
               }
             }, looksLikeClinicSearch);
           }
@@ -1100,7 +1100,7 @@
     if (confirmBtn) {
       confirmBtn.addEventListener("click", function () {
         closeMapModal();
-        showToast("📍 Location set: " + state.location.name + ". Showing clinics in this area.");
+        showToast("Location set: " + state.location.name + ". Showing clinics in this area.");
       });
     }
 
@@ -1121,7 +1121,7 @@
         modalSearchBtn.textContent = "Search";
         if (result) {
           setLocation(result.lat, result.lng, result.name, true);
-          showToast("📍 Selected: " + result.name);
+          showToast("Selected: " + result.name);
         } else {
           showToast("Could not find location. Try another city name.");
         }
@@ -1150,12 +1150,12 @@
 
         if (match) {
           setLocation(match.lat, match.lng, match.name, true);
-          showToast("📍 Chosen area: " + match.name);
+          showToast("Chosen area: " + match.name);
         } else {
           geocodeAddress(cityName, function (res) {
             if (res) {
               setLocation(res.lat, res.lng, res.name, true);
-              showToast("📍 Chosen area: " + res.name);
+              showToast("Chosen area: " + res.name);
             }
           });
         }
