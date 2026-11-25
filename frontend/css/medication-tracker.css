@@ -5,7 +5,7 @@
 
    Sections
      1. Storage disclosure + alerts + undo banners
-     2. Progress card
+     2. Inline progress (schedule heading)
      3. Dose lists (scheduled, as needed, my medications) + empty state
      4. Add-medication form + dialogs
      5. History
@@ -14,32 +14,47 @@
 
 /* ---------- 1. Storage disclosure, alerts, undo banners ---------- */
 .med-notice {
-  margin-bottom: var(--space-5);
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid #90E0EF;
-  border-radius: var(--radius-lg);
-  background: var(--pale-cyan);
+  margin-bottom: var(--space-4);
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--surface);
   color: var(--ink);
 }
-.med-notice-head { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }
-.med-notice-head .i { width: 22px; height: 22px; color: var(--blue-600); flex-shrink: 0; }
-.med-notice h2 { margin: 0; font-size: 1.05rem; }
-.med-notice p { margin: 0 0 var(--space-2); color: var(--ink); font-size: 0.93rem; line-height: 1.55; }
-.med-notice p:last-of-type { margin-bottom: 0; }
-.med-notice strong { color: var(--navy); }
-.med-profile-chip {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  border: 1px solid #90E0EF;
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--navy);
-  white-space: nowrap;
+.med-notice.is-synced { border-left-color: var(--success); }
+.med-notice-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.med-notice-row > .i { width: 20px; height: 20px; flex-shrink: 0; color: var(--blue-600); }
+.med-notice.is-synced .med-notice-row > .i { color: var(--success); }
+.med-notice-text { flex: 1 1 220px; min-width: 0; }
+.med-notice h2 { margin: 0; font-size: 1rem; line-height: 1.35; }
+.med-notice-sub { margin: 2px 0 0; color: var(--ink-soft); font-size: var(--text-sm); line-height: 1.45; }
+.med-notice-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.med-notice-actions .btn { min-height: 38px; }
+.med-notice-more { margin-top: 6px; }
+.med-notice-more summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--blue-600);
+  font-weight: 600;
+  font-size: var(--text-sm);
 }
-.med-notice-actions { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.med-notice-more summary::-webkit-details-marker { display: none; }
+.med-notice-more summary .i { width: 16px; height: 16px; transition: transform var(--dur-fast) ease; }
+.med-notice-more[open] summary .i { transform: rotate(180deg); }
+.med-notice-more summary:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
+.med-notice-body { padding: var(--space-2) 0 var(--space-1); }
+.med-notice-body p { margin: 0 0 var(--space-2); font-size: var(--text-sm); line-height: 1.55; color: var(--ink); }
+.med-notice-body strong { color: var(--navy); }
+.med-notice-danger { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.med-notice-delete { color: var(--danger); border-color: #E8B4B0; }
+.med-notice-delete:hover { background: var(--danger-bg); color: var(--danger); }
+.med-disclaimer { margin: 8px 0 0; color: var(--ink-soft); font-size: var(--text-sm); }
+@media (prefers-reduced-motion: reduce) { .med-notice-more summary .i { transition: none; } }
 
 /* A .btn sets its own display, which would override the hidden attribute: be explicit. */
 .med-actions [hidden], .med-alert-actions [hidden], .med-notice [hidden] { display: none !important; }
@@ -49,14 +64,37 @@
 
 /* Dose reminders (push notifications) card — js/push-reminders.js */
 #medReminders:empty { display: none; }
-.med-reminders { margin-bottom: var(--space-5); }
-.med-reminders-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
-.med-reminders h2 { margin: 0; font-size: 1.1rem; }
-.med-reminders p { margin: 0 0 var(--space-2); font-size: 0.93rem; line-height: 1.55; }
+.med-reminders {
+  margin-bottom: var(--space-5);
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.med-reminders-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.med-reminders-row > .i { width: 20px; height: 20px; flex-shrink: 0; color: var(--blue-600); }
+.med-reminders-text { flex: 1 1 220px; min-width: 0; }
+.med-reminders-head { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.med-reminders h2 { margin: 0; font-size: 1rem; line-height: 1.35; }
+.med-reminders-sub { margin: 2px 0 0; color: var(--ink-soft); font-size: var(--text-sm); line-height: 1.45; }
 .med-reminders .badge .i { width: 14px; height: 14px; vertical-align: -2px; }
-.med-reminders-error { display: flex; align-items: flex-start; gap: 6px; color: #8A1C1C; }
+.med-reminders-privacy { margin: 8px 0 0; }
+.med-reminders-error { display: flex; align-items: flex-start; gap: 6px; margin: 8px 0 0; color: #8A1C1C; font-size: var(--text-sm); }
 .med-reminders-error .i { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
-.med-reminders-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.med-reminders-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.med-reminders-actions .btn { min-height: 38px; }
+.med-reminders-more { margin-top: 6px; }
+.med-reminders-more summary {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 32px;
+  cursor: pointer; list-style: none; color: var(--blue-600); font-weight: 600; font-size: var(--text-sm);
+}
+.med-reminders-more summary::-webkit-details-marker { display: none; }
+.med-reminders-more summary .i { width: 16px; height: 16px; transition: transform var(--dur-fast) ease; }
+.med-reminders-more[open] summary .i { transform: rotate(180deg); }
+.med-reminders-more summary:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
+.med-reminders-body { padding-top: var(--space-2); }
+.med-reminders-body p { margin: 0 0 var(--space-2); font-size: var(--text-sm); line-height: 1.55; }
+.med-reminders-body .med-reminders-actions { margin-top: var(--space-2); }
 .med-alert {
   display: flex;
   align-items: flex-start;
@@ -82,22 +120,13 @@
 .med-alert.is-undo { border-left-color: var(--navy); }
 
 /* ---------- 2. Progress ---------- */
-.med-progress { display: flex; align-items: center; gap: var(--space-5); margin-bottom: var(--space-6); padding: var(--space-5); }
-.ring {
-  --pct: 0;
-  position: relative;
-  flex-shrink: 0;
-  width: 88px; height: 88px;
-  display: grid; place-items: center;
-  border-radius: 50%;
-  background: conic-gradient(var(--teal) calc(var(--pct) * 1%), var(--sand) 0);
-}
-.ring::before { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: var(--surface); }
-.ring span { position: relative; font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--navy); }
-.med-progress-body { flex: 1; min-width: 0; }
-.med-progress-body h2 { font-size: 1.1rem; margin-bottom: 4px; }
-.med-progress-body p { margin-bottom: var(--space-3); }
-.med-progress-body strong { color: var(--navy); }
+/* Inline progress in the "Today's schedule" heading (shown only when doses are scheduled today). */
+.med-schedule-title { display: flex; align-items: center; gap: var(--space-3) var(--space-4); flex-wrap: wrap; min-width: 0; }
+.med-progress-inline { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.med-progress-inline[hidden] { display: none; }
+.med-progress-inline strong { color: var(--navy); }
+.med-progress-inline .progress-track { display: block; width: 88px; height: 6px; }
+.med-progress-inline .progress-fill { display: block; }
 
 /* ---------- 3. Dose lists ---------- */
 .med-list[hidden] { display: none; }
@@ -136,9 +165,11 @@
 .med-mine-info strong { display: block; color: var(--navy); font-family: var(--font-display); overflow-wrap: anywhere; }
 .med-mine-info span { font-size: var(--text-sm); color: var(--ink-soft); }
 
-.med-empty { text-align: center; padding: var(--space-7) var(--space-5); }
-.med-empty .med-empty-icon { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: var(--space-3); border-radius: 16px; background: var(--teal-soft); color: #006399; }
-.med-empty .med-empty-icon .i { width: 28px; height: 28px; }
+/* Empty state: a quiet dashed placeholder rather than another elevated card. */
+.card.med-empty, .card.med-empty:hover { border: 1px dashed var(--border-strong); background: transparent; box-shadow: none; }
+.med-empty { text-align: center; padding: var(--space-6) var(--space-5); }
+.med-empty .med-empty-icon { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: var(--space-2); border-radius: var(--radius-md); background: var(--teal-soft); color: #006399; }
+.med-empty .med-empty-icon .i { width: 22px; height: 22px; }
 .med-empty h3 { margin-bottom: var(--space-2); }
 .med-empty p { max-width: 46ch; margin: 0 auto var(--space-4); }
 .med-footer { display: flex; flex-direction: column; gap: var(--space-4); align-items: center; margin-top: 28px; }
@@ -262,10 +293,18 @@ html.med-dialog-open { overflow: hidden; }
   .hist-table td::before { content: attr(data-label); flex-shrink: 0; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint); }
 }
 @media (max-width: 600px) {
-  .med-progress { flex-direction: column; align-items: flex-start; }
   .med-notice { padding: var(--space-4); }
   /* dialogs become bottom sheets */
   .med-dialog { width: 100%; max-width: none; margin: auto 0 0; border-radius: var(--radius-xl) var(--radius-xl) 0 0; max-height: 92vh; max-height: 92dvh; }
   .med-dialog-inner { padding: var(--space-5) var(--space-4) var(--space-6); }
   .form-actions .btn { flex-basis: 100%; }
 }
+
+/* Skeleton rows while a signed-in user's first cloud sync is running: same grid as real .med-item rows. */
+.med-skeleton { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--space-3); }
+.med-skeleton .sk-time { width: 64px; height: 14px; justify-self: end; }
+.med-skeleton .sk-sub { width: 35%; }
+.med-skeleton .med-info { flex: 1; min-width: 0; }
+.med-skeleton .sk-btn { width: 150px; height: 36px; border-radius: var(--radius-md); flex-shrink: 0; }
+.hist-table .sk-row td { padding-top: 14px; padding-bottom: 14px; }
+@media (max-width: 600px) { .med-skeleton .sk-time { justify-self: start; } .med-skeleton .sk-btn { width: 100%; } }

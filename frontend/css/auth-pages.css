@@ -73,7 +73,7 @@
   flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
   width: 40px; height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: var(--light-cyan);
 }
@@ -184,7 +184,7 @@
   width: 100%; min-height: 50px;
   padding: 12px 16px;
   border: 1.5px solid var(--border-strong);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--surface);
   color: #3c4043;
   font-family: var(--font-display);

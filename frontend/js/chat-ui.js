@@ -311,9 +311,19 @@
       listEl.appendChild(warn);
     }
     if (remote.status === "loading" && !all.length) {
-      var loading = el("p", "cs-note", "Loading your saved consultations…");
+      // Skeleton rows shaped like saved consultations; the hidden status line is what screen readers hear.
+      var loading = el("p", "visually-hidden", "Loading your saved consultations…");
       loading.setAttribute("role", "status");
       listEl.appendChild(loading);
+      var sk = el("div", "cs-skeleton");
+      sk.setAttribute("aria-hidden", "true");
+      for (var s = 0; s < 4; s++) {
+        var row = el("div", "cs-sk-row");
+        row.appendChild(el("span", "skeleton cs-sk-title"));
+        row.appendChild(el("span", "skeleton cs-sk-date"));
+        sk.appendChild(row);
+      }
+      listEl.appendChild(sk);
       return;
     }
     if (remote.status === "error") {

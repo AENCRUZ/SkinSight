@@ -526,7 +526,7 @@
     var modalBtn = document.getElementById("modalUseLocationBtn");
     if (modalBtn) {
       modalBtn.disabled = false;
-      modalBtn.innerHTML = '<svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg> Use GPS Location';
+      modalBtn.innerHTML = '<svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg> Use GPS<span class="gps-word"> Location</span>';
     }
   }
 
@@ -581,9 +581,9 @@
 
         setLocation(lat, lng, null, true);
         if (window.SkinsightClinics.getCoverageAt(lat, lng)) {
-          showToast("📍 Located! Distance counts now start from your actual location.");
+          showToast("Located! Distance counts now start from your actual location.");
         } else {
-          showToast("📍 Located. We don't list clinics in your area yet; see the coverage note below.");
+          showToast("Located. We don't list clinics in your area yet; see the coverage note at the top of the page.");
         }
         if (autoOpenModal) {
           openMapModal();
@@ -611,10 +611,18 @@
   /* --------------------------------------------------------------------------
      Outside current coverage
      -------------------------------------------------------------------------- */
+  function setResultsOrigin(text) {
+    var el = document.getElementById("resultsOrigin");
+    if (!el) return;
+    el.textContent = text;
+    el.hidden = !text;
+  }
+
   function renderOutsideCoverage(areaDisplayName) {
     var container = document.getElementById("clinicsList");
     var resultsCountEl = document.getElementById("resultsCount");
     if (resultsCountEl) resultsCountEl.textContent = "No listed clinics for this location yet";
+    setResultsOrigin("");
     var locationNameText = document.getElementById("locationNameText");
     if (locationNameText) locationNameText.textContent = state.location.name;
     if (!container) return;
@@ -728,6 +736,7 @@
     if (resultsCountEl) {
       resultsCountEl.textContent = filtered.length + " listed clinic" + (filtered.length === 1 ? "" : "s") + " " + filterScopeLabel;
     }
+    setResultsOrigin("");
 
     var locationNameText = document.getElementById("locationNameText");
     if (locationNameText) {
@@ -784,29 +793,10 @@
       return;
     }
 
-    var gmapsSearchUrl = window.SkinsightClinics.getGoogleMapsSearchUrl(
-      state.location.lat,
-      state.location.lng,
-      "dermatologist skin clinic in " + state.location.name
-    );
-
-    var originNote = isUserGps
+    // Where distances are measured from (shown under the results heading; replaces the old "Directory · N" strip).
+    setResultsOrigin(isUserGps
       ? "Distances are calculated starting from your actual device location (driving road distance)."
-      : "Distances and search radius are measured from " + escapeHtml(cleanTargetCity) + (hasActualUserGps ? " (also showing distance from your GPS location)." : ".");
-
-    var syncBannerHtml =
-      '<div class="gmaps-sync-banner" role="status">' +
-        '<div class="gmaps-sync-left">' +
-          '<span class="gmaps-sync-pulse"></span>' +
-          '<div class="gmaps-sync-text">' +
-            '<strong>Directory &middot; ' + filtered.length + ' listed clinic' + (filtered.length === 1 ? '' : 's') + ' ' + escapeHtml(filterScopeLabel) + '</strong>' +
-            '<p>' + originNote + '</p>' +
-          '</div>' +
-        '</div>' +
-        '<a href="' + gmapsSearchUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-xs gmaps-sync-btn" title="Search Google Maps for dermatologists near this location">' +
-          'Open Google Maps <svg class="i" style="width:12px;height:12px;" aria-hidden="true"><use href="#i-arrow-right"/></svg>' +
-        '</a>' +
-      '</div>';
+      : "Distances and search radius are measured from " + cleanTargetCity + (hasActualUserGps ? " (also showing distance from your GPS location)." : "."));
 
     var html = filtered.map(function (clinic) {
       var openStatus = window.SkinsightClinics.getOpenStatus(clinic);
@@ -816,7 +806,7 @@
       var distanceDisplay = "";
       if (clinic.distance != null) {
         if (isUserGps) {
-          distanceDisplay = "🚗 ~" + clinic.distance + " km from your location";
+          distanceDisplay = "~" + clinic.distance + " km from your location";
         } else {
           distanceDisplay = "~" + clinic.distance + " km from " + escapeHtml(cleanTargetCity);
           if (hasActualUserGps) {
@@ -827,7 +817,7 @@
               clinic.lng
             );
             if (actualUserDist != null) {
-              distanceDisplay += " (🚗 ~" + actualUserDist + " km from your GPS)";
+              distanceDisplay += " (~" + actualUserDist + " km from your GPS)";
             }
           }
         }
@@ -880,7 +870,7 @@
       '</article>';
     }).join("");
 
-    container.innerHTML = syncBannerHtml + html;
+    container.innerHTML = html;
 
     Array.prototype.forEach.call(container.querySelectorAll(".btn-show-on-map"), function (btn) {
       btn.addEventListener("click", function () {
@@ -1018,7 +1008,7 @@
               if (res) {
                 clearTextFilter(inputEl);
                 setLocation(res.lat, res.lng, res.name, true);
-                showToast("📍 Moved to " + res.name);
+                showToast("Moved to " + res.name);
               }
             }, looksLikeClinicSearch);
           }
@@ -1100,7 +1090,7 @@
     if (confirmBtn) {
       confirmBtn.addEventListener("click", function () {
         closeMapModal();
-        showToast("📍 Location set: " + state.location.name + ". Showing clinics in this area.");
+        showToast("Location set: " + state.location.name + ". Showing clinics in this area.");
       });
     }
 
@@ -1121,7 +1111,7 @@
         modalSearchBtn.textContent = "Search";
         if (result) {
           setLocation(result.lat, result.lng, result.name, true);
-          showToast("📍 Selected: " + result.name);
+          showToast("Selected: " + result.name);
         } else {
           showToast("Could not find location. Try another city name.");
         }
@@ -1150,12 +1140,12 @@
 
         if (match) {
           setLocation(match.lat, match.lng, match.name, true);
-          showToast("📍 Chosen area: " + match.name);
+          showToast("Chosen area: " + match.name);
         } else {
           geocodeAddress(cityName, function (res) {
             if (res) {
               setLocation(res.lat, res.lng, res.name, true);
-              showToast("📍 Chosen area: " + res.name);
+              showToast("Chosen area: " + res.name);
             }
           });
         }

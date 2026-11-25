@@ -721,6 +721,8 @@
       if (navLinks) {
         var mobileProfile = navLinks.querySelector(".nav-mobile-profile");
         if (mobileProfile) mobileProfile.remove();
+        var mobileSaved = navLinks.querySelector(".nav-mobile-saved");
+        if (mobileSaved) mobileSaved.remove();
       }
       if (mobileLoginItem) {
         mobileLoginItem.className = "nav-login-item";
@@ -743,18 +745,26 @@
       navActions.innerHTML =
         '<a href="ai-assistant-intro.html" class="btn btn-primary btn-sm">Get Started</a>' +
         '<div class="nav-user-menu">' +
-        '<button type="button" class="nav-user-trigger" id="nav-user-trigger" aria-haspopup="true" aria-expanded="false" title="Account menu">' +
+        '<button type="button" class="nav-user-trigger" id="nav-user-trigger" aria-expanded="false" aria-controls="nav-user-dropdown" title="Account menu">' +
         avatarHtml +
         '<span class="nav-user-name">' + escapeHtml(displayName) + '</span>' +
         '<svg class="nav-user-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>' +
         '</button>' +
-        '<div class="nav-user-dropdown" id="nav-user-dropdown" role="menu">' +
+        // Account panel: a disclosure (button + panel of ordinary links), not an ARIA menu, so Tab/Enter work as
+        // expected without arrow-key handling. Links only point to existing pages; Sign out is set apart below.
+        '<div class="nav-user-dropdown" id="nav-user-dropdown">' +
         '<div class="nav-dropdown-header">' +
         '<span class="nav-dropdown-name">' + escapeHtml(displayName) + '</span>' +
         '<span class="nav-dropdown-email">' + escapeHtml(email) + '</span>' +
         '</div>' +
         '<div class="nav-dropdown-divider"></div>' +
-        '<button type="button" class="nav-dropdown-item nav-dropdown-logout" id="btn-supabase-logout" role="menuitem">' +
+        '<ul class="nav-dropdown-links" aria-label="Your account">' +
+        '<li><a class="nav-dropdown-item" href="ai-chat.html"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-message"/></svg><span>Saved consultations</span></a></li>' +
+        '<li><a class="nav-dropdown-item" href="medication-tracker.html"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-pill"/></svg><span>My medications</span></a></li>' +
+        '<li><a class="nav-dropdown-item" href="privacy.html"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-shield-check"/></svg><span>Privacy &amp; data</span></a></li>' +
+        '</ul>' +
+        '<div class="nav-dropdown-divider"></div>' +
+        '<button type="button" class="nav-dropdown-item nav-dropdown-logout" id="btn-supabase-logout">' +
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
         '<span>Sign Out</span>' +
         '</button>' +
@@ -780,7 +790,17 @@
         });
 
         document.addEventListener("keydown", function (e) {
-          if (e.key === "Escape") {
+          if (e.key === "Escape" && dropdown.classList.contains("open")) {
+            var wasInside = dropdown.contains(document.activeElement);
+            dropdown.classList.remove("open");
+            trigger.setAttribute("aria-expanded", "false");
+            if (wasInside || document.activeElement === trigger) trigger.focus();
+          }
+        });
+
+        // Tabbing out of the open panel closes it.
+        dropdown.addEventListener("focusout", function (e) {
+          if (e.relatedTarget && !dropdown.contains(e.relatedTarget) && e.relatedTarget !== trigger) {
             dropdown.classList.remove("open");
             trigger.setAttribute("aria-expanded", "false");
           }
@@ -817,6 +837,14 @@
         '</div>';
 
       navLinks.insertBefore(profileLi, navLinks.firstChild);
+
+      // Signed-in shortcut in the mobile menu (the other account destinations are already in the nav).
+      var existingSaved = navLinks.querySelector(".nav-mobile-saved");
+      if (existingSaved) existingSaved.remove();
+      var savedLi = document.createElement("li");
+      savedLi.className = "nav-mobile-saved";
+      savedLi.innerHTML = '<a href="ai-chat.html">Saved consultations</a>';
+      navLinks.insertBefore(savedLi, profileLi.nextSibling);
     }
 
     if (mobileLoginItem) {

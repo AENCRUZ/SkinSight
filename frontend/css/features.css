@@ -16,21 +16,46 @@
    ========================================================================== */
 
 /* ---------- 1. Preview / sample-data components ---------- */
-.coverage-note {
+/* Coverage fact, shown as one line in the Find a Dermatologist page header. */
+.coverage-line {
   display: flex;
-  gap: var(--space-3);
-  align-items: flex-start;
-  margin: 0 0 var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid #90E0EF;
-  border-radius: var(--radius-md);
-  background: var(--pale-cyan);
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-2);
   color: var(--navy);
   font-size: var(--text-sm);
 }
-.coverage-note .i { width: 20px; height: 20px; margin-top: 1px; flex-shrink: 0; color: var(--blue-600); }
-.coverage-note p { margin: 0; color: inherit; }
-.coverage-note strong { font-family: var(--font-display); }
+.coverage-line .i { width: 16px; height: 16px; flex-shrink: 0; color: var(--blue-600); }
+
+/* "Not independently verified" disclosure: one line, reason behind a native <details>. Amber rule = warning. */
+.verify-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 var(--space-4);
+  padding: 8px 12px;
+  border-left: 3px solid #C98A12;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: #FFF9EC;
+  color: #5A3B00;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+.verify-strip > .i { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: #8A5A00; }
+.verify-strip details { flex: 1; min-width: 0; }
+.verify-strip summary { cursor: pointer; list-style: none; }
+.verify-strip summary::-webkit-details-marker { display: none; }
+.verify-strip summary strong { font-family: var(--font-display); }
+.verify-why {
+  color: #7A4E00;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+.verify-strip details[open] .verify-why { text-decoration: none; }
+.verify-strip summary:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
+.verify-strip details p { margin: 6px 0 2px; color: inherit; }
 .preview-banner {
   display: flex;
   align-items: flex-start;
@@ -56,7 +81,7 @@
 .card-static:hover { box-shadow: var(--shadow-sm); border-color: var(--border); }
 
 /* ---------- 2. Page scaffolding ---------- */
-.feature-section { padding-top: var(--space-6); }
+.feature-section { padding-top: var(--space-5); }
 .wrap-narrow { max-width: 760px; }
 .wrap-mid { max-width: 860px; }
 .wrap-form { max-width: 640px; }
@@ -81,7 +106,9 @@
 .finder-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--space-5); align-items: start; }
 .results-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); flex-wrap: wrap; }
 .results-head h2 { margin: 0; font-size: 1.15rem; color: var(--navy); }
+.results-origin { margin: calc(-1 * var(--space-2)) 0 var(--space-3); font-size: var(--text-sm); color: var(--ink-soft); }
 .badge-location { background: var(--teal-soft); color: #006399; border: 1px solid #90E0EF; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; font-weight: 600; border-radius: var(--radius-pill); font-size: 0.82rem; }
+.badge-location .i { width: 14px; height: 14px; flex-shrink: 0; }
 
 .clinic-card {
   display: grid;
@@ -89,28 +116,43 @@
   gap: var(--space-4);
   align-items: center;
   margin-bottom: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--dur) ease, border-color var(--dur) ease, transform var(--dur) ease;
+  transition: box-shadow var(--dur) ease, border-color var(--dur) ease;
   cursor: pointer;
 }
-.clinic-card:hover { box-shadow: var(--shadow); border-color: var(--blue); transform: translateY(-2px); }
+/* Flat at rest (border only); elevation is reserved for hover and the highlighted card. */
+.clinic-card:hover { box-shadow: var(--shadow-sm); border-color: var(--blue); }
 .clinic-card.is-highlighted { border-color: var(--teal); background: #F6FBFB; box-shadow: 0 0 0 2px var(--teal), var(--shadow); }
-.clinic-card-icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--teal-soft); color: #006399; flex-shrink: 0; }
+.clinic-card-icon { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--teal-soft); color: #006399; flex-shrink: 0; }
 .clinic-card.is-closed .clinic-card-icon { background: var(--surface-warm); color: var(--ink-soft); }
-.clinic-card-icon .i { width: 24px; height: 24px; }
+.clinic-card-icon .i { width: 20px; height: 20px; }
 .clinic-card h3 { margin: 0 0 4px; font-size: 1.08rem; color: var(--navy); }
 .clinic-meta { margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--ink-soft); }
 .clinic-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.clinic-card-actions { display: flex; flex-direction: column; gap: var(--space-2); align-items: stretch; min-width: 170px; }
-.clinic-dir-link { font-size: 0.8rem; text-align: center; color: var(--blue); padding: 4px 8px; }
+/* One primary action (View details); Show on Map + Directions sit side by side underneath. Order and targets unchanged. */
+.clinic-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-items: stretch; min-width: 220px; }
+.clinic-card-actions .btn-primary { grid-column: 1 / -1; }
+.clinic-card-actions .btn { min-height: 36px; padding: 6px 10px; font-size: 0.82rem; }
+.clinic-card-actions .btn .i { width: 15px; height: 15px; }
+.clinic-dir-link { text-align: center; color: var(--blue); border: 1px solid var(--border); }
+.clinic-dir-link:hover { border-color: var(--blue); }
 
 .badge-inperson { background: #EAEFF5; color: var(--navy); border: 1px solid #D2DCEA; }
 .badge-teleconsult { background: #E8F4EC; color: #155724; border: 1px solid #C3E6CB; }
 .badge-open { background: var(--success-bg); color: var(--success); border: 1px solid #B7E4C7; }
+
+/* Clinic result tags: one neutral chip style for facts (doctors, in-person, teleconsult, unconfirmed hours).
+   Only open/closed status keeps colour, and it always has text plus a dot so colour is never the only cue. */
+.clinic-tags .badge { padding: 3px 10px; font-size: 0.78rem; font-weight: 600; border-radius: var(--radius-pill); }
+.clinic-tags .badge-info,
+.clinic-tags .badge-inperson,
+.clinic-tags .badge-teleconsult { background: var(--surface-warm); color: var(--ink-soft); border: 1px solid var(--border); }
+.clinic-tags .badge-closed { border: 1px solid #F1C6C2; }
+.clinic-tags .badge-closed::before,
+.clinic-tags .badge-open::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 .badge-closed { background: var(--danger-bg); color: var(--danger); border: 1px solid #F5C6CB; }
 .btn.is-disabled, a.btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
 .badge-gmaps { background: #E8F0FE; color: #1A73E8; border: 1px solid #C2D7FA; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
@@ -466,15 +508,22 @@ body.modal-open { overflow: hidden; }
   z-index: 2;
   width: 100%;
   max-width: 980px;
+  /* Size to the *visible* viewport. iOS Safari measures vh with its toolbars hidden, which made the
+     dialog taller than the screen and clipped the footer. 86vh stays as the fallback for old browsers. */
   height: 86vh;
+  height: min(86vh, calc(100dvh - 32px));
   max-height: 90vh;
+  max-height: calc(100dvh - 32px);
   background: var(--surface);
   border-radius: var(--radius-xl);
   box-shadow: 0 24px 60px rgba(3, 4, 94, 0.35);
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* Safety net: if the content is ever taller than the dialog, it scrolls and the sticky footer stays visible. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   animation: modalScaleUp 0.24s var(--ease);
 }
 @keyframes modalScaleUp {
@@ -601,7 +650,12 @@ body.modal-open { overflow: hidden; }
   transition: all 0.15s ease;
   white-space: nowrap;
   font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
+.city-chip .i { width: 14px; height: 14px; flex-shrink: 0; color: var(--blue); }
+.city-chip.is-active .i { color: currentColor; }
 .city-chip:hover {
   border-color: var(--blue);
   color: var(--blue);
@@ -651,7 +705,8 @@ body.modal-open { overflow: hidden; }
 
 .map-modal-footer {
   flex-shrink: 0;
-  position: relative;
+  position: sticky;
+  bottom: 0;
   z-index: 20;
   display: flex;
   align-items: center;
@@ -676,51 +731,64 @@ body.modal-open { overflow: hidden; }
   flex-wrap: wrap;
 }
 
-/* Google Maps Live Sync Banner */
-.gmaps-sync-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--teal);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  box-shadow: 0 1px 4px rgba(3, 4, 94, 0.05);
-  flex-wrap: wrap;
-}
-.gmaps-sync-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 220px;
-}
-.gmaps-sync-pulse {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #0077B6;
-  box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.25);
-  flex-shrink: 0;
-}
-.gmaps-sync-text strong {
-  display: block;
-  font-size: 0.88rem;
-  color: var(--navy);
-  font-family: var(--font-display);
-}
-.gmaps-sync-text p {
-  margin: 1px 0 0;
-  font-size: 0.78rem;
-  color: var(--ink-soft);
-}
-.gmaps-sync-btn {
-  font-size: 0.8rem;
-  padding: 5px 12px;
-  white-space: nowrap;
+/* Location picker on phones: full-screen sheet, compact header/toolbar, one scrolling row of town chips,
+   and a footer that is always on screen (clear of the home indicator). Behaviour and IDs are unchanged. */
+@media (max-width: 600px) {
+  .map-modal { padding: 0; align-items: stretch; }
+  .map-modal-dialog {
+    max-width: none;
+    min-width: 0; /* flex item: don't grow to the widest child's min-content */
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    animation: none;
+  }
+  .map-modal-header { padding: 14px 16px 10px; gap: 12px; }
+  .map-modal-header h2 { font-size: 1.2rem; }
+  .map-modal-header p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.85rem;
+  }
+  .map-modal-close { margin: -6px -6px 0 0; min-width: 44px; min-height: 44px; }
+
+  .map-modal-toolbar { padding: 10px 16px; gap: 8px; flex-wrap: nowrap; }
+  .map-modal-search { min-width: 0; gap: 6px; }
+  .map-modal-search input { min-width: 0; width: 100%; }
+  .map-modal-toolbar .btn { flex-shrink: 0; padding-inline: 12px; }
+  #modalUseLocationBtn .gps-word { display: none; }
+
+  .map-modal-chips-bar { padding: 8px 0 10px; gap: 6px; flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
+  .map-modal-chips-bar .chips-label { padding: 0 16px; }
+  .modal-city-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 2px 16px;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-city-chips::-webkit-scrollbar { display: none; }
+  .city-chip { flex-shrink: 0; min-height: 40px; padding: 6px 14px; }
+
+  /* The map fills whatever space is left, but never collapses below a usable size. */
+  .map-modal-viewport-wrap { flex: 1 0 clamp(170px, 34dvh, 380px); min-height: 170px; }
+  .map-modal-viewport-wrap .modal-google-iframe { position: absolute; inset: 0; }
+
+  .map-modal-footer {
+    flex-direction: column;
+    flex-wrap: nowrap; /* a wrapping column sizes its line to the widest child, which overflowed the screen */
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .modal-footer-info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem; }
+  .modal-footer-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .modal-footer-actions .btn { width: 100%; min-width: 0; min-height: 44px; padding-inline: 10px; font-size: 0.88rem; }
 }
 
 /* Toast Notifications */
@@ -974,8 +1042,8 @@ body.modal-open { overflow: hidden; }
 }
 @media (max-width: 700px) {
   .clinic-card { grid-template-columns: auto minmax(0, 1fr); }
-  .clinic-card-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
-  .clinic-card-actions .btn { flex: 1 1 160px; }
+  .clinic-card-actions { grid-column: 1 / -1; min-width: 0; }
+  .clinic-card-actions .btn { min-height: 44px; }
   .about-grid { grid-template-columns: 1fr; }
   .derm-row { flex-wrap: wrap; }
   .derm-row .badge { margin-left: 0; }
@@ -983,3 +1051,25 @@ body.modal-open { overflow: hidden; }
 @media (max-width: 600px) {
   .selfcare-grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 480px) {
+  /* The pin tile is decorative (aria-hidden); on small phones its column only forces extra text wrapping. */
+  .clinic-card { grid-template-columns: minmax(0, 1fr); }
+  .clinic-card-icon { display: none; }
+}
+
+/* Map placeholder while the Google Maps iframe loads: a shimmer with a pin outline sits BEHIND the iframe,
+   which paints over it once the map renders. CSS only; no change to how maps load. */
+.mini-map-viewport-wrap::before,
+.map-modal-viewport-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2390A4B8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E") center / 40px 40px no-repeat, linear-gradient(90deg, #E8EDF2 25%, #DCE4EB 37%, #E8EDF2 63%);
+  background-size: 40px 40px, 400% 100%;
+  animation: ss-map-shimmer 1.6s ease infinite;
+}
+@keyframes ss-map-shimmer { 0% { background-position: center, 100% 50%; } 100% { background-position: center, 0 50%; } }
+@media (prefers-reduced-motion: reduce) { .mini-map-viewport-wrap::before, .map-modal-viewport-wrap::before { animation: none; } }
+.mini-google-iframe, .modal-google-iframe { position: relative; z-index: 1; }
+.map-modal-overlay-badge { z-index: 5; }

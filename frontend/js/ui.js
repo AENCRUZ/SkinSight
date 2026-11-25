@@ -121,7 +121,7 @@
       '<a class="skip-link" href="#main">Skip to main content</a>' +
       '<header class="navbar">' +
         '<nav class="wrap" aria-label="Primary">' +
-          '<a href="index.html" class="brand" aria-label="SKINSIGHT home">SKIN<span>SIGHT</span></a>' +
+          '<a href="index.html" class="brand" aria-label="SKINSIGHT home"><img class="brand-mark" src="img/logo-mark.svg" alt="" width="26" height="26"><span class="brand-word">SKIN<span>SIGHT</span></span></a>' +
           '<button type="button" id="nav-toggle" class="nav-toggle" ' +
             'aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav"></button>' +
           '<label for="nav-toggle" class="hamburger-label" aria-hidden="true"><span></span><span></span><span></span></label>' +
@@ -147,7 +147,7 @@
       '<div class="wrap">' +
         '<div class="footer-grid">' +
           "<div>" +
-            '<div class="brand">SKIN<span>SIGHT</span></div>' +
+            '<div class="brand"><img class="brand-mark" src="img/logo-mark-reversed.svg" alt="" width="26" height="26"><span class="brand-word">SKIN<span>SIGHT</span></span></div>' +
             '<p class="footer-blurb">AI-assisted skin health platform. Document your concerns and prepare for better dermatology care.</p>' +
           "</div>" +
           '<nav aria-label="Footer">' +

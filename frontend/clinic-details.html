@@ -47,14 +47,14 @@
       <svg class="i" aria-hidden="true" focusable="false"><use href="#i-chevron-left"/></svg> Back to Find a Dermatologist
     </a>
 
-    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Directory details aren't verified.</strong> Hours, contact details, doctors and services below are from our directory and have not been independently confirmed. Please check with the clinic first.</p></div>
+    <div class="verify-strip" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><details><summary><span><strong>Clinic details aren't independently verified.</strong> Call ahead to confirm.</span> <span class="verify-why">Why?</span></summary><p>Hours, contact details, doctors and services below are from our directory and have not been independently confirmed. Please check with the clinic first.</p></details></div>
 
     <!-- Clinic Header & Core Contacts -->
     <div class="card card-static clinic-hero">
       <div class="clinic-hero-top">
         <span class="badge badge-info" id="clinicStatusBadge">Hours unconfirmed</span>
         <span class="badge badge-info" id="clinicTypeBadge">In-person</span>
-        <span class="badge badge-location" id="clinicCityBadge">📍 Batangas City</span>
+        <span class="badge badge-location" id="clinicCityBadge"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg><span id="clinicCityText">Batangas City</span></span>
       </div>
       <h1 id="clinicName">SkinStation — SM City Batangas</h1>
       <ul class="info-list">
@@ -320,7 +320,8 @@
 
     var cityBadge = document.getElementById("clinicCityBadge");
     if (cityBadge) {
-      cityBadge.textContent = "📍 " + (clinic.city || "Location not listed");
+      var cityText = document.getElementById("clinicCityText");
+      if (cityText) cityText.textContent = clinic.city || "Location not listed";
     }
 
     // Google Maps Links & Embed

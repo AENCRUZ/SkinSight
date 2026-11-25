@@ -158,22 +158,43 @@
         '<button type="button" class="btn btn-ghost btn-sm" data-reminder-toggle>Turn off reminders</button>';
     } else {
       status = '<span class="badge badge-muted">Off</span>';
-      html = "Get a notification at each dose time, even when Chrome isn't open on this page.";
+      html = "Get a notification at each dose time, even when SKINSIGHT isn't open.";
       actions = '<button type="button" class="btn btn-primary btn-sm" data-reminder-toggle>Turn on reminders</button>';
     }
 
+    // One compact row: title + status + the main action. When reminders are OFF the privacy line stays visible
+    // (that is the opt-in moment). When ON, the test button, details and tips sit in "Reminder settings".
+    var privacy = '<strong>Privacy:</strong> turning reminders on sends this profile\'s medication names, notes and dose times to SKINSIGHT\'s server so it can notify you. Turning them off deletes that copy.';
+    var canSubscribe = supported && Notification.permission !== "denied";
+    var mainAction = "", settingsHtml = "";
+    if (on) {
+      mainAction = '<button type="button" class="btn btn-ghost btn-sm" data-reminder-toggle>Turn off reminders</button>';
+      settingsHtml =
+        '<details class="med-reminders-more"' + (settingsOpen ? " open" : "") + '><summary>Reminder settings' + icon("chevron-down") + '</summary>' +
+          '<div class="med-reminders-body"><p>' + html + '</p>' +
+          '<p class="med-hint">On Windows and macOS, Chrome must be allowed to run in the background (Chrome Settings → System → “Continue running background apps when Google Chrome is closed”). Reminders are only sent to this browser.</p>' +
+          '<p class="med-hint">' + privacy + '</p>' +
+          '<div class="med-reminders-actions"><button type="button" class="btn btn-secondary btn-sm" data-reminder-test>Send a test in ' + TEST_DELAY + ' seconds</button></div></div>' +
+        '</details>';
+    } else if (canSubscribe) {
+      mainAction = actions;
+    }
+
     mount.innerHTML =
-      '<section class="card card-static med-reminders" aria-labelledby="medRemindersTitle">' +
-        '<div class="med-reminders-head"><h2 id="medRemindersTitle">Dose reminders</h2>' + status + '</div>' +
-        '<p>' + html + '</p>' +
-        (supported && Notification.permission !== "denied"
-          ? '<p class="med-hint"><strong>Privacy:</strong> turning reminders on sends this profile\'s medication names, notes and dose times to SKINSIGHT\'s server so it can notify you. Turning them off deletes that copy.</p>'
-          : "") +
-        (on ? '<p class="med-hint">On Windows and macOS, Chrome must be allowed to run in the background (Chrome Settings → System → “Continue running background apps when Google Chrome is closed”). Reminders are only sent to this browser.</p>' : "") +
+      '<section class="med-reminders' + (on ? " is-on" : "") + '" aria-labelledby="medRemindersTitle">' +
+        '<div class="med-reminders-row">' + icon("bell") +
+          '<div class="med-reminders-text"><div class="med-reminders-head"><h2 id="medRemindersTitle">Dose reminders</h2>' + status + '</div>' +
+            (on ? "" : '<p class="med-reminders-sub">' + html + '</p>') + '</div>' +
+          (mainAction ? '<div class="med-reminders-actions">' + mainAction + "</div>" : "") +
+        '</div>' +
+        (canSubscribe && !on ? '<p class="med-hint med-reminders-privacy">' + privacy + '</p>' : "") +
+        settingsHtml +
         (lastError ? '<p class="med-reminders-error" role="alert">' + icon("alert-circle") + " " + S.esc(lastError) + "</p>" : "") +
-        (actions ? '<div class="med-reminders-actions">' + actions + "</div>" : "") +
       "</section>";
+    var more = mount.querySelector(".med-reminders-more");
+    if (more) more.addEventListener("toggle", function () { settingsOpen = more.open; });
   }
+  var settingsOpen = false;
 
   function refresh() {
     return currentSubscription().then(render, function () { render(null); });
