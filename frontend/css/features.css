@@ -81,7 +81,7 @@
 .card-static:hover { box-shadow: var(--shadow-sm); border-color: var(--border); }
 
 /* ---------- 2. Page scaffolding ---------- */
-.feature-section { padding-top: var(--space-6); }
+.feature-section { padding-top: var(--space-5); }
 .wrap-narrow { max-width: 760px; }
 .wrap-mid { max-width: 860px; }
 .wrap-form { max-width: 640px; }
@@ -116,28 +116,43 @@
   gap: var(--space-4);
   align-items: center;
   margin-bottom: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--dur) ease, border-color var(--dur) ease, transform var(--dur) ease;
+  transition: box-shadow var(--dur) ease, border-color var(--dur) ease;
   cursor: pointer;
 }
-.clinic-card:hover { box-shadow: var(--shadow); border-color: var(--blue); transform: translateY(-2px); }
+/* Flat at rest (border only); elevation is reserved for hover and the highlighted card. */
+.clinic-card:hover { box-shadow: var(--shadow-sm); border-color: var(--blue); }
 .clinic-card.is-highlighted { border-color: var(--teal); background: #F6FBFB; box-shadow: 0 0 0 2px var(--teal), var(--shadow); }
-.clinic-card-icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--teal-soft); color: #006399; flex-shrink: 0; }
+.clinic-card-icon { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--teal-soft); color: #006399; flex-shrink: 0; }
 .clinic-card.is-closed .clinic-card-icon { background: var(--surface-warm); color: var(--ink-soft); }
-.clinic-card-icon .i { width: 24px; height: 24px; }
+.clinic-card-icon .i { width: 20px; height: 20px; }
 .clinic-card h3 { margin: 0 0 4px; font-size: 1.08rem; color: var(--navy); }
 .clinic-meta { margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--ink-soft); }
 .clinic-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.clinic-card-actions { display: flex; flex-direction: column; gap: var(--space-2); align-items: stretch; min-width: 170px; }
-.clinic-dir-link { font-size: 0.8rem; text-align: center; color: var(--blue); padding: 4px 8px; }
+/* One primary action (View details); Show on Map + Directions sit side by side underneath. Order and targets unchanged. */
+.clinic-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-items: stretch; min-width: 220px; }
+.clinic-card-actions .btn-primary { grid-column: 1 / -1; }
+.clinic-card-actions .btn { min-height: 36px; padding: 6px 10px; font-size: 0.82rem; }
+.clinic-card-actions .btn .i { width: 15px; height: 15px; }
+.clinic-dir-link { text-align: center; color: var(--blue); border: 1px solid var(--border); }
+.clinic-dir-link:hover { border-color: var(--blue); }
 
 .badge-inperson { background: #EAEFF5; color: var(--navy); border: 1px solid #D2DCEA; }
 .badge-teleconsult { background: #E8F4EC; color: #155724; border: 1px solid #C3E6CB; }
 .badge-open { background: var(--success-bg); color: var(--success); border: 1px solid #B7E4C7; }
+
+/* Clinic result tags: one neutral chip style for facts (doctors, in-person, teleconsult, unconfirmed hours).
+   Only open/closed status keeps colour, and it always has text plus a dot so colour is never the only cue. */
+.clinic-tags .badge { padding: 3px 10px; font-size: 0.78rem; font-weight: 600; border-radius: var(--radius-pill); }
+.clinic-tags .badge-info,
+.clinic-tags .badge-inperson,
+.clinic-tags .badge-teleconsult { background: var(--surface-warm); color: var(--ink-soft); border: 1px solid var(--border); }
+.clinic-tags .badge-closed { border: 1px solid #F1C6C2; }
+.clinic-tags .badge-closed::before,
+.clinic-tags .badge-open::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 .badge-closed { background: var(--danger-bg); color: var(--danger); border: 1px solid #F5C6CB; }
 .btn.is-disabled, a.btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
 .badge-gmaps { background: #E8F0FE; color: #1A73E8; border: 1px solid #C2D7FA; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
@@ -1027,12 +1042,17 @@ body.modal-open { overflow: hidden; }
 }
 @media (max-width: 700px) {
   .clinic-card { grid-template-columns: auto minmax(0, 1fr); }
-  .clinic-card-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
-  .clinic-card-actions .btn { flex: 1 1 160px; }
+  .clinic-card-actions { grid-column: 1 / -1; min-width: 0; }
+  .clinic-card-actions .btn { min-height: 44px; }
   .about-grid { grid-template-columns: 1fr; }
   .derm-row { flex-wrap: wrap; }
   .derm-row .badge { margin-left: 0; }
 }
 @media (max-width: 600px) {
   .selfcare-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  /* The pin tile is decorative (aria-hidden); on small phones its column only forces extra text wrapping. */
+  .clinic-card { grid-template-columns: minmax(0, 1fr); }
+  .clinic-card-icon { display: none; }
 }

@@ -696,7 +696,7 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
 
 .login-gate-panel {
   background: #fff;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 30px;
   max-width: 420px;
   width: 100%;

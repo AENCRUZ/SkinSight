@@ -165,9 +165,11 @@
 .med-mine-info strong { display: block; color: var(--navy); font-family: var(--font-display); overflow-wrap: anywhere; }
 .med-mine-info span { font-size: var(--text-sm); color: var(--ink-soft); }
 
-.med-empty { text-align: center; padding: var(--space-7) var(--space-5); }
-.med-empty .med-empty-icon { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin-bottom: var(--space-3); border-radius: 16px; background: var(--teal-soft); color: #006399; }
-.med-empty .med-empty-icon .i { width: 28px; height: 28px; }
+/* Empty state: a quiet dashed placeholder rather than another elevated card. */
+.card.med-empty, .card.med-empty:hover { border: 1px dashed var(--border-strong); background: transparent; box-shadow: none; }
+.med-empty { text-align: center; padding: var(--space-6) var(--space-5); }
+.med-empty .med-empty-icon { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: var(--space-2); border-radius: var(--radius-md); background: var(--teal-soft); color: #006399; }
+.med-empty .med-empty-icon .i { width: 22px; height: 22px; }
 .med-empty h3 { margin-bottom: var(--space-2); }
 .med-empty p { max-width: 46ch; margin: 0 auto var(--space-4); }
 .med-footer { display: flex; flex-direction: column; gap: var(--space-4); align-items: center; margin-top: 28px; }

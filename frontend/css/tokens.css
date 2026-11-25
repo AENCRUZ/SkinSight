@@ -18,6 +18,8 @@
   --pale-cyan: #CAF0F8;     /* brand palest cyan */
 
   /* ----- Secondary accents (use sparingly) ----- */
+  /* NOTE: the four names below are legacy aliases kept so older rules keep working. They do NOT mean their
+     names: --teal is brand BLUE, --coral is brand CYAN, --coral-600/700 are brand NAVY. Prefer --blue/--cyan/--navy. */
   --teal: #0077B6;          /* legacy name: now the brand blue (teal is not a brand colour) */
   --teal-soft: #CAF0F8;
   --coral: #00B4D8;         /* legacy name: now brand cyan (coral is not a brand colour) */
@@ -58,7 +60,7 @@
   --font-body: 'Open Sans', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
 
   --text-xs: 0.78rem;
-  --text-sm: 0.88rem;
+  --text-sm: 0.9375rem;     /* 15px: minimum for informational/body text in panels */
   --text-base: 1rem;
   --text-lg: 1.125rem;
   --text-h3: clamp(1.1rem, 1.02rem + 0.35vw, 1.25rem);
@@ -77,10 +79,11 @@
   --space-9: 96px;
 
   /* ----- Radii ----- */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
+  /* Tighter radii read more clinical/precise than soft app-template rounding. */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
   --radius-pill: 999px;
 
   /* ----- Shadows (layered, navy-tinted) ----- */
