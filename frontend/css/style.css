@@ -1073,3 +1073,18 @@ th { color: var(--navy); font-family: var(--font-display); font-size: 0.8rem; te
     font-size: 16px !important;
   }
 }
+
+/* ---------- Skeleton loading placeholders ----------
+   Shared by medications, chat history, the consultation summary and the maps. Shapes mirror the real content so
+   nothing jumps when it arrives. Screen readers get a visually hidden status line instead of the shapes. */
+.skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, #EDF2F7 25%, #DCE4EB 37%, #EDF2F7 63%);
+  background-size: 400% 100%;
+  animation: ss-shimmer 1.4s ease infinite;
+}
+@keyframes ss-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+.sk-line { height: 12px; margin: 6px 0; }
+.sk-title { height: 16px; width: 55%; margin: 2px 0 8px; }

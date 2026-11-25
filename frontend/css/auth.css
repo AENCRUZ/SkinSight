@@ -482,6 +482,12 @@ html.auth-user-signed-in .nav-auth-actions:not(:has(.nav-user-menu))::after {
   flex-shrink: 0;
 }
 
+.nav-dropdown-links { list-style: none; margin: 0; padding: 0; }
+.nav-dropdown-item .i { width: 16px; height: 16px; color: var(--blue-600); }
+.nav-dropdown-item:focus-visible { outline: 3px solid var(--cyan); outline-offset: -3px; background: #f4f8fb; }
+/* The signed-in "Saved consultations" shortcut only belongs in the mobile drawer. */
+@media (min-width: 1025px) { .nav-links .nav-mobile-saved { display: none; } }
+
 .nav-dropdown-logout {
   color: var(--danger);
 }

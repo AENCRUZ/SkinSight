@@ -1056,3 +1056,20 @@ body.modal-open { overflow: hidden; }
   .clinic-card { grid-template-columns: minmax(0, 1fr); }
   .clinic-card-icon { display: none; }
 }
+
+/* Map placeholder while the Google Maps iframe loads: a shimmer with a pin outline sits BEHIND the iframe,
+   which paints over it once the map renders. CSS only; no change to how maps load. */
+.mini-map-viewport-wrap::before,
+.map-modal-viewport-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2390A4B8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E") center / 40px 40px no-repeat, linear-gradient(90deg, #E8EDF2 25%, #DCE4EB 37%, #E8EDF2 63%);
+  background-size: 40px 40px, 400% 100%;
+  animation: ss-map-shimmer 1.6s ease infinite;
+}
+@keyframes ss-map-shimmer { 0% { background-position: center, 100% 50%; } 100% { background-position: center, 0 50%; } }
+@media (prefers-reduced-motion: reduce) { .mini-map-viewport-wrap::before, .map-modal-viewport-wrap::before { animation: none; } }
+.mini-google-iframe, .modal-google-iframe { position: relative; z-index: 1; }
+.map-modal-overlay-badge { z-index: 5; }

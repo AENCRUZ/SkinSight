@@ -300,5 +300,11 @@ html.med-dialog-open { overflow: hidden; }
   .form-actions .btn { flex-basis: 100%; }
 }
 
-/* Shown while a signed-in user's first cloud sync is still running (replaced by a skeleton in Phase 5). */
-.med-loading { margin: 0; padding: var(--space-5) 0; color: var(--ink-soft); font-size: var(--text-sm); }
+/* Skeleton rows while a signed-in user's first cloud sync is running: same grid as real .med-item rows. */
+.med-skeleton { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--space-3); }
+.med-skeleton .sk-time { width: 64px; height: 14px; justify-self: end; }
+.med-skeleton .sk-sub { width: 35%; }
+.med-skeleton .med-info { flex: 1; min-width: 0; }
+.med-skeleton .sk-btn { width: 150px; height: 36px; border-radius: var(--radius-md); flex-shrink: 0; }
+.hist-table .sk-row td { padding-top: 14px; padding-bottom: 14px; }
+@media (max-width: 600px) { .med-skeleton .sk-time { justify-self: start; } .med-skeleton .sk-btn { width: 100%; } }

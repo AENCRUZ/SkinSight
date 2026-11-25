@@ -601,3 +601,29 @@
 }
 
 .intro-narrow { max-width: var(--max-narrow); }
+
+/* Saved-consultation list while it loads (same rhythm as .cs-item rows). */
+.cs-skeleton { padding: var(--space-2); display: grid; gap: var(--space-4); }
+.cs-sk-row { display: grid; gap: 6px; padding: 0 var(--space-2); }
+.cs-sk-title { height: 14px; width: 80%; }
+.cs-sk-date { height: 10px; width: 30%; }
+
+/* Consultation summary while it loads: summary.js sets aria-busy="true" on the document and puts "…" in each
+   field. Show each field as a shimmer bar instead; the text stays in the DOM for screen readers. CSS only. */
+.summary-doc[aria-busy="true"] :is(#summaryMainConcern, #summarySymptoms, #summaryDuration, #summaryAffectedArea, #summaryTriggers, #summaryObservations),
+.summary-doc[aria-busy="true"] #summaryQuestions li {
+  color: transparent;
+  min-height: 14px;
+  max-width: 85%;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, #EDF2F7 25%, #DCE4EB 37%, #EDF2F7 63%);
+  background-size: 400% 100%;
+  animation: ss-shimmer 1.4s ease infinite;
+  user-select: none;
+}
+.summary-doc[aria-busy="true"] #summaryQuestions li { list-style: none; margin-left: -1.2em; }
+.summary-doc[aria-busy="true"] #summaryQuestions li::marker { content: ""; }
+@media (prefers-reduced-motion: reduce) {
+  .summary-doc[aria-busy="true"] :is(#summaryMainConcern, #summarySymptoms, #summaryDuration, #summaryAffectedArea, #summaryTriggers, #summaryObservations),
+  .summary-doc[aria-busy="true"] #summaryQuestions li { animation: none; }
+}

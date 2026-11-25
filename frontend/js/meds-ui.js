@@ -50,7 +50,9 @@
     if (cloudWaitTimer) { window.clearInterval(cloudWaitTimer); cloudWaitTimer = null; }
     if (!state.awaitingCloud) return;
     state.awaitingCloud = false;
+    renderNotice();
     if (isTracker) renderTracker();
+    if (isHistory) renderHistory();
   }
   function startCloudWait() {
     if (cloudWaitTimer) { window.clearInterval(cloudWaitTimer); cloudWaitTimer = null; }
@@ -88,9 +90,15 @@
     if (!mount) return;
     var st = S.status();
     var isAccount = st.profile.kind === "account";
+    // Keep keyboard focus on Sync now / Delete if the row is redrawn while one of them has focus.
+    var active = document.activeElement, refocus = null;
+    if (active && mount.contains(active)) refocus = active.hasAttribute("data-med-sync") ? "[data-med-sync]" : active.hasAttribute("data-med-delete") ? "[data-med-delete]" : null;
 
+    // Only claim "Synced" once the store confirms a successful sync.
     var headTitle = !isAccount ? "Saved on this device only"
-      : st.tableAvailable ? "Synced to your account" : "Saved on this device";
+      : !st.tableAvailable ? "Saved on this device"
+      : st.synced ? "Synced to your account"
+      : st.syncing ? "Syncing with your account…" : "Saved to your account";
     var subHtml = !isAccount
       ? 'Not synced or backed up. <a href="signup.html">Sign in to sync</a> across devices.'
       : st.tableAvailable ? "" : "Cloud storage isn’t set up yet, so your medications are kept in this browser.";
@@ -109,9 +117,9 @@
       : '<button type="button" class="btn btn-ghost btn-sm med-notice-delete" data-med-delete>' + icon("trash") + ' Delete medication data on this device</button>';
 
     mount.innerHTML =
-      '<section class="med-notice' + (isAccount && st.tableAvailable ? " is-synced" : "") + '" aria-labelledby="medNoticeTitle">' +
+      '<section class="med-notice' + (isAccount && st.tableAvailable && st.synced ? " is-synced" : "") + '" aria-labelledby="medNoticeTitle">' +
         '<div class="med-notice-row">' +
-          icon(isAccount && st.tableAvailable ? "circle-check" : "info") +
+          icon(isAccount && st.tableAvailable && st.synced ? "circle-check" : "info") +
           '<div class="med-notice-text"><h2 id="medNoticeTitle">' + esc(headTitle) + '</h2>' +
             (subHtml ? '<p class="med-notice-sub">' + subHtml + '</p>' : "") + '</div>' +
           (syncButton ? '<div class="med-notice-actions">' + syncButton + '</div>' : "") +
@@ -125,6 +133,7 @@
       '</section>';
     var more = $(".med-notice-more", mount);
     if (more) more.addEventListener("toggle", function () { state.noticeOpen = more.open; });
+    if (refocus) { var again = $(refocus, mount); if (again) again.focus(); }
   }
 
   // ------------------------------------------------------------------ alerts: storage warnings, messages, undo banners
@@ -204,7 +213,11 @@
     list.hidden = !total;
     if (!meds.length && state.awaitingCloud) {
       empty.hidden = false;
-      empty.innerHTML = '<p class="med-loading" role="status">Loading your medications from your account…</p>';
+      // Skeleton rows shaped like real doses (Phase 5); the hidden status line is what screen readers hear.
+      var skRow = '<li class="med-item"><span class="skeleton sk-time"></span><div class="med-card"><div class="med-info">' +
+        '<span class="skeleton sk-title"></span><span class="skeleton sk-line sk-sub"></span></div><span class="skeleton sk-btn"></span></div></li>';
+      empty.innerHTML = '<p class="visually-hidden" role="status">Loading your medications from your account…</p>' +
+        '<ul class="med-list med-skeleton" aria-hidden="true">' + skRow + skRow + skRow + '</ul>';
     } else if (!meds.length) {
       var st = S.status();
       var whereSaved = st.profile.kind !== "account" ? "everything stays on this device"
@@ -517,6 +530,16 @@
   }
   function renderHistory(focusFirstNew) {
     var rows = S.history(), sum = S.summarize(rows);
+    var histTable = $("#histTable");
+    if (state.awaitingCloud && !rows.length) {
+      // First cloud sync still running: show table-shaped placeholders instead of "no history".
+      histTable.hidden = false; histTable.setAttribute("aria-busy", "true");
+      $("#histEmpty").hidden = true; $("#histMore").hidden = true;
+      var cell = '<td><span class="skeleton sk-line"></span></td>';
+      $("#histBody").innerHTML = new Array(6).join('<tr class="sk-row" aria-hidden="true">' + cell + cell + cell + '</tr>');
+      return;
+    }
+    histTable.removeAttribute("aria-busy");
     $("#statDone").textContent = sum.completed;
     $("#statNotLogged").textContent = sum.notLogged;
     $("#statRate").textContent = sum.rate === null ? "–" : sum.rate + "%";
@@ -660,6 +683,7 @@
     // Automatically update UI when cloud data arrives
     window.addEventListener("skinsight:meds-synced", function () {
       stopCloudWait();
+      renderNotice();
       refresh();
     });
 
