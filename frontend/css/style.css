@@ -149,17 +149,25 @@ site-header, site-footer, main { display: contents; }
   height: var(--navbar-h);
 }
 
+/* Brand lockup: standalone symbol + the unchanged SKINSIGHT wordmark. The wordmark has its own wrapper so the
+   flex gap only separates symbol and word (without it the gap split the word into "SKIN SIGHT"). */
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 800;
   font-size: 1.4rem;
+  line-height: 1;
   color: var(--navy);
   letter-spacing: 0.4px;
   flex-shrink: 0;
 }
-.brand span { color: var(--cyan-ink); transition: color var(--dur) ease; }
-.brand:hover span { color: var(--blue); }
-footer .brand span, .auth-aside .brand span { color: var(--cyan); }
-footer .brand:hover span { color: var(--light-cyan); }
+.brand-mark { display: block; width: 26px; height: 26px; flex-shrink: 0; }
+.brand-word { white-space: nowrap; }
+.brand-word span { color: var(--cyan-ink); transition: color var(--dur) ease; }
+.brand:hover .brand-word span { color: var(--blue); }
+footer .brand-word span, .auth-aside .brand-word span { color: var(--cyan); }
+footer .brand:hover .brand-word span { color: var(--light-cyan); }
 
 .nav-links {
   display: flex;
@@ -404,7 +412,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 @media (max-width: 600px) {
   .wrap { --gutter: 16px; }
-  .brand { font-size: 1.2rem; }
+  .brand { font-size: 1.2rem; gap: 7px; }
+  .brand-mark { width: 24px; height: 24px; }
   footer { padding: var(--space-7) 0 var(--space-5); }
   .footer-grid { grid-template-columns: 1fr; gap: var(--space-6); }
 }
