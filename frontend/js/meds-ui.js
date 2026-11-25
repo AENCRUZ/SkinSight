@@ -78,22 +78,22 @@
   }
 
   function profileLabel() { return S.status().profile.kind === "account" ? "your signed-in account" : "the guest profile"; }
-  function profileChip() {
-    var st = S.status();
-    if (st.profile.kind === "account") {
-      return st.cloudSync ? "Cloud Sync Active" : "Signed-in account";
-    }
-    return "Guest profile";
-  }
-
-  // ------------------------------------------------------------------ disclosure (always visible)
+  // ------------------------------------------------------------------ storage status row + "Privacy & data" disclosure
+  // Always visible: where the data lives (and, for guests, that it is not synced or backed up) plus Sync now.
+  // Behind the disclosure: the full storage/privacy explanation and Delete. The "not medical advice" statement
+  // stays visible in the page's footer notice (tracker) or the one-line disclaimer below (add / history pages).
+  state.noticeOpen = false;
   function renderNotice() {
     var mount = $("#medNotice");
     if (!mount) return;
     var st = S.status();
     var isAccount = st.profile.kind === "account";
 
-    var headTitle = isAccount ? "Synced with your account" : "Stored on this device only";
+    var headTitle = !isAccount ? "Saved on this device only"
+      : st.tableAvailable ? "Synced to your account" : "Saved on this device";
+    var subHtml = !isAccount
+      ? 'Not synced or backed up. <a href="signup.html">Sign in to sync</a> across devices.'
+      : st.tableAvailable ? "" : "Cloud storage isn’t set up yet, so your medications are kept in this browser.";
     var descriptionHtml = isAccount
       ? '<p>Your medications are securely saved to your <strong>SKINSIGHT account in Supabase</strong> and synced across your devices. A local copy is cached in this browser so the tracker works instantly and offline.</p>' +
         (!st.tableAvailable ? '<p class="med-hint"><em>Note: Cloud tables are not created in Supabase yet. Medication data is safely preserved on this device.</em></p>' : '') +
@@ -102,17 +102,29 @@
         '<p><strong>Shared or public device?</strong> Anyone who can use this browser profile may be able to read this information. Delete your data when you’re finished.</p>' +
         '<p>SKINSIGHT only records what you tell it. It <strong>cannot verify that you took a medication</strong> and <strong>does not give medical advice</strong>. Follow the instructions of your healthcare professional.</p>';
 
-    var actionButtons = isAccount
-      ? '<button type="button" class="btn btn-secondary btn-sm" data-med-sync>' + icon("circle-check") + ' Sync now</button> ' +
-        '<button type="button" class="btn btn-ghost btn-sm" data-med-delete>' + icon("trash") + ' Delete medication data</button>'
-      : '<button type="button" class="btn btn-ghost btn-sm" data-med-delete>' + icon("trash") + ' Delete medication data on this device</button>';
+    var syncButton = isAccount
+      ? '<button type="button" class="btn btn-secondary btn-sm" data-med-sync>' + icon("rotate-ccw") + ' Sync now</button>' : "";
+    var deleteButton = isAccount
+      ? '<button type="button" class="btn btn-ghost btn-sm med-notice-delete" data-med-delete>' + icon("trash") + ' Delete medication data</button>'
+      : '<button type="button" class="btn btn-ghost btn-sm med-notice-delete" data-med-delete>' + icon("trash") + ' Delete medication data on this device</button>';
 
     mount.innerHTML =
-      '<section class="med-notice" aria-labelledby="medNoticeTitle">' +
-        '<div class="med-notice-head">' + icon("info") + '<h2 id="medNoticeTitle">' + esc(headTitle) + ' <span class="med-profile-chip">' + esc(profileChip()) + '</span></h2></div>' +
-        descriptionHtml +
-        '<div class="med-notice-actions">' + actionButtons + '</div>' +
+      '<section class="med-notice' + (isAccount && st.tableAvailable ? " is-synced" : "") + '" aria-labelledby="medNoticeTitle">' +
+        '<div class="med-notice-row">' +
+          icon(isAccount && st.tableAvailable ? "circle-check" : "info") +
+          '<div class="med-notice-text"><h2 id="medNoticeTitle">' + esc(headTitle) + '</h2>' +
+            (subHtml ? '<p class="med-notice-sub">' + subHtml + '</p>' : "") + '</div>' +
+          (syncButton ? '<div class="med-notice-actions">' + syncButton + '</div>' : "") +
+        '</div>' +
+        '<details class="med-notice-more"' + (state.noticeOpen ? " open" : "") + '>' +
+          '<summary>Privacy &amp; data' + icon("chevron-down") + '</summary>' +
+          '<div class="med-notice-body">' + descriptionHtml +
+            '<div class="med-notice-danger">' + deleteButton + '</div></div>' +
+        '</details>' +
+        (isTracker ? "" : '<p class="med-disclaimer">SKINSIGHT records what you tell it, can’t confirm doses were taken, and doesn’t give medical advice.</p>') +
       '</section>';
+    var more = $(".med-notice-more", mount);
+    if (more) more.addEventListener("toggle", function () { state.noticeOpen = more.open; });
   }
 
   // ------------------------------------------------------------------ alerts: storage warnings, messages, undo banners
@@ -182,13 +194,10 @@
     var done = slots.filter(function (s) { return s.status === "completed"; }).length, total = slots.length;
     var pct = total ? Math.round((done / total) * 100) : 0;
 
-    var ring = $("#medRing");
-    ring.style.setProperty("--pct", pct);
-    ring.setAttribute("aria-label", total ? done + " of " + total + " scheduled doses completed today" : "No scheduled doses today");
-    $("#medRingText").textContent = total ? done + "/" + total : "–";
-    $("#medProgressText").innerHTML = total ? "<strong>" + done + " of " + total + "</strong> scheduled doses completed today" : "No scheduled doses today";
+    // Progress lives in the "Today's schedule" heading and only appears when doses are scheduled today.
+    $("#medProgress").hidden = !total;
+    $("#medProgressText").innerHTML = total ? "<strong>" + done + " of " + total + "</strong> done" : "";
     $("#medBar").style.width = pct + "%";
-    $("#medProgressNote").hidden = !asNeeded.length;
 
     var list = $("#medList"), empty = $("#medScheduleEmpty");
     list.innerHTML = slots.map(slotHtml).join("");

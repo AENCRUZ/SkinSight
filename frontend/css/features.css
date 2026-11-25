@@ -16,21 +16,46 @@
    ========================================================================== */
 
 /* ---------- 1. Preview / sample-data components ---------- */
-.coverage-note {
+/* Coverage fact, shown as one line in the Find a Dermatologist page header. */
+.coverage-line {
   display: flex;
-  gap: var(--space-3);
-  align-items: flex-start;
-  margin: 0 0 var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid #90E0EF;
-  border-radius: var(--radius-md);
-  background: var(--pale-cyan);
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-2);
   color: var(--navy);
   font-size: var(--text-sm);
 }
-.coverage-note .i { width: 20px; height: 20px; margin-top: 1px; flex-shrink: 0; color: var(--blue-600); }
-.coverage-note p { margin: 0; color: inherit; }
-.coverage-note strong { font-family: var(--font-display); }
+.coverage-line .i { width: 16px; height: 16px; flex-shrink: 0; color: var(--blue-600); }
+
+/* "Not independently verified" disclosure: one line, reason behind a native <details>. Amber rule = warning. */
+.verify-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 var(--space-4);
+  padding: 8px 12px;
+  border-left: 3px solid #C98A12;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: #FFF9EC;
+  color: #5A3B00;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+.verify-strip > .i { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; color: #8A5A00; }
+.verify-strip details { flex: 1; min-width: 0; }
+.verify-strip summary { cursor: pointer; list-style: none; }
+.verify-strip summary::-webkit-details-marker { display: none; }
+.verify-strip summary strong { font-family: var(--font-display); }
+.verify-why {
+  color: #7A4E00;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+.verify-strip details[open] .verify-why { text-decoration: none; }
+.verify-strip summary:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
+.verify-strip details p { margin: 6px 0 2px; color: inherit; }
 .preview-banner {
   display: flex;
   align-items: flex-start;
@@ -81,6 +106,7 @@
 .finder-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--space-5); align-items: start; }
 .results-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); flex-wrap: wrap; }
 .results-head h2 { margin: 0; font-size: 1.15rem; color: var(--navy); }
+.results-origin { margin: calc(-1 * var(--space-2)) 0 var(--space-3); font-size: var(--text-sm); color: var(--ink-soft); }
 .badge-location { background: var(--teal-soft); color: #006399; border: 1px solid #90E0EF; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; font-weight: 600; border-radius: var(--radius-pill); font-size: 0.82rem; }
 .badge-location .i { width: 14px; height: 14px; flex-shrink: 0; }
 
@@ -748,53 +774,6 @@ body.modal-open { overflow: hidden; }
   .modal-footer-info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem; }
   .modal-footer-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
   .modal-footer-actions .btn { width: 100%; min-width: 0; min-height: 44px; padding-inline: 10px; font-size: 0.88rem; }
-}
-
-/* Google Maps Live Sync Banner */
-.gmaps-sync-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--teal);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  box-shadow: 0 1px 4px rgba(3, 4, 94, 0.05);
-  flex-wrap: wrap;
-}
-.gmaps-sync-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 220px;
-}
-.gmaps-sync-pulse {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #0077B6;
-  box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.25);
-  flex-shrink: 0;
-}
-.gmaps-sync-text strong {
-  display: block;
-  font-size: 0.88rem;
-  color: var(--navy);
-  font-family: var(--font-display);
-}
-.gmaps-sync-text p {
-  margin: 1px 0 0;
-  font-size: 0.78rem;
-  color: var(--ink-soft);
-}
-.gmaps-sync-btn {
-  font-size: 0.8rem;
-  padding: 5px 12px;
-  white-space: nowrap;
 }
 
 /* Toast Notifications */

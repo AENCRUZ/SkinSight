@@ -47,13 +47,13 @@
     <span class="eyebrow">Dermatologist directory</span>
     <h1>Find a Dermatologist</h1>
     <p>Search for dermatologist clinics, pin your location on Google Maps, and reach out directly to share your consultation summary.</p>
+    <p class="coverage-line"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg><span>Clinics are currently listed in <strong>Batangas Province</strong> only.</span></p>
   </div>
 </div>
 
 <section class="feature-section">
   <div class="wrap">
-    <div class="coverage-note" id="coverageNote" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-map-pin"/></svg><p><strong>Current coverage: Batangas Province, Philippines only.</strong> This is a demo directory. You can pin any location, but we only list clinics in Batangas for now, and more places will be added over time.</p></div>
-    <div class="preview-banner" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Directory details aren't verified.</strong> Hours, phone numbers, emails and doctors come from our own directory and have not been independently confirmed. Please contact the clinic to confirm before you visit.</p></div>
+    <div class="verify-strip" role="note"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><details><summary><span><strong>Clinic details aren't independently verified.</strong> Call ahead to confirm.</span> <span class="verify-why">Why?</span></summary><p>Hours, phone numbers, emails and doctors come from our own directory and have not been independently confirmed. Please contact the clinic to confirm before you visit.</p></details></div>
     <!-- Active Search & Location Panel -->
     <form class="card card-static finder-panel" role="search" aria-label="Search clinics and choose location" onsubmit="return false">
       <fieldset class="finder-fields">
@@ -100,13 +100,14 @@
     <div class="finder-layout">
       <!-- Left: Clinic Results List -->
       <div class="finder-results">
-        <div class="results-head">
+        <div class="results-head" aria-live="polite">
           <h2 id="resultsCount">Clinics near you</h2>
           <span class="badge badge-location" id="pinnedLocationBadge" title="Current pinned location">
             <svg class="i" style="width:14px;height:14px;" aria-hidden="true"><use href="#i-map-pin"/></svg>
             <span id="locationNameText">Batangas City</span>
           </span>
         </div>
+        <p class="results-origin" id="resultsOrigin" hidden></p>
 
         <div id="clinicsList">
           <!-- Dynamically populated by clinic-finder.js -->

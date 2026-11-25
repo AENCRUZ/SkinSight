@@ -57,18 +57,14 @@
     <div class="med-alerts" id="medAlerts"></div>
     <div id="medReminders"></div>
 
-    <div class="card card-static med-progress">
-      <div class="ring" id="medRing" role="img" aria-label="No scheduled doses today"><span id="medRingText">&ndash;</span></div>
-      <div class="med-progress-body">
-        <h2>Today's progress</h2>
-        <p id="medProgressText">No scheduled doses today</p>
-        <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="medBar"></div></div>
-        <p class="med-hint" id="medProgressNote" hidden>As-needed medications aren't included in this progress.</p>
+    <div class="section-bar med-schedule-bar">
+      <div class="med-schedule-title">
+        <h2>Today's schedule</h2>
+        <div class="med-progress-inline" id="medProgress" hidden>
+          <span id="medProgressText"></span>
+          <span class="progress-track" aria-hidden="true"><span class="progress-fill" id="medBar"></span></span>
+        </div>
       </div>
-    </div>
-
-    <div class="section-bar">
-      <h2>Today's schedule</h2>
       <a href="add-medication.html" id="medAddLink" class="btn btn-primary btn-sm"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> Add medication</a>
     </div>
     <div id="medScheduleEmpty" hidden></div>
@@ -88,7 +84,7 @@
 
     <div class="notice strong">
       <svg class="i" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>
-      <span>Only track medications prescribed or recommended by a healthcare professional.</span>
+      <span>Only track medications prescribed or recommended by a healthcare professional. SKINSIGHT records what you tell it, can’t confirm doses were taken, and doesn’t give medical advice.</span>
     </div>
 
     <div class="med-footer">

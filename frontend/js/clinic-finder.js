@@ -583,7 +583,7 @@
         if (window.SkinsightClinics.getCoverageAt(lat, lng)) {
           showToast("Located! Distance counts now start from your actual location.");
         } else {
-          showToast("Located. We don't list clinics in your area yet; see the coverage note below.");
+          showToast("Located. We don't list clinics in your area yet; see the coverage note at the top of the page.");
         }
         if (autoOpenModal) {
           openMapModal();
@@ -611,10 +611,18 @@
   /* --------------------------------------------------------------------------
      Outside current coverage
      -------------------------------------------------------------------------- */
+  function setResultsOrigin(text) {
+    var el = document.getElementById("resultsOrigin");
+    if (!el) return;
+    el.textContent = text;
+    el.hidden = !text;
+  }
+
   function renderOutsideCoverage(areaDisplayName) {
     var container = document.getElementById("clinicsList");
     var resultsCountEl = document.getElementById("resultsCount");
     if (resultsCountEl) resultsCountEl.textContent = "No listed clinics for this location yet";
+    setResultsOrigin("");
     var locationNameText = document.getElementById("locationNameText");
     if (locationNameText) locationNameText.textContent = state.location.name;
     if (!container) return;
@@ -728,6 +736,7 @@
     if (resultsCountEl) {
       resultsCountEl.textContent = filtered.length + " listed clinic" + (filtered.length === 1 ? "" : "s") + " " + filterScopeLabel;
     }
+    setResultsOrigin("");
 
     var locationNameText = document.getElementById("locationNameText");
     if (locationNameText) {
@@ -784,29 +793,10 @@
       return;
     }
 
-    var gmapsSearchUrl = window.SkinsightClinics.getGoogleMapsSearchUrl(
-      state.location.lat,
-      state.location.lng,
-      "dermatologist skin clinic in " + state.location.name
-    );
-
-    var originNote = isUserGps
+    // Where distances are measured from (shown under the results heading; replaces the old "Directory · N" strip).
+    setResultsOrigin(isUserGps
       ? "Distances are calculated starting from your actual device location (driving road distance)."
-      : "Distances and search radius are measured from " + escapeHtml(cleanTargetCity) + (hasActualUserGps ? " (also showing distance from your GPS location)." : ".");
-
-    var syncBannerHtml =
-      '<div class="gmaps-sync-banner" role="status">' +
-        '<div class="gmaps-sync-left">' +
-          '<span class="gmaps-sync-pulse"></span>' +
-          '<div class="gmaps-sync-text">' +
-            '<strong>Directory &middot; ' + filtered.length + ' listed clinic' + (filtered.length === 1 ? '' : 's') + ' ' + escapeHtml(filterScopeLabel) + '</strong>' +
-            '<p>' + originNote + '</p>' +
-          '</div>' +
-        '</div>' +
-        '<a href="' + gmapsSearchUrl + '" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-xs gmaps-sync-btn" title="Search Google Maps for dermatologists near this location">' +
-          'Open Google Maps <svg class="i" style="width:12px;height:12px;" aria-hidden="true"><use href="#i-arrow-right"/></svg>' +
-        '</a>' +
-      '</div>';
+      : "Distances and search radius are measured from " + cleanTargetCity + (hasActualUserGps ? " (also showing distance from your GPS location)." : "."));
 
     var html = filtered.map(function (clinic) {
       var openStatus = window.SkinsightClinics.getOpenStatus(clinic);
@@ -880,7 +870,7 @@
       '</article>';
     }).join("");
 
-    container.innerHTML = syncBannerHtml + html;
+    container.innerHTML = html;
 
     Array.prototype.forEach.call(container.querySelectorAll(".btn-show-on-map"), function (btn) {
       btn.addEventListener("click", function () {
